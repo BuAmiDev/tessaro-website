@@ -1,0 +1,168 @@
+---
+import Base from '../layouts/Base.astro';
+import PageIntro from '../components/PageIntro.astro';
+import Icon from '../components/Icon.astro';
+import { CAPABILITIES, GROUPS } from '../content/capabilities';
+import { SCENARIOS } from '../lib/scenario-engine';
+import { INDUSTRIES } from '../content/industries';
+const capData = Object.fromEntries(CAPABILITIES.map((c) => [c.id, { name: c.name, group: GROUPS[c.group].name, status: c.status }]));
+const scData = Object.fromEntries(SCENARIOS.map((s) => [s.id, s.name]));
+const indData = Object.fromEntries(INDUSTRIES.map((i) => [i.id, i.name]));
+---
+<Base title="My setup" description="The capabilities, scenarios and configuration you have collected while exploring Tessaro." current="my-setup" noindex>
+  <PageIntro title="My setup" lead="Everything you have collected while exploring: capabilities, saved scenarios and your configuration draft. Take it into a demo or a trial and nobody has to ask you twice.">
+    <div class="where" data-where></div>
+  </PageIntro>
+
+  <section class="section tight">
+    <div class="wrap ms">
+      <div class="ms-main">
+        <div class="ms-empty" data-empty hidden>
+          <h2 class="h3">Nothing saved yet</h2>
+          <p class="muted">Run a scenario and save it, or add capabilities from the feature explorer. They will appear here.</p>
+          <div class="row"><a class="btn btn-primary" href="/simulator">Explore a scenario</a><a class="btn" href="/features">Browse capabilities</a></div>
+        </div>
+
+        <section class="card" aria-labelledby="h-ind" data-block>
+          <div class="card-h"><h2 id="h-ind" class="h4">Industry</h2></div>
+          <div class="field"><label for="industry" class="sr-only">Industry</label>
+            <select class="select" id="industry"><option value="">Not chosen yet</option>{Object.entries(indData).map(([k, v]) => <option value={k}>{v}</option>)}</select></div>
+        </section>
+
+        <section class="card" aria-labelledby="h-sc" data-block>
+          <div class="card-h"><h2 id="h-sc" class="h4">Saved scenarios <span class="count" data-sc-count></span></h2><a class="btn btn-sm btn-quiet" href="/simulator"><Icon name="plus" size={16} /> Add a scenario</a></div>
+          <ul class="list" role="list" data-sc-list></ul>
+          <p class="xs muted" data-sc-none hidden>No saved scenarios.</p>
+        </section>
+
+        <section class="card" aria-labelledby="h-cap" data-block>
+          <div class="card-h"><h2 id="h-cap" class="h4">Capabilities <span class="count" data-cap-count></span></h2><a class="btn btn-sm btn-quiet" href="/features"><Icon name="plus" size={16} /> Add capabilities</a></div>
+          <ul class="list" role="list" data-cap-list></ul>
+          <p class="xs muted" data-cap-none hidden>No capabilities added.</p>
+        </section>
+
+        <section class="card" aria-labelledby="h-cfg" data-block>
+          <div class="card-h"><h2 id="h-cfg" class="h4">Configuration draft</h2></div>
+          <p class="small" data-cfg></p>
+        </section>
+
+        <section class="card" aria-labelledby="h-notes" data-block>
+          <div class="card-h"><h2 id="h-notes" class="h4">Notes for our team</h2></div>
+          <div class="field"><label for="notes" class="sr-only">Notes</label>
+            <textarea class="textarea" id="notes" rows="4" placeholder="For example: we run 3 AMC contracts with different response times, and owners approve anything above AED 2,000."></textarea>
+            <p class="hint">Saved automatically. Please don’t include personal details about residents or customers.</p></div>
+        </section>
+      </div>
+
+      <div class="ms-side" role="region" aria-label="Next steps">
+        <div class="card sticky">
+          <h2 class="h4">Continue with this setup</h2>
+          <a class="btn btn-primary" href="/configurator">Continue to configurator <Icon name="arrow-right" size={16} /></a>
+          <a class="btn" href="/demo?from=setup">Book a demo with this setup</a>
+          <a class="btn" href="/trial">Start a trial with this setup</a>
+          <hr />
+          <details class="hand">
+            <summary>What we receive</summary>
+            <p class="xs muted">A versioned summary with your industry, capability IDs and scenario inputs. No names, emails or phone numbers.</p>
+            <pre data-handoff></pre>
+          </details>
+          <button class="btn btn-sm btn-quiet danger" type="button" data-clear><Icon name="trash-2" size={16} /> Clear this setup</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <p class="sr-only" role="status" aria-live="polite" data-live></p>
+</Base>
+
+<style>
+  .where { display: grid; gap: 10px; padding: 16px; border-radius: var(--r-sm); background: var(--surface); border: 1px solid var(--line); font-size: var(--t-sm); }
+  .where b { color: var(--fg); }
+  .ms { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 32px; align-items: start; }
+  .ms-main { display: grid; gap: 16px; }
+  .card { background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--r-md); padding: 20px; display: grid; gap: 14px; }
+  .card-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .count { font-family: var(--font-body); font-weight: 600; color: var(--fg-2); font-size: var(--t-sm); margin-left: 4px; }
+  .list { display: grid; gap: 8px; margin: 0; }
+  .list :global(li) { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--bg); }
+  .list :global(.t) { font-weight: 600; }
+  .list :global(.m) { font-size: var(--t-xs); color: var(--fg-2); }
+  .list :global(.acts) { display: flex; gap: 4px; grid-row: 1 / span 2; grid-column: 2; }
+  .list :global(.nt) { grid-column: 1 / -1; }
+  .ms-side .sticky { position: sticky; top: 88px; }
+  .ms-side .btn { justify-content: center; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; width: 100%; }
+  .hand summary { cursor: pointer; font-size: var(--t-sm); font-weight: 600; }
+  .hand pre { font-size: 11px; line-height: 1.5; max-height: 260px; overflow: auto; background: var(--surface); padding: 10px; border-radius: 6px; white-space: pre-wrap; word-break: break-word; margin-top: 8px; }
+  .danger { color: var(--alert); }
+  .ms-empty { padding: 32px; border: 1px dashed var(--line-strong); border-radius: var(--r-md); display: grid; gap: 12px; }
+  @media (max-width: 900px) { .ms { grid-template-columns: 1fr; } .ms-side .sticky { position: static; } }
+</style>
+
+<script define:vars={{ capData, scData, indData }}>
+  window.__MS = { capData, scData, indData };
+</script>
+<script>
+  import { load, update, clear, toHandoff, countItems } from '../lib/setup-store';
+  import { auth, track } from '../integrations/index';
+  import { icon } from '../lib/icons';
+  const { capData, scData } = (window as any).__MS as { capData: Record<string, { name: string; group: string; status: string }>; scData: Record<string, string> };
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+  const live = $('[data-live]');
+  const say = (m: string) => { live.textContent = m; };
+  const persist = () => auth.persistAccountCopy();
+  const fmt = (iso: string) => new Date(iso).toLocaleString('en-AE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+  function render() {
+    const s = load(); const acc = auth.current();
+    $('[data-where]').innerHTML = acc
+      ? `${icon('shield-check', 16)} <span><b>Saved to your account</b> (${esc(acc.email)}). Available on any device after you sign in.</span><span class="xs muted">Test mode: accounts are stored in this browser until an identity provider is connected.</span>`
+      : `${icon('lock', 16)} <span><b>Saved on this device only.</b> Sign in to keep it on any device. Your draft moves into your account automatically.</span><a class="btn btn-sm" href="/sign-in?next=/my-setup">Sign in to save</a>`;
+    const empty = countItems(s) === 0 && !s.notes && !s.industry;
+    $('[data-empty]').hidden = !empty;
+    document.querySelectorAll<HTMLElement>('[data-block]').forEach((b) => (b.hidden = empty));
+    $<HTMLSelectElement>('#industry').value = s.industry || '';
+    const notes = $<HTMLTextAreaElement>('#notes'); if (document.activeElement !== notes) notes.value = s.notes || '';
+
+    $('[data-sc-count]').textContent = s.scenarios.length ? `(${s.scenarios.length})` : '';
+    $('[data-sc-none]').hidden = s.scenarios.length > 0;
+    $('[data-sc-list]').innerHTML = s.scenarios.map((x) => {
+      const q = new URLSearchParams(Object.entries(x.inputs).map(([k, v]) => [k, String(v)])).toString();
+      return `<li data-id="${x.id}"><span class="t">${esc(x.name || scData[x.inputs.scenario] || 'Scenario')}</span>
+        <span class="m">${esc(scData[x.inputs.scenario] || '')} · ${x.inputs.urgency} · ${x.inputs.sites} sites · approval above AED ${x.inputs.threshold.toLocaleString('en-AE')} · saved ${fmt(x.savedAt)}</span>
+        <span class="acts"><a class="btn btn-sm btn-quiet" href="/simulator?${q}">Open</a><button class="btn btn-sm btn-quiet" type="button" data-rm-sc="${x.id}" aria-label="Remove ${esc(x.name)}">${icon('trash-2', 16)}</button></span>
+        <div class="field nt"><label class="xs muted" for="n-${x.id}">Note</label><input class="input" id="n-${x.id}" data-note="${x.id}" value="${esc(x.note || '')}" placeholder="What should we know about this case?" /></div></li>`;
+    }).join('');
+
+    $('[data-cap-count]').textContent = s.capabilities.length ? `(${s.capabilities.length})` : '';
+    $('[data-cap-none]').hidden = s.capabilities.length > 0;
+    $('[data-cap-list]').innerHTML = s.capabilities.filter((id) => capData[id]).map((id) => `<li><span class="t">${esc(capData[id].name)}</span><span class="m">${esc(capData[id].group)} · ${capData[id].status === 'pilot' ? 'Pilot' : 'Designed'}</span>
+      <span class="acts"><a class="btn btn-sm btn-quiet" href="/features#${id}">Details</a><button class="btn btn-sm btn-quiet" type="button" data-rm-cap="${id}" aria-label="Remove ${esc(capData[id].name)}">${icon('trash-2', 16)}</button></span></li>`).join('');
+
+    $('[data-cfg]').innerHTML = s.config
+      ? `Step ${s.config.step + 1} of 7, last changed ${fmt(s.config.updatedAt)}. <a class="link" href="/configurator">Resume</a>`
+      : `Not started. <a class="link" href="/configurator">Start the configurator</a> to describe your sites, roles and approval rules.`;
+    $('[data-handoff]').textContent = JSON.stringify(toHandoff(s), null, 2);
+  }
+
+  document.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    const sc = t.closest<HTMLElement>('[data-rm-sc]'); const cap = t.closest<HTMLElement>('[data-rm-cap]');
+    if (sc) { const id = sc.dataset.rmSc!; update((s) => { s.scenarios = s.scenarios.filter((x) => x.id !== id); }); persist(); render(); say('Scenario removed.'); track('setup_item_removed', { kind: 'scenario' }); }
+    if (cap) { const id = cap.dataset.rmCap!; update((s) => { s.capabilities = s.capabilities.filter((x) => x !== id); }); persist(); render(); say('Capability removed.'); track('setup_item_removed', { kind: 'capability' }); }
+  });
+  document.addEventListener('change', (e) => {
+    const t = e.target as HTMLInputElement;
+    if (t.dataset.note) { const id = t.dataset.note; update((s) => { const x = s.scenarios.find((y) => y.id === id); if (x) x.note = t.value.slice(0, 400); }); persist(); say('Note saved.'); }
+    if (t.id === 'industry') { update((s) => { s.industry = t.value || undefined; }); persist(); render(); say('Industry saved.'); }
+  });
+  let tm: number | undefined;
+  $('#notes').addEventListener('input', (e) => { clearTimeout(tm); tm = window.setTimeout(() => { update((s) => { s.notes = (e.target as HTMLTextAreaElement).value.slice(0, 2000); }); persist(); say('Notes saved.'); }, 500); });
+  $('[data-clear]').addEventListener('click', () => {
+    const b = $('[data-clear]');
+    if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.lastChild!.textContent = ' Press again to clear everything'; setTimeout(() => { b.dataset.confirm = ''; b.lastChild!.textContent = ' Clear this setup'; }, 4000); return; }
+    clear(); persist(); render(); say('Setup cleared.'); track('setup_cleared');
+  });
+  render(); window.addEventListener('setup:change', render);
+  track('setup_viewed', { items: countItems(load()) });
+</script>

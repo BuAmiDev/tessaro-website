@@ -1,0 +1,380 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { INDUSTRIES } from '../content/industries';
+import { SCENARIOS } from '../lib/scenario-engine';
+import { TILE_RECTS } from '../hero/tiles';
+---
+<Base title="Scenario simulator" description="Choose your industry and inputs, then follow a realistic service scenario from report to sign-off. See what Tessaro suggests, what rules apply and where people decide." current="simulator">
+  <section class="sim-top" data-surface="dark">
+    <div class="wrap sim-top-in">
+      <div>
+        <h1>Scenario simulator</h1>
+        <p class="lead">Choose a business context, adjust the inputs, and follow the work from report to record. Every suggestion shows the context it used and the rule behind it.</p>
+      </div>
+      <p class="notice notice-test"><Icon name="info" size={18} /><span><b>Illustrative.</b> Sample data, a compressed timeline and example costs in AED. Outcomes are calculated from the rules shown; no live AI system runs behind this page.</span></p>
+    </div>
+  </section>
+
+  <section class="sim" data-sim>
+    <div class="wrap sim-layout">
+      <!-- Controls -->
+      <form class="panel sim-ctrls" data-ctrls aria-labelledby="ctrl-t" id="adjust">
+        <h2 id="ctrl-t" class="panel-h">Your scenario</h2>
+        <div class="field"><label for="f-industry">Industry and operating model</label>
+          <select class="select" id="f-industry" name="industry">
+            {INDUSTRIES.map((i) => <option value={i.id}>{i.short}{i.status === 'proposed' ? ' (proposed)' : ''}</option>)}
+          </select>
+        </div>
+        <div class="field"><label for="f-scenario">Scenario</label>
+          <select class="select" id="f-scenario" name="scenario">
+            {SCENARIOS.map((s) => <option value={s.id}>{s.name}</option>)}
+          </select>
+          <p class="hint" data-scenario-line></p>
+        </div>
+        <div class="two">
+          <div class="field"><label for="f-sites">Sites or properties <output class="num" for="f-sites" data-out="sites"></output></label><input type="range" id="f-sites" name="sites" min="1" max="200" step="1" /></div>
+          <div class="field"><label for="f-team">Technicians <output class="num" for="f-team" data-out="team"></output></label><input type="range" id="f-team" name="team" min="2" max="80" step="1" /></div>
+        </div>
+        <div class="field"><label for="f-asset">Asset type</label><input class="input" id="f-asset" name="asset" autocomplete="off" maxlength="60" /></div>
+        <fieldset class="field"><legend class="label">Urgency</legend>
+          <div class="pills">{['P1', 'P2', 'P3'].map((u) => <label class="pill"><input type="radio" name="urgency" value={u} /><span>{u}</span></label>)}</div>
+          <p class="hint">P1 emergency · P2 urgent · P3 routine</p>
+        </fieldset>
+        <fieldset class="field"><legend class="label">Contract coverage</legend>
+          <div class="pills">{[['amc', 'Annual contract'], ['warranty', 'Warranty'], ['none', 'None']].map(([v, l]) => <label class="pill"><input type="radio" name="coverage" value={v} /><span>{l}</span></label>)}</div>
+        </fieldset>
+        <div class="field"><label for="f-threshold">Approval needed above</label>
+          <select class="select" id="f-threshold" name="threshold">{[250, 500, 1000, 2000, 5000, 20000].map((n) => <option value={n}>AED {n.toLocaleString('en-AE')}</option>)}</select>
+        </div>
+        <fieldset class="field"><legend class="label">Technician availability</legend>
+          <div class="pills">{[['available', 'Available'], ['busy', 'Busy'], ['none', 'Nobody']].map(([v, l]) => <label class="pill"><input type="radio" name="availability" value={v} /><span>{l}</span></label>)}</div>
+        </fieldset>
+        <div class="field"><label for="f-channel">Customer updates by</label>
+          <select class="select" id="f-channel" name="channel"><option value="whatsapp">WhatsApp</option><option value="app">Mobile app</option><option value="email">Email</option><option value="sms">SMS</option></select>
+        </div>
+        <fieldset class="field"><legend class="label">If approval is needed, the approver…</legend>
+          <div class="pills">{[['approve', 'Approves'], ['decline', 'Declines'], ['pending', 'Hasn’t answered']].map(([v, l]) => <label class="pill"><input type="radio" name="decision" value={v} /><span>{l}</span></label>)}</div>
+        </fieldset>
+      </form>
+
+      <!-- Environment -->
+      <div class="sim-env panel" aria-labelledby="env-t">
+        <div class="env-head">
+          <h2 id="env-t" class="panel-h">Operation</h2>
+          <span class="state" data-state></span>
+        </div>
+        <div class="board" data-board aria-hidden="true">
+          {TILE_RECTS.map(([x, y, w, h], i) => (
+            <div class="bt" data-tile={i} style={`left:${x / 104 * 100}%;top:${y / 104 * 100}%;width:${w / 104 * 100}%;height:${h / 104 * 100}%`}><span class="bt-l"></span></div>
+          ))}
+        </div>
+        <dl class="metrics" data-metrics></dl>
+        <div class="legend" aria-label="Legend">
+          <span class="k k-auto">Automatic</span><span class="k k-proposal">Suggested</span><span class="k k-approval">Needs approval</span><span class="k k-human">Person</span><span class="k k-exception">Exception</span>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="sim-time panel" aria-labelledby="tl-t">
+        <div class="env-head">
+          <h2 id="tl-t" class="panel-h">Activity</h2>
+          <div class="row">
+            <button class="btn btn-sm" type="button" data-replay><Icon name="rotate-ccw" size={16} /> Replay</button>
+          </div>
+        </div>
+        <p class="sr-only" aria-live="polite" data-live></p>
+        <ol class="tl" role="list" data-tl></ol>
+      </div>
+    </div>
+
+    <div class="wrap sim-actions">
+      <div class="panel act">
+        <div class="act-l">
+          <h2 class="panel-h">Keep this scenario</h2>
+          <p class="small muted" data-save-where>Saved on this device. Sign in to keep it in your account.</p>
+        </div>
+        <div class="act-btns">
+          <button class="btn btn-primary" type="button" data-save><Icon name="save" size={18} /> Save scenario</button>
+          <button class="btn" type="button" data-compare-btn><Icon name="git-compare-arrows" size={18} /> Compare saved <span class="count" data-saved-n hidden></span></button>
+          <button class="btn" type="button" data-addcaps><Icon name="plus" size={18} /> Add capabilities to my setup</button>
+          <a class="btn" href="/configurator" data-to-config>Continue to configurator</a>
+          <a class="btn" href="/demo" data-to-demo>Book a demo using this scenario</a>
+          <a class="btn btn-quiet" href="#adjust">Adjust scenario</a>
+        </div>
+        <p class="toast" role="status" data-toast hidden></p>
+      </div>
+      <div class="panel compare" data-compare hidden>
+        <div class="env-head"><h2 class="panel-h">Saved scenarios</h2><button class="btn btn-sm btn-quiet" type="button" data-compare-close><Icon name="x" size={16} /> Close</button></div>
+        <div class="tw" data-compare-body></div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .sim-top { background: var(--graphite-900); padding: 56px 0 40px; }
+  .sim-top-in { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 32px; align-items: end; }
+  .sim-top h1 { margin-bottom: 14px; }
+  .sim { padding: 28px 0 80px; }
+  .sim-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr) minmax(0, 1.05fr); gap: 16px; align-items: start; }
+  .panel-h { font-family: var(--font-body); font-size: var(--t-md); font-weight: 600; letter-spacing: 0; }
+  .sim-ctrls { padding: 20px; display: grid; gap: 18px; position: sticky; top: 84px; max-height: calc(100dvh - 100px); overflow: auto; overscroll-behavior: contain; }
+  fieldset.field { border: 0; padding: 0; margin: 0; }
+  .two { display: grid; gap: 14px; }
+  .field label output { float: right; color: var(--fg-2); font-weight: 600; }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill { position: relative; }
+  .pill input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+  .pill span { display: inline-flex; align-items: center; min-height: 40px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line-strong); background: var(--surface-interactive); font-size: var(--t-sm); font-weight: 500; }
+  .pill input:checked + span { border-color: var(--accent); background: var(--surface-selected); color: var(--accent-text); font-weight: 600; }
+  .pill input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .sim-env, .sim-time { padding: 20px; display: grid; gap: 16px; min-width: 0; }
+  .env-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .state { font-size: var(--t-xs); font-weight: 600; padding: 4px 10px; border-radius: 4px; }
+  .state.complete { background: var(--ok-tint); color: var(--ok); }
+  .state.awaiting { background: var(--wait-tint); color: var(--wait); }
+  .state.exception-recovered { background: var(--info-tint); color: var(--info); }
+  .board { position: relative; aspect-ratio: 1; width: 100%; background: var(--porcelain-200); border-radius: var(--r-sm); }
+  .bt { position: absolute; padding: 3px; container-type: size; }
+  @container (max-width: 64px) { .bt-l { color: transparent !important; } }
+  .bt::before { content: ""; position: absolute; inset: 3px; border-radius: 6px; background: var(--surface-raised); border: 1px solid var(--line); transition: background-color var(--d-panel) ease, border-color var(--d-panel) ease, transform var(--d-panel) var(--ease-out); }
+  .bt-l { position: absolute; inset: 3px; padding: 8px; font-size: 11.5px; font-weight: 600; line-height: 1.25; color: var(--fg-2); display: flex; align-items: flex-end; overflow: hidden; }
+  .bt.on::before { background: var(--emerald-600); border-color: var(--emerald-600); transform: translateY(-2px); }
+  .bt.on .bt-l { color: #fff; }
+  .bt.done::before { background: var(--mint-100); border-color: #B5DCC7; }
+  .bt.done .bt-l { color: var(--ok); }
+  .bt.exc::before { background: var(--alert-tint); border-color: var(--alert); }
+  .bt.exc .bt-l { color: var(--alert); }
+  .metrics { display: flex; flex-wrap: wrap; gap: 3px; background: var(--line); border: 3px solid var(--line); border-radius: var(--r-xs); margin: 0; }
+  .metrics :global(div) { flex: 1 1 120px; background: var(--surface-raised); border-radius: 5px; padding: 10px 12px; }
+  .metrics :global(dt) { font-size: var(--t-xs); color: var(--fg-2); }
+  .metrics :global(dd) { margin: 2px 0 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .metrics :global(dd small) { display: block; font-weight: 500; font-size: 11.5px; color: var(--fg-3); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px; }
+:global(.k) { font-size: 11.5px; font-weight: 600; padding: 2px 7px; border-radius: 4px; white-space: nowrap; display: inline-flex; gap: 4px; align-items: center; }
+  :global(.k-auto), :global(.k-record) { background: var(--ok-tint); color: var(--ok); }
+  :global(.k-proposal) { background: var(--wait-tint); color: var(--wait); }
+  :global(.k-approval) { background: var(--wait-tint); color: var(--wait); box-shadow: inset 0 0 0 1px currentColor; }
+  :global(.k-human) { background: var(--info-tint); color: var(--info); }
+  :global(.k-exception) { background: var(--alert-tint); color: var(--alert); }
+  .tl { margin: 0; display: grid; gap: 0; }
+  .tl :global(li) { display: grid; grid-template-columns: 28px 1fr; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+  .tl :global(li:first-child) { border-top: 0; }
+  .tl :global(li.pending) { display: none; }
+  .tl :global(li.enter) { animation: tl-in 260ms var(--ease-out); }
+  @keyframes tl-in { from { opacity: 0; transform: translateY(6px); } }
+  .tl :global(.ic) { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: var(--surface); border: 1px solid var(--line); color: var(--fg-2); }
+  .tl :global(.h) { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+  .tl :global(.t) { font-weight: 600; }
+  .tl :global(.at) { font-size: var(--t-xs); color: var(--fg-3); font-variant-numeric: tabular-nums; margin-left: auto; }
+  .tl :global(.d) { color: var(--fg-2); font-size: var(--t-sm); margin-top: 4px; }
+  .tl :global(.x) { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tl :global(.x button) { min-height: 34px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--line-strong); background: var(--surface-interactive); font-size: var(--t-xs); font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .tl :global(.x button[aria-expanded="true"]) { background: var(--surface); }
+  .tl :global(.x button.go) { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .tl :global(.more) { margin-top: 8px; padding: 10px 12px; border-radius: 6px; background: var(--surface); font-size: var(--t-xs); color: var(--fg-2); }
+  .tl :global(.more ul) { margin: 4px 0 0; padding-left: 16px; }
+  .tl :global(.more b) { color: var(--fg); }
+  .sim-actions { display: grid; gap: 16px; margin-top: 16px; }
+  .act { padding: 20px; display: grid; grid-template-columns: minmax(0, 260px) 1fr; gap: 16px 24px; align-items: center; }
+  .act-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .toast { grid-column: 1 / -1; font-size: var(--t-sm); font-weight: 600; color: var(--ok); display: flex; gap: 8px; align-items: center; }
+  .compare { padding: 20px; display: grid; gap: 12px; }
+  .tw { overflow-x: auto; }
+  .tw :global(table) { border-collapse: collapse; width: 100%; font-size: var(--t-sm); min-width: 560px; }
+  .tw :global(th), .tw :global(td) { text-align: start; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .tw :global(th) { font-size: var(--t-xs); color: var(--fg-2); font-weight: 600; }
+  @media (max-width: 1180px) { .sim-layout { grid-template-columns: 280px 1fr; } .sim-time { grid-column: 1 / -1; } }
+  @media (max-width: 820px) {
+    .sim-top-in { grid-template-columns: 1fr; }
+    .sim-layout { grid-template-columns: 1fr; }
+    .sim-ctrls { position: static; max-height: none; }
+    .act { grid-template-columns: minmax(0, 1fr); }
+    .act-btns :global(.btn) { white-space: normal; text-align: center; }
+    .bt-l { font-size: 11px; padding: 5px; }
+  }
+</style>
+
+<script>
+  import { run, defaultInputs, scenarioById, CHANNEL_NAME, type Inputs, type Outcome } from '../lib/scenario-engine';
+  import { INDUSTRIES, industryById } from '../content/industries';
+  import { CAPABILITIES } from '../content/capabilities';
+  import { load, saveScenario, toggleCapability } from '../lib/setup-store';
+  import { auth, track } from '../integrations/index';
+  import { icon } from '../lib/icons';
+
+  const form = document.querySelector<HTMLFormElement>('[data-ctrls]')!;
+  const tl = document.querySelector<HTMLOListElement>('[data-tl]')!;
+  const board = document.querySelector<HTMLElement>('[data-board]')!;
+  const tiles = [...board.querySelectorAll<HTMLElement>('[data-tile]')];
+  const metrics = document.querySelector<HTMLElement>('[data-metrics]')!;
+  const stateEl = document.querySelector<HTMLElement>('[data-state]')!;
+  const live = document.querySelector<HTMLElement>('[data-live]')!;
+  const toast = document.querySelector<HTMLElement>('[data-toast]')!;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const TILE_NAMES: Record<string, string[]> = {
+    default: ['Where it happened', 'Office', 'Customer', 'Contract', 'Tech', 'Sub', 'Owner', 'Calendar', 'Parts', 'Quote', 'Record'],
+    'property-management': ['Apartment 1204', 'Property manager', 'Resident', 'Service contract', 'Tech', 'Other', 'Owner', 'Calendar', 'Parts', 'Quote', 'Record'],
+  };
+  const KIND: Record<string, [string, string]> = { auto: ['Automatic', 'check'], record: ['Recorded', 'scroll-text'], proposal: ['Suggested', 'eye'], approval: ['Needs approval', 'hand'], human: ['Person', 'user'], exception: ['Exception', 'triangle-alert'] };
+  const ACTOR: Record<string, string> = { assist: 'bot', rule: 'scroll-text', person: 'user', tech: 'wrench', customer: 'message-square-text', system: 'check-check' };
+  const STATE_T: Record<string, string> = { complete: 'Resolved', awaiting: 'Waiting for a decision', 'exception-recovered': 'Exception recovered', 'exception-open': 'Needs attention' };
+
+  let inputs: Inputs;
+  let outcome: Outcome;
+  let timers: number[] = [];
+
+  function fromURL(): Inputs {
+    const q = new URLSearchParams(location.search);
+    const industry = industryById[q.get('industry') || ''] ? q.get('industry')! : 'hvac-refrigeration';
+    const ind = industryById[industry];
+    const scenario = scenarioById[q.get('scenario') || ''] ? q.get('scenario')! : ind.scenarios[0];
+    const base = defaultInputs(scenario, industry, { sites: ind.defaults.sites, team: ind.defaults.team, asset: ind.defaults.asset, channel: ind.defaults.channel });
+    const num = (k: string) => (q.get(k) && !isNaN(+q.get(k)!) ? +q.get(k)! : undefined);
+    const pick = <T extends string>(k: string, ok: T[]) => (ok.includes(q.get(k) as T) ? (q.get(k) as T) : undefined);
+    return { ...base,
+      sites: num('sites') ?? base.sites, team: num('team') ?? base.team, threshold: num('threshold') ?? base.threshold,
+      urgency: pick('urgency', ['P1', 'P2', 'P3']) ?? base.urgency, coverage: pick('coverage', ['amc', 'warranty', 'none']) ?? base.coverage,
+      availability: pick('availability', ['available', 'busy', 'none']) ?? base.availability, channel: pick('channel', ['whatsapp', 'app', 'email', 'sms']) ?? base.channel,
+      decision: pick('decision', ['approve', 'decline', 'pending']) ?? 'approve' };
+  }
+  function toURL(i: Inputs) {
+    const q = new URLSearchParams({ industry: i.industry, scenario: i.scenario, sites: String(i.sites), team: String(i.team), urgency: i.urgency, coverage: i.coverage, threshold: String(i.threshold), availability: i.availability, channel: i.channel, decision: i.decision });
+    history.replaceState(null, '', `${location.pathname}?${q}`);
+  }
+  function fillForm(i: Inputs) {
+    const f = form.elements as any;
+    f.industry.value = i.industry; filterScenarios(i.industry); f.scenario.value = i.scenario;
+    f.sites.value = i.sites; f.team.value = i.team; f.asset.value = i.asset; f.threshold.value = String(i.threshold); f.channel.value = i.channel;
+    for (const n of ['urgency', 'coverage', 'availability', 'decision']) (form.querySelector(`input[name="${n}"][value="${(i as any)[n]}"]`) as HTMLInputElement).checked = true;
+    paintOutputs();
+  }
+  function readForm(): Inputs {
+    const fd = new FormData(form);
+    return { scenario: String(fd.get('scenario')), industry: String(fd.get('industry')), sites: +fd.get('sites')!, team: +fd.get('team')!, asset: String(fd.get('asset') || '').slice(0, 60) || 'Equipment',
+      urgency: fd.get('urgency') as any, coverage: fd.get('coverage') as any, threshold: +fd.get('threshold')!, availability: fd.get('availability') as any, channel: fd.get('channel') as any, decision: fd.get('decision') as any };
+  }
+  function filterScenarios(industry: string) {
+    const allowed = industryById[industry].scenarios;
+    const sel = form.elements.namedItem('scenario') as HTMLSelectElement;
+    [...sel.options].forEach((o) => { o.hidden = !allowed.includes(o.value); o.disabled = !allowed.includes(o.value); });
+    if (!allowed.includes(sel.value)) sel.value = allowed[0];
+  }
+  function paintOutputs() {
+    document.querySelectorAll<HTMLOutputElement>('[data-out]').forEach((o) => { o.textContent = new Intl.NumberFormat('en-AE').format(+(form.elements.namedItem(o.dataset.out!) as HTMLInputElement).value); });
+    document.querySelector('[data-scenario-line]')!.textContent = scenarioById[(form.elements.namedItem('scenario') as HTMLSelectElement).value].oneLine;
+  }
+  const fmtAt = (m: number) => (m < 60 ? `+${m} min` : `+${Math.floor(m / 60)} h ${m % 60 ? (m % 60) + ' min' : ''}`.trim());
+  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+
+  function stepHTML(s: Outcome['steps'][number], idx: number) {
+    const [kname, kic] = KIND[s.kind];
+    const ctx = s.context?.length ? `<button type="button" data-more="ctx-${idx}" aria-expanded="false" aria-controls="ctx-${idx}">${icon('eye', 14)} Context used</button>` : '';
+    const rule = s.rule ? `<button type="button" data-more="rule-${idx}" aria-expanded="false" aria-controls="rule-${idx}">${icon('scroll-text', 14)} View rule ${esc(s.rule.id)}</button>` : '';
+    let act = '';
+    if (s.id === 'assign') act = `<button type="button" class="go" data-act="accept">${icon('check', 14)} Accept</button><button type="button" data-act="change-tech">${icon('pencil', 14)} Choose someone else</button>`;
+    if (s.id === 'approval') act = `<button type="button" class="go" data-act="approve">${icon('check', 14)} Approve</button><button type="button" data-act="decline">${icon('x', 14)} Decline</button>`;
+    if (s.id === 'declined' || s.id === 'waiting') act = `<button type="button" data-act="approve">${icon('rotate-ccw', 14)} Try: approver approves</button>`;
+    if (s.id === 'no-tech') act = `<button type="button" data-act="tech-back">${icon('rotate-ccw', 14)} Try: a technician is free</button>`;
+    return `<li class="pending" data-i="${idx}">
+      <span class="ic" title="${esc(s.actor)}">${icon(ACTOR[s.actor] || 'check', 16)}</span>
+      <div><div class="h"><span class="t">${esc(s.title)}</span><span class="k k-${s.kind}">${kname}</span><span class="at">${fmtAt(s.at)}</span></div>
+      <p class="d">${esc(s.detail)}</p>
+      ${ctx || rule || act ? `<div class="x">${ctx}${rule}${act}</div>` : ''}
+      ${s.context?.length ? `<div class="more" id="ctx-${idx}" hidden><b>Context used</b><ul>${s.context.map((c) => `<li>${esc(c)}</li>`).join('')}</ul></div>` : ''}
+      ${s.rule ? `<div class="more" id="rule-${idx}" hidden><b>Rule ${esc(s.rule.id)}</b><p>${esc(s.rule.text)}</p><p>Rules are edited by administrators and published with a second approver.</p></div>` : ''}
+      </div></li>`;
+  }
+
+  function paintBoard(upTo: number) {
+    const names = TILE_NAMES[inputs.industry] || TILE_NAMES.default;
+    const used = new Set(outcome.steps.map((s) => s.tile));
+    tiles.forEach((t, i) => { t.classList.remove('on', 'done', 'exc'); t.querySelector('.bt-l')!.textContent = used.has(i) ? names[i] : ''; });
+    outcome.steps.slice(0, upTo + 1).forEach((s, k) => {
+      if (s.tile === undefined) return;
+      const el = tiles[s.tile];
+      if (s.kind === 'exception') el.classList.add('exc'); else if (k === upTo) { el.classList.remove('exc'); el.classList.add('on'); } else if (!el.classList.contains('exc')) el.classList.add('done');
+      if (k < upTo && el.classList.contains('on')) el.classList.replace('on', 'done');
+    });
+  }
+  function reveal(i: number) {
+    const li = tl.querySelector<HTMLLIElement>(`li[data-i="${i}"]`); if (!li) return;
+    li.classList.remove('pending'); if (!reduce) li.classList.add('enter');
+    paintBoard(i); live.textContent = outcome.steps[i].title;
+  }
+  function play() {
+    timers.forEach(clearTimeout); timers = [];
+    tl.innerHTML = outcome.steps.map(stepHTML).join('');
+    if (reduce) { outcome.steps.forEach((_, i) => reveal(i)); return; }
+    outcome.steps.forEach((_, i) => timers.push(window.setTimeout(() => reveal(i), 140 + i * 520)));
+  }
+  function render(animate = true) {
+    inputs = readForm(); toURL(inputs);
+    outcome = run(inputs);
+    stateEl.className = 'state ' + outcome.state; stateEl.textContent = STATE_T[outcome.state];
+    metrics.innerHTML = outcome.metrics.map((m) => `<div><dt>${m.label}</dt><dd>${esc(m.value)}${m.note ? `<small>${m.note}</small>` : ''}</dd></div>`).join('');
+    if (animate) play(); else { tl.innerHTML = outcome.steps.map(stepHTML).join(''); outcome.steps.forEach((_, i) => reveal(i)); }
+    track('scenario_run', { scenario: inputs.scenario, industry: inputs.industry, state: outcome.state });
+  }
+  function setRadio(name: string, v: string) { (form.querySelector(`input[name="${name}"][value="${v}"]`) as HTMLInputElement).checked = true; render(false); }
+
+  form.addEventListener('input', (e) => { const t = e.target as HTMLElement; paintOutputs(); if (t.id === 'f-sites' || t.id === 'f-team' || t.id === 'f-asset') { clearTimeout((form as any)._t); (form as any)._t = setTimeout(() => render(false), 250); } });
+  form.addEventListener('change', (e) => {
+    const t = e.target as HTMLInputElement;
+    if (t.name === 'industry') { filterScenarios(t.value); const d = industryById[t.value].defaults; const f = form.elements as any; f.asset.value = d.asset; f.sites.value = d.sites; f.team.value = d.team; f.channel.value = d.channel; paintOutputs(); }
+    if (t.name === 'scenario') { const di = defaultInputs(t.value, (form.elements as any).industry.value); for (const n of ['urgency', 'coverage', 'availability']) (form.querySelector(`input[name="${n}"][value="${(di as any)[n]}"]`) as HTMLInputElement).checked = true; (form.elements as any).threshold.value = String(di.threshold); paintOutputs(); }
+    if (t.type === 'range' || t.id === 'f-asset') return;
+    render(true);
+  });
+  tl.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest('button'); if (!b) return;
+    if (b.dataset.more) { const p = document.getElementById(b.dataset.more)!; const open = b.getAttribute('aria-expanded') === 'true'; b.setAttribute('aria-expanded', String(!open)); p.hidden = open; return; }
+    const a = b.dataset.act;
+    if (a === 'accept') { b.closest('.x')!.innerHTML = `<span class="k k-human">${icon('check', 12)} Accepted by you</span>`; }
+    if (a === 'change-tech') setRadio('availability', 'busy');
+    if (a === 'approve') setRadio('decision', 'approve');
+    if (a === 'decline') setRadio('decision', 'decline');
+    if (a === 'tech-back') setRadio('availability', 'available');
+  });
+  document.querySelector('[data-replay]')!.addEventListener('click', () => play());
+
+  // Saving, comparing, handoff
+  const showToast = (msg: string) => { toast.hidden = false; toast.innerHTML = `${icon('check', 16)} ${msg}`; clearTimeout((toast as any)._t); (toast as any)._t = setTimeout(() => (toast.hidden = true), 5000); };
+  const savedN = () => { const n = load().scenarios.length; const c = document.querySelector<HTMLElement>('[data-saved-n]')!; c.hidden = !n; c.textContent = String(n); };
+  const where = () => { const acc = auth.current(); document.querySelector('[data-save-where]')!.innerHTML = acc ? `Saved to your account (${esc(acc.email)}).` : 'Saved on this device. <a class="link" href="/sign-in?next=/simulator">Sign in</a> to keep it in your account.'; };
+  document.querySelector('[data-save]')!.addEventListener('click', () => {
+    const name = `${outcome.scenarioName} · ${inputs.urgency} · ${inputs.availability === 'available' ? 'tech available' : inputs.availability === 'busy' ? 'tech busy' : 'no tech'} · AED ${inputs.threshold.toLocaleString('en-AE')} limit`;
+    const item = saveScenario({ name, inputs, state: outcome.state });
+    auth.persistAccountCopy();
+    (document.querySelector('[data-to-demo]') as HTMLAnchorElement).href = `/demo?scenario=${item.id}`;
+    savedN(); showToast(`Saved “${name}”. ${auth.current() ? 'In your account.' : 'On this device.'}`);
+    track('scenario_saved', { scenario: inputs.scenario });
+  });
+  document.querySelector('[data-addcaps]')!.addEventListener('click', () => {
+    const ids = CAPABILITIES.filter((c) => c.scenarios.includes(inputs.scenario) && c.status !== 'proposed').map((c) => c.id);
+    ids.forEach((id) => toggleCapability(id, true)); auth.persistAccountCopy();
+    showToast(`Added ${ids.length} capabilities used in this scenario to My setup.`);
+    track('capabilities_added', { count: ids.length, from: 'simulator' });
+  });
+  const cmp = document.querySelector<HTMLElement>('[data-compare]')!;
+  function drawCompare() {
+    const list = load().scenarios.slice(0, 4);
+    const body = cmp.querySelector('[data-compare-body]')!;
+    if (!list.length) { body.innerHTML = '<p class="muted small">Nothing saved yet. Save this scenario, change an input, and save again to compare.</p>'; return; }
+    const outs = list.map((s) => run(s.inputs));
+    const rows: [string, (i: number) => string][] = [
+      ['Scenario', (i) => esc(outs[i].scenarioName)], ['Urgency', (i) => list[i].inputs.urgency], ['Coverage', (i) => list[i].inputs.coverage.toUpperCase()],
+      ['Technician', (i) => list[i].inputs.availability], ['Approval limit', (i) => 'AED ' + list[i].inputs.threshold.toLocaleString('en-AE')],
+      ...outs[0].metrics.map((m, k) => [m.label, (i: number) => esc(outs[i].metrics[k]?.value ?? '–')] as [string, (i: number) => string]),
+      ['Outcome', (i) => STATE_T[outs[i].state]], ['Steps', (i) => String(outs[i].steps.length)],
+    ];
+    body.innerHTML = `<table><thead><tr><th scope="col">Saved</th>${list.map((s) => `<th scope="col">${new Intl.DateTimeFormat('en-AE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(s.savedAt))}</th>`).join('')}</tr></thead><tbody>${rows.map(([l, f]) => `<tr><th scope="row">${l}</th>${list.map((_, i) => `<td>${f(i)}</td>`).join('')}</tr>`).join('')}</tbody></table><p class="xs muted" style="margin-top:8px">Showing up to 4 of your saved scenarios. Manage them in <a class="link" href="/my-setup">My setup</a>.</p>`;
+  }
+  document.querySelector('[data-compare-btn]')!.addEventListener('click', () => { cmp.hidden = false; drawCompare(); cmp.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); });
+  document.querySelector('[data-compare-close]')!.addEventListener('click', () => (cmp.hidden = true));
+
+  const start = fromURL(); fillForm(start); render(true); savedN(); where();
+  window.addEventListener('setup:change', savedN);
+</script>

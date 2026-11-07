@@ -1,0 +1,177 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { NAV } from '../content/site';
+interface Props { tone?: 'light' | 'dark'; current?: string; }
+const { tone = 'light', current = '' } = Astro.props;
+---
+<header class="hdr" data-surface={tone === 'dark' ? 'dark' : undefined} data-hdr>
+  <div class="hdr-in wrap">
+    <a href="/" class="hdr-logo" aria-label="Tessaro home"><Logo tone={tone} height={24} /></a>
+    <nav aria-label="Main" class="hdr-nav">
+      <ul role="list">
+        {NAV.map((item) => (
+          <li class="hdr-item">
+            {'groups' in item ? (
+              <>
+                <button class="hdr-link" aria-expanded="false" aria-controls={`mm-${item.id}`} data-mm-btn aria-current={current === item.id ? 'page' : undefined}>
+                  {item.label}<Icon name="chevron-down" size={15} class="chev" />
+                </button>
+                <div class="mm" id={`mm-${item.id}`} hidden data-mm>
+                  <div class="mm-in">
+                    <div class="mm-groups">
+                      {item.groups.map((g) => (
+                        <div class="mm-group">
+                          <p class="mm-title">{g.title}</p>
+                          <ul role="list">
+                            {g.links.map((l) => (
+                              <li><a href={l.href} class="mm-link" {...('external' in l && l.external ? { target: '_blank', rel: 'noopener' } : {})}>
+                                <span class="mm-l">{l.label}{'external' in l && l.external && <Icon name="arrow-up-right" size={14} />}</span>
+                                <span class="mm-d">{l.desc}</span>
+                              </a></li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                    {'featured' in item && item.featured && (
+                      <a class="mm-feature" href={item.featured.href} data-surface="forest">
+                        <span class="mm-tiles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+                        <span class="mm-f-k">Scenario</span>
+                        <span class="mm-f-t">{item.featured.title}</span>
+                        <span class="mm-f-d">{item.featured.text}</span>
+                        <span class="mm-f-go">Open in the simulator <Icon name="arrow-right" size={15} /></span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <a class="hdr-link" href={item.href} aria-current={current === item.id ? 'page' : undefined}>{item.label}</a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <div class="hdr-util">
+      <a class="hdr-setup" href="/my-setup" data-setup-link aria-label="My setup">
+        <Icon name="layers" size={18} /><span class="hdr-setup-t">My setup</span><span class="count" data-setup-count hidden></span>
+      </a>
+      <a class="hdr-signin" href="/sign-in" data-signin-link>Sign in</a>
+      <a class="btn btn-sm hdr-demo" href="/demo">Book a demo</a>
+      <a class="btn btn-sm btn-primary" href="/trial">Start a trial</a>
+      <button class="hdr-menu" aria-expanded="false" aria-controls="mobile-nav" data-mobile-btn aria-label="Open menu">
+        <Icon name="menu" size={22} class="i-open" /><Icon name="x" size={22} class="i-close" />
+      </button>
+    </div>
+  </div>
+  <div class="mnav" id="mobile-nav" hidden data-mobile>
+    <nav aria-label="Mobile" class="mnav-in">
+      {NAV.map((item) => 'groups' in item ? (
+        <details class="mnav-g">
+          <summary>{item.label}<Icon name="chevron-down" size={18} /></summary>
+          <ul role="list">
+            {item.groups.flatMap((g) => g.links).map((l) => <li><a href={l.href}><span>{l.label}</span><small>{l.desc}</small></a></li>)}
+          </ul>
+        </details>
+      ) : (
+        <a class="mnav-a" href={item.href}>{item.label}</a>
+      ))}
+      <div class="mnav-util">
+        <a class="mnav-a" href="/my-setup"><Icon name="layers" size={18} /> My setup <span class="count" data-setup-count hidden></span></a>
+        <a class="mnav-a" href="/sign-in" data-signin-link><Icon name="log-in" size={18} /> Sign in</a>
+        <a class="mnav-a" href="/support"><Icon name="life-buoy" size={18} /> Support</a>
+      </div>
+    </nav>
+    <div class="mnav-cta">
+      <a class="btn" href="/demo">Book a demo</a>
+      <a class="btn btn-primary" href="/trial">Start a trial</a>
+    </div>
+  </div>
+</header>
+
+<style>
+  .hdr { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: color-mix(in oklab, var(--bg) 92%, transparent); backdrop-filter: saturate(140%) blur(12px); -webkit-backdrop-filter: saturate(140%) blur(12px); border-bottom: 1px solid var(--line); color: var(--fg); }
+  .hdr-in { display: flex; align-items: center; gap: 20px; height: 68px; }
+  .hdr-logo { display: inline-flex; padding: 6px 4px; margin-left: -4px; border-radius: 6px; flex: 0 0 auto; }
+  .hdr-nav { flex: 1; min-width: 0; }
+  .hdr-nav > ul { display: flex; gap: 2px; justify-content: center; margin: 0; }
+  .hdr-link { display: inline-flex; align-items: center; gap: 4px; height: 40px; padding: 0 12px; border: 0; background: none; border-radius: 6px; font-size: var(--t-sm); font-weight: 500; color: var(--fg-2); text-decoration: none; cursor: pointer; transition: color var(--d-fast) ease, background-color var(--d-fast) ease; white-space: nowrap; }
+  .hdr-link:hover, .hdr-link[aria-expanded="true"] { color: var(--fg); background: var(--surface); }
+  .hdr-link[aria-current="page"] { color: var(--fg); box-shadow: inset 0 -2px 0 var(--accent); border-radius: 6px 6px 0 0; }
+  .hdr-link :global(.chev) { transition: transform var(--d-fast) var(--ease-out); }
+  .hdr-link[aria-expanded="true"] :global(.chev) { transform: rotate(180deg); }
+  .hdr-util { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+  .hdr-signin, .hdr-setup { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 10px; border-radius: 6px; font-size: var(--t-sm); font-weight: 500; color: var(--fg-2); text-decoration: none; }
+  .hdr-signin:hover, .hdr-setup:hover { color: var(--fg); background: var(--surface); }
+  .count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--accent); color: var(--accent-fg); font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums; }
+  .hdr-menu { display: none; width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); align-items: center; justify-content: center; cursor: pointer; color: var(--fg); }
+  .hdr-menu :global(.i-close) { display: none; }
+  .hdr-menu[aria-expanded="true"] :global(.i-open) { display: none; }
+  .hdr-menu[aria-expanded="true"] :global(.i-close) { display: block; }
+
+  /* Mega menu */
+  .mm { position: absolute; left: 0; right: 0; top: 100%; padding: 0 var(--gutter-r) 0 var(--gutter); }
+  .mm-in { max-width: var(--page-max); margin: 8px auto 0; background: var(--overlay); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--e-overlay); padding: 28px; display: grid; grid-template-columns: 1fr 300px; gap: 28px; transform-origin: top center; animation: mm-in var(--d-fast) var(--ease-out); }
+  @keyframes mm-in { from { opacity: 0; transform: translateY(-4px) scale(.99); } }
+  .mm-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; }
+  .mm-title { font-size: var(--t-xs); font-weight: 600; color: var(--fg-3); margin-bottom: 8px; padding-left: 12px; }
+  .mm-group ul { margin: 0; display: grid; gap: 2px; }
+  .mm-link { display: grid; gap: 2px; padding: 10px 12px; border-radius: var(--r-sm); text-decoration: none; transition: background-color var(--d-fast) ease; }
+  .mm-link:hover { background: var(--surface); }
+  .mm-l { font-weight: 600; font-size: var(--t-sm); color: var(--fg); display: inline-flex; gap: 4px; align-items: center; }
+  .mm-d { font-size: var(--t-xs); color: var(--fg-2); line-height: 1.45; }
+  .mm-feature { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 6px; padding: 22px; border-radius: var(--r-md); background: var(--bg); color: var(--fg); text-decoration: none; min-height: 220px; }
+  .mm-tiles { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 22px 22px; gap: 3px; width: 110px; margin-bottom: auto; }
+  .mm-tiles i { background: var(--line-strong); border-radius: 3px; }
+  .mm-tiles i:nth-child(1) { grid-row: span 2; background: var(--accent); }
+  .mm-f-k { font-size: var(--t-xs); color: var(--fg-3); font-weight: 600; margin-top: 16px; }
+  .mm-f-t { font-family: var(--font-display); font-weight: 600; font-size: 1.125rem; line-height: 1.25; }
+  .mm-f-d { font-size: var(--t-xs); color: var(--fg-2); }
+  .mm-f-go { display: inline-flex; gap: 6px; align-items: center; font-size: var(--t-sm); font-weight: 600; color: var(--accent-text); margin-top: 6px; }
+
+  /* Mobile */
+  .mnav { position: fixed; inset: 68px 0 0 0; top: calc(68px + env(safe-area-inset-top, 0px)); background: var(--bg); overflow: auto; overscroll-behavior: contain; display: flex; flex-direction: column; padding: 8px var(--gutter-r) calc(16px + env(safe-area-inset-bottom, 0px)) var(--gutter); }
+  .mnav[hidden] { display: none; }
+  .mnav-in { flex: 1; display: grid; align-content: start; }
+  .mnav-g, .mnav-a { border-bottom: 1px solid var(--line); }
+  .mnav-g summary, .mnav-a { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 56px; font-weight: 600; font-size: var(--t-md); text-decoration: none; cursor: pointer; list-style: none; }
+  .mnav-g summary::-webkit-details-marker { display: none; }
+  .mnav-g[open] summary :global(svg) { transform: rotate(180deg); }
+  .mnav-g ul { margin: 0 0 12px; display: grid; }
+  .mnav-g a { display: grid; padding: 10px 0 10px 12px; text-decoration: none; border-left: 2px solid var(--line); }
+  .mnav-g a small { color: var(--fg-2); font-size: var(--t-xs); }
+  .mnav-util .mnav-a { justify-content: flex-start; font-weight: 500; }
+  .mnav-cta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 16px; position: sticky; bottom: 0; background: var(--bg); }
+
+  @media (max-width: 1180px) { .hdr-setup-t { display: none; } }
+  @media (max-width: 1080px) {
+    .hdr-nav, .hdr-signin, .hdr-setup, .hdr-demo { display: none; }
+    .hdr-util { margin-left: auto; }
+    .hdr-menu { display: inline-flex; }
+  }
+  @media (max-width: 420px) { .hdr-util > .btn-primary { display: none; } }
+</style>
+
+<script>
+  import { load, countItems } from '../lib/setup-store';
+  import { auth } from '../integrations/index';
+  const hdr = document.querySelector('[data-hdr]')!;
+  const btns = [...hdr.querySelectorAll<HTMLButtonElement>('[data-mm-btn]')];
+  const closeAll = (except?: HTMLButtonElement) => btns.forEach((b) => { if (b !== except) { b.setAttribute('aria-expanded', 'false'); (document.getElementById(b.getAttribute('aria-controls')!) as HTMLElement).hidden = true; } });
+  btns.forEach((b) => {
+    const panel = document.getElementById(b.getAttribute('aria-controls')!) as HTMLElement;
+    b.addEventListener('click', () => { const open = b.getAttribute('aria-expanded') === 'true'; closeAll(b); b.setAttribute('aria-expanded', String(!open)); panel.hidden = open; });
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { const open = btns.find((b) => b.getAttribute('aria-expanded') === 'true'); if (open) { closeAll(); open.focus(); } } });
+  document.addEventListener('click', (e) => { if (!hdr.contains(e.target as Node)) closeAll(); });
+  hdr.addEventListener('focusout', (e) => { if (!hdr.contains((e as FocusEvent).relatedTarget as Node)) closeAll(); });
+  const mb = hdr.querySelector<HTMLButtonElement>('[data-mobile-btn]')!; const mp = hdr.querySelector<HTMLElement>('[data-mobile]')!;
+  const setMobile = (open: boolean) => { mb.setAttribute('aria-expanded', String(open)); mb.setAttribute('aria-label', open ? 'Close menu' : 'Open menu'); mp.hidden = !open; document.documentElement.style.overflow = open ? 'hidden' : ''; };
+  mb.addEventListener('click', () => setMobile(mb.getAttribute('aria-expanded') !== 'true'));
+  window.matchMedia('(min-width: 1081px)').addEventListener('change', (m) => { if (m.matches) setMobile(false); });
+  const paint = () => { const n = countItems(load()); hdr.querySelectorAll<HTMLElement>('[data-setup-count]').forEach((c) => { c.hidden = !n; c.textContent = String(n); }); };
+  paint(); window.addEventListener('setup:change', paint); window.addEventListener('storage', paint);
+  const acc = auth.current();
+  if (acc) hdr.querySelectorAll<HTMLAnchorElement>('[data-signin-link]').forEach((a) => { a.lastChild!.textContent = ' Account'; a.href = '/my-setup'; });
+</script>

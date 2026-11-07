@@ -1,0 +1,75 @@
+---
+import Base from '../layouts/Base.astro';
+import PageIntro from '../components/PageIntro.astro';
+import Icon from '../components/Icon.astro';
+import { brand } from '../config/brand';
+import { HELP } from '../content/site';
+const topics: [string, string][] = [['question', 'A question before buying'], ['trial', 'Trial or payment'], ['onboarding', 'Setting up my workspace'], ['account', 'Signing in or my account'], ['other', 'Something else']];
+---
+<Base title="Contact support" description="Reach a person on the Tessaro team by message, email or phone." current="support">
+  <PageIntro title="Talk to a person" lead="Tell us what you need. A member of our team replies within one working day, Sunday to Thursday, Dubai time.">
+    <ul class="ways" role="list">
+      <li><Icon name="mail" size={18} /><span><b>Email</b><a class="link" href={`mailto:${brand.supportEmail}`}>{brand.supportEmail}</a></span></li>
+      <li><Icon name="phone" size={18} /><span><b>Phone or WhatsApp</b><a class="link" href={`tel:${brand.phone.replace(/\s/g, '')}`}>{brand.phone}</a></span></li>
+    </ul>
+  </PageIntro>
+  <section class="section tight">
+    <div class="wrap sp">
+      <form class="sp-form" novalidate data-form>
+        <p class="notice notice-test small"><Icon name="flask-conical" size={18} /><span><b>Test mode.</b> Messages are kept in this browser until a support desk is connected. For anything urgent, email or call.</span></p>
+        <div class="field"><label for="topic">What is it about?</label><select class="select" id="topic" name="topic">{topics.map(([k, v]) => <option value={k}>{v}</option>)}</select></div>
+        <div class="suggest" data-suggest hidden></div>
+        <div class="field"><label for="msg">Your message</label><textarea class="textarea" id="msg" name="msg" rows="5" required></textarea><p class="hint">Please don’t include card numbers or passwords.</p><p class="error" data-err="msg" hidden></p></div>
+        <div class="grid2">
+          <div class="field"><label for="name">Name</label><input class="input" id="name" name="name" autocomplete="name" required /><p class="error" data-err="name" hidden></p></div>
+          <div class="field"><label for="email">Email</label><input class="input" type="email" id="email" name="email" autocomplete="email" spellcheck="false" required /><p class="error" data-err="email" hidden></p></div>
+        </div>
+        <label class="choice"><input type="checkbox" name="context" checked /> <span>Include my saved setup and trial progress (no personal details) so you don’t have to explain it.</span></label>
+        <button class="btn btn-primary" type="submit">Send to support</button>
+      </form>
+      <div class="sp-done" data-done hidden tabindex="-1"><p class="ok"><Icon name="circle-check" size={26} /></p><h2 class="h3">Message received</h2><p data-done-t></p><a class="btn" href="/help">Back to the help center</a></div>
+      <div class="sp-side"><h2 class="h4">Quick answers</h2><ul role="list">{HELP.slice(9).map((h) => <li><a class="link small" href={`/help#${h.id}`}>{h.title}</a></li>)}</ul></div>
+    </div>
+  </section>
+</Base>
+<style>
+  .ways { display: grid; gap: 12px; margin: 0; } .ways li { display: flex; gap: 12px; align-items: flex-start; } .ways span { display: grid; gap: 2px; font-size: var(--t-sm); }
+  .sp { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 48px; align-items: start; max-width: 1040px; }
+  .sp-form, .sp-done { display: grid; gap: 18px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .suggest { padding: 14px 16px; border-radius: var(--r-sm); background: var(--info-tint); font-size: var(--t-sm); display: grid; gap: 4px; }
+  .sp-side { padding: 18px; border: 1px solid var(--line); border-radius: var(--r-md); display: grid; gap: 10px; } .sp-side ul { display: grid; gap: 8px; margin: 0; }
+  .ok { color: var(--ok); }
+  @media (max-width: 860px) { .sp { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .grid2 { grid-template-columns: 1fr; } }
+</style>
+<script>
+  import { auth, trial, track } from '../integrations/index';
+  import { load, toHandoff } from '../lib/setup-store';
+  import { HELP } from '../content/site';
+  import { icon } from '../lib/icons';
+  const form = document.querySelector<HTMLFormElement>('[data-form]')!; const qs = new URLSearchParams(location.search);
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const acc = auth.current(); if (acc) { ($('#email') as HTMLInputElement).value = acc.email; ($('#name') as HTMLInputElement).value = acc.name || ''; }
+  const topic = qs.get('topic'); if (topic) ($('#topic') as HTMLSelectElement).value = topic === 'trial' || topic === 'onboarding' ? topic : 'other';
+  const q = qs.get('q'); const art = qs.get('article'); const msg = $('#msg') as HTMLTextAreaElement;
+  if (q) msg.value = q; if (art) { const a = HELP.find((h) => h.id === art); if (a) msg.value = `I read “${a.title}” but still need help: `; }
+  // Suggest a guide while typing; never block sending.
+  let tm: number | undefined;
+  msg.addEventListener('input', () => { clearTimeout(tm); tm = window.setTimeout(() => {
+    const words = msg.value.toLowerCase().split(/\W+/).filter((w) => w.length > 3);
+    const best = HELP.map((h) => ({ h, s: words.filter((w) => (h.title + ' ' + h.body).toLowerCase().includes(w)).length })).sort((a, b) => b.s - a.s)[0];
+    const box = $('[data-suggest]'); if (best && best.s >= 2) { box.hidden = false; box.innerHTML = `<b>This guide might help:</b> <a class="link" href="/help#${best.h.id}" target="_blank">${best.h.title}</a><span class="xs muted">You can still send your message.</span>`; } else box.hidden = true;
+  }, 400); });
+  const err = (k: string, m: string) => { const e = form.querySelector<HTMLElement>(`[data-err="${k}"]`)!; e.hidden = !m; e.innerHTML = m ? `${icon('circle-alert', 14)} ${m}` : ''; const i = form.querySelector(`[name="${k}"]`); if (i) m ? i.setAttribute('aria-invalid', 'true') : i.removeAttribute('aria-invalid'); return !!m; };
+  form.addEventListener('submit', (e) => {
+    e.preventDefault(); const fd = new FormData(form); const v = (k: string) => String(fd.get(k) || '').trim();
+    const bad = [err('msg', v('msg').length >= 10 ? '' : 'Tell us a little more (at least 10 characters).'), err('name', v('name') ? '' : 'Enter your name.'), err('email', /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v('email')) ? '' : 'Enter an email like name@company.com.')].some(Boolean);
+    if (bad) { form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(); return; }
+    const ref = 'SUP-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+    const ticket = { ref, topic: v('topic'), createdAt: new Date().toISOString(), context: fd.get('context') ? { setup: toHandoff(load()), trialStep: trial.get().step } : undefined };
+    try { const all = JSON.parse(localStorage.getItem('tessaro.support') || '[]'); all.unshift(ticket); localStorage.setItem('tessaro.support', JSON.stringify(all.slice(0, 10))); } catch { /* storage unavailable */ }
+    track('support_requested', { topic: v('topic'), with_context: !!ticket.context });
+    form.hidden = true; const d = $('[data-done]'); d.hidden = false; $('[data-done-t]').textContent = `Reference ${ref}. In live mode a person would reply to ${v('email')} within one working day.`; d.focus();
+  });
+</script>

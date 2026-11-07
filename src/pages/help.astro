@@ -1,0 +1,68 @@
+---
+import Base from '../layouts/Base.astro';
+import PageIntro from '../components/PageIntro.astro';
+import Icon from '../components/Icon.astro';
+import { HELP } from '../content/site';
+const cats = [...new Set(HELP.map((h) => h.cat))];
+---
+<Base title="Help center" description="Guides for getting started, importing data, roles, approvals, WhatsApp, the technician app, billing and troubleshooting." current="help">
+  <PageIntro title="Help center" lead="Guides for setting up and running Tessaro. Can’t find it? A person on our team will answer.">
+    <form class="hs" role="search" onsubmit="return false"><label for="hq" class="sr-only">Search help</label>
+      <div class="hs-in"><Icon name="search" size={18} /><input class="input" type="search" id="hq" placeholder="Search, for example “import assets” or “payment”" autocomplete="off" /></div></form>
+  </PageIntro>
+  <section class="section tight">
+    <div class="wrap hc">
+      <nav class="hc-cats" aria-label="Help categories"><ul role="list">{cats.map((c) => <li><a href={`#cat-${c.toLowerCase().replace(/[^a-z]+/g, '-')}`}>{c}</a></li>)}</ul></nav>
+      <div class="hc-main">
+        <p class="small muted" data-hcount aria-live="polite"></p>
+        {cats.map((c) => (
+          <section class="hc-cat" id={`cat-${c.toLowerCase().replace(/[^a-z]+/g, '-')}`} data-cat>
+            <h2 class="h4">{c}</h2>
+            {HELP.filter((h) => h.cat === c).map((h) => (
+              <details class="art" id={h.id} data-art data-text={`${h.title} ${h.body} ${(h as any).tags?.join(' ') ?? ''}`.toLowerCase()}>
+                <summary>{h.title}</summary>
+                <div class="art-b"><p>{h.body}</p><p class="xs muted art-f">Did this answer your question? <a class="link" href={`/support?article=${h.id}`}>No, ask a person</a></p></div>
+              </details>
+            ))}
+          </section>
+        ))}
+        <div class="hc-empty" data-hempty hidden><h2 class="h4">No guide matches “<span data-hq></span>”</h2><p class="muted small">Ask us directly. We’ll answer and add a guide if others need it too.</p><a class="btn btn-primary btn-sm" data-ask href="/support">Ask a person</a></div>
+      </div>
+      <div class="hc-side"><h2 class="h4">Talk to a person</h2><p class="small muted">Support answers within one working day, Sunday to Thursday, Dubai time. Urgent production issues are answered faster once you have a workspace.</p><a class="btn btn-sm" href="/support"><Icon name="life-buoy" size={16} /> Contact support</a></div>
+    </div>
+  </section>
+</Base>
+<style>
+  .hs-in { position: relative; } .hs-in :global(svg) { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--fg-2); pointer-events: none; }
+  .hs-in .input { padding-left: 42px; height: 52px; font-size: var(--t-md); }
+  .hc { display: grid; grid-template-columns: 220px minmax(0, 1fr) 260px; gap: 40px; align-items: start; }
+  .hc-cats { position: sticky; top: 88px; } .hc-cats ul { display: grid; gap: 2px; margin: 0; }
+  .hc-cats a { display: block; padding: 8px 10px; border-radius: 6px; text-decoration: none; font-size: var(--t-sm); color: var(--fg-2); } .hc-cats a:hover { background: var(--surface); color: var(--fg); }
+  .hc-main { display: grid; gap: 28px; min-width: 0; }
+  .hc-cat { display: grid; gap: 0; scroll-margin-top: 96px; } .hc-cat h2 { margin-bottom: 8px; }
+  .art { border-top: 1px solid var(--line); scroll-margin-top: 96px; } .hc-cat .art:last-child { border-bottom: 1px solid var(--line); }
+  .art summary { cursor: pointer; padding: 14px 0; font-weight: 600; list-style-position: outside; }
+  .art-b { padding: 0 0 16px; display: grid; gap: 10px; color: var(--fg-2); max-width: 64ch; }
+  .art:target { background: var(--surface-selected); }
+  .hc-side { position: sticky; top: 88px; padding: 18px; border: 1px solid var(--line); border-radius: var(--r-md); display: grid; gap: 10px; background: var(--surface-raised); }
+  .hc-empty { padding: 24px; border: 1px dashed var(--line-strong); border-radius: var(--r-md); display: grid; gap: 10px; justify-items: start; }
+  @media (max-width: 1080px) { .hc { grid-template-columns: 1fr; } .hc-cats, .hc-side { position: static; } .hc-cats ul { display: flex; flex-wrap: wrap; gap: 6px; } }
+</style>
+<script>
+  import { track } from '../integrations/index';
+  const q = document.querySelector<HTMLInputElement>('#hq')!;
+  const arts = [...document.querySelectorAll<HTMLDetailsElement>('[data-art]')]; const cats = [...document.querySelectorAll<HTMLElement>('[data-cat]')];
+  const target = location.hash.slice(1); const t = target && document.getElementById(target); if (t instanceof HTMLDetailsElement) t.open = true;
+  let tm: number | undefined;
+  function apply() {
+    const words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean); let n = 0;
+    arts.forEach((a) => { const ok = words.every((w) => a.dataset.text!.includes(w)); a.hidden = !ok; if (ok) n++; a.open = words.length > 0 && ok && n <= 3; });
+    cats.forEach((c) => (c.hidden = !c.querySelector('[data-art]:not([hidden])')));
+    document.querySelector('[data-hcount]')!.textContent = words.length ? `${n} guide${n === 1 ? '' : 's'} found` : '';
+    const empty = document.querySelector<HTMLElement>('[data-hempty]')!; empty.hidden = n > 0;
+    document.querySelector('[data-hq]')!.textContent = q.value.trim();
+    (document.querySelector('[data-ask]') as HTMLAnchorElement).href = `/support?q=${encodeURIComponent(q.value.trim().slice(0, 80))}`;
+    clearTimeout(tm); if (words.length) tm = window.setTimeout(() => track('help_search', { results: n, has_results: n > 0 }), 800);
+  }
+  q.addEventListener('input', apply);
+</script>

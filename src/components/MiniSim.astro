@@ -1,0 +1,68 @@
+---
+// Homepage preview of the simulator: two inputs, recalculated outcome.
+---
+<div class="mini" data-mini>
+  <div class="mini-ctrls">
+    <fieldset class="mini-f">
+      <legend>Technician availability</legend>
+      <div class="seg" role="radiogroup">
+        <label><input type="radio" name="mini-av" value="available" checked /> Available</label>
+        <label><input type="radio" name="mini-av" value="busy" /> On another job</label>
+        <label><input type="radio" name="mini-av" value="none" /> Nobody on shift</label>
+      </div>
+    </fieldset>
+    <fieldset class="mini-f">
+      <legend>Approval limit for chargeable parts</legend>
+      <div class="seg" role="radiogroup">
+        <label><input type="radio" name="mini-th" value="500" /> AED 500</label>
+        <label><input type="radio" name="mini-th" value="1000" checked /> AED 1,000</label>
+        <label><input type="radio" name="mini-th" value="5000" /> AED 5,000</label>
+      </div>
+    </fieldset>
+  </div>
+  <div class="mini-out" aria-live="polite">
+    <p class="mini-sum" data-mini-sum></p>
+    <ol class="mini-steps" role="list" data-mini-steps></ol>
+  </div>
+</div>
+
+<style>
+  .mini { background: var(--graphite-900); border: 1px solid #2E3A36; border-radius: var(--r-lg); padding: 20px; display: grid; gap: 18px; --fg: #EEF1EE; --fg-2: #BCC5C1; color: var(--fg); }
+  .mini-ctrls { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .mini-f { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; min-width: 0; }
+  .mini-f legend { font-size: var(--t-xs); font-weight: 600; color: var(--fg-2); margin-bottom: 8px; padding: 0; }
+  .seg { display: grid; gap: 4px; }
+  .seg label { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px; border-radius: 6px; border: 1px solid #2E3A36; font-size: var(--t-sm); cursor: pointer; color: var(--fg-2); }
+  .seg label:has(input:checked) { border-color: var(--emerald-400); background: #123F2F; color: var(--fg); }
+  .seg label:has(input:focus-visible) { outline: 2px solid #8AB4FF; outline-offset: 2px; }
+  .seg input { accent-color: #2BC48A; }
+  .mini-out { border-top: 1px solid #2E3A36; padding-top: 16px; display: grid; gap: 12px; }
+  .mini-sum { font-weight: 600; }
+  .mini-steps { margin: 0; display: grid; gap: 6px; }
+  .mini-steps :global(li) { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: start; font-size: var(--t-sm); padding: 8px 10px; border-radius: 6px; background: #1C2522; }
+  .mini-steps :global(li .t) { font-weight: 600; color: var(--fg); }
+  .mini-steps :global(li .d) { display: block; color: var(--fg-2); font-size: var(--t-xs); margin-top: 2px; }
+  .mini-steps :global(li .k) { font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+  .mini-steps :global(.k-auto), .mini-steps :global(.k-record) { background: rgba(79,212,154,.12); color: #4FD49A; }
+  .mini-steps :global(.k-proposal), .mini-steps :global(.k-approval) { background: rgba(242,181,74,.12); color: #F2B54A; }
+  .mini-steps :global(.k-human) { background: rgba(138,180,255,.12); color: #8AB4FF; }
+  .mini-steps :global(.k-exception) { background: rgba(255,138,122,.14); color: #FF8A7A; }
+  .mini-steps :global(li svg) { margin-top: 2px; color: var(--fg-2); }
+  @media (max-width: 600px) { .mini-ctrls { grid-template-columns: 1fr; } .mini { padding: 16px; } }
+</style>
+
+<script>
+  import { run, defaultInputs, type Availability } from '../lib/scenario-engine';
+  import { icon } from '../lib/icons';
+  const KIND: Record<string, [string, string]> = { auto: ['Automatic', 'check'], record: ['Recorded', 'check'], proposal: ['Suggested', 'eye'], approval: ['Needs approval', 'hand'], human: ['Person', 'user'], exception: ['Exception', 'triangle-alert'] };
+  const root = document.querySelector<HTMLElement>('[data-mini]')!;
+  const draw = () => {
+    const av = (root.querySelector<HTMLInputElement>('input[name="mini-av"]:checked')!.value) as Availability;
+    const th = Number(root.querySelector<HTMLInputElement>('input[name="mini-th"]:checked')!.value);
+    const out = run({ ...defaultInputs('freezer-p1', 'hvac-refrigeration'), availability: av, threshold: th, team: 18 });
+    root.querySelector('[data-mini-sum]')!.textContent = out.summary;
+    const keep = out.steps.filter((s) => ['coverage', 'assign', 'no-tech', 'escalate', 'risk', 'approval', 'within', 'complete'].includes(s.id)).slice(0, 5);
+    root.querySelector('[data-mini-steps]')!.innerHTML = keep.map((s) => { const [k, ic] = KIND[s.kind]; return `<li>${icon(ic, 16)}<span><span class="t">${s.title}</span><span class="d">${s.detail}</span></span><span class="k k-${s.kind}">${k}</span></li>`; }).join('');
+  };
+  root.addEventListener('change', draw); draw();
+</script>

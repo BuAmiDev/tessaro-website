@@ -1,0 +1,8 @@
+---
+import { STATUS, type StatusKey } from '../config/brand';
+import Icon from './Icon.astro';
+interface Props { status: StatusKey; }
+const { status } = Astro.props;
+const icon = { live: 'circle-check', pilot: 'calendar-clock', designed: 'layout-template', proposed: 'flask-conical' }[status];
+---
+<span class={`status status-${status}`} title={STATUS[status].note}><Icon name={icon} size={13} />{STATUS[status].label}</span>

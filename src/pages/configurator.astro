@@ -1,0 +1,301 @@
+---
+import Base from '../layouts/Base.astro';
+import PageIntro from '../components/PageIntro.astro';
+import Icon from '../components/Icon.astro';
+import { INDUSTRIES } from '../content/industries';
+import { CONFIG_STEPS } from '../lib/config-rules';
+import { pricing } from '../content/pricing';
+const assetTypes = ['Chillers', 'Freezers and cold rooms', 'Split and package AC', 'Air handling units', 'Pumps and plant', 'Lifts', 'Fire and life safety', 'Electrical', 'Plumbing'];
+const roles: [string, string][] = [['manager', 'Service or maintenance manager'], ['dispatcher', 'Dispatcher'], ['technician', 'Technicians'], ['admin', 'Administrator'], ['finance', 'Finance approver'], ['customer', 'Customer facilities team (portal)'], ['owner', 'Property owners (portal)'], ['resident', 'Residents or tenants (app)']];
+---
+<Base title="Configurator" description="Describe your sites, team, contracts, approvals and channels. Tessaro checks the draft, previews how a job would flow and suggests a plan." current="configurator" noindex>
+  <PageIntro title="Configure your setup" lead="Seven short steps. Your draft saves as you go, so you can leave and come back. At the end we check it, show how a job would flow and suggest a plan.">
+    <p class="notice small"><Icon name="info" size={18} /><span>This is a planning draft, not a live workspace. During setup the product applies its own checks before anything is published.</span></p>
+  </PageIntro>
+
+  <section class="section tight">
+    <div class="wrap cf">
+      <nav class="cf-steps" aria-label="Configurator steps">
+        <ol role="list">
+          {CONFIG_STEPS.map((s, i) => <li><button type="button" data-go={i}><span class="n">{i + 1}</span><span class="t">{s.title}</span><span class="st" data-st={i}></span></button></li>)}
+        </ol>
+        <div class="cf-prog" aria-hidden="true"><span data-bar></span></div>
+        <p class="xs muted" data-saved>Not saved yet</p>
+      </nav>
+
+      <form class="cf-form" novalidate data-form>
+        <fieldset data-step="0">
+          <legend><h2 class="h3">Company and industry</h2></legend>
+          <div class="field"><label for="industry">Industry</label>
+            <select class="select" id="industry" name="industry"><option value="">Choose…</option>{INDUSTRIES.map((i) => <option value={i.id}>{i.name}{i.status === 'proposed' ? ' (proposed)' : ''}</option>)}</select>
+            <p class="error" data-err="industry" hidden></p></div>
+          <div class="field"><label for="company">How you work</label>
+            <select class="select" id="company" name="company"><option value="provider">Service provider for other companies</option><option value="manager">Property or facilities manager using providers</option><option value="inhouse">In-house maintenance team</option></select></div>
+          <div class="field sm"><label for="countries">Countries you operate in</label><input class="input" type="number" inputmode="numeric" min="1" id="countries" name="countries" /><p class="error" data-err="countries" hidden></p></div>
+        </fieldset>
+
+        <fieldset data-step="1" hidden>
+          <legend><h2 class="h3">Sites and equipment</h2></legend>
+          <div class="grid2">
+            <div class="field"><label for="sites">Sites or buildings</label><input class="input" type="number" inputmode="numeric" min="1" id="sites" name="sites" /><p class="error" data-err="sites" hidden></p></div>
+            <div class="field"><label for="assets">Assets to track</label><input class="input" type="number" inputmode="numeric" min="0" id="assets" name="assets" /><p class="hint">An estimate is fine.</p><p class="error" data-err="assets" hidden></p></div>
+          </div>
+          <fieldset class="field"><legend class="label">Equipment types</legend>
+            <div class="chips">{assetTypes.map((a) => <label class="chk"><input type="checkbox" name="assetTypes" value={a} /> {a}</label>)}</div>
+            <p class="error" data-err="assetTypes" hidden></p></fieldset>
+        </fieldset>
+
+        <fieldset data-step="2" hidden>
+          <legend><h2 class="h3">Team and roles</h2></legend>
+          <div class="grid2">
+            <div class="field"><label for="technicians">Technicians</label><input class="input" type="number" inputmode="numeric" min="1" id="technicians" name="technicians" /><p class="error" data-err="technicians" hidden></p></div>
+            <div class="field"><label for="dispatchers">Dispatchers or coordinators</label><input class="input" type="number" inputmode="numeric" min="0" id="dispatchers" name="dispatchers" /><p class="error" data-err="dispatchers" hidden></p></div>
+          </div>
+          <label class="choice"><input type="checkbox" name="subcontractors" /> <span><b>We use subcontractors</b><br /><span class="xs muted">They get a scoped view of their own jobs only.</span></span></label>
+          <fieldset class="field"><legend class="label">Who will use Tessaro</legend>
+            <div class="chips">{roles.map(([k, v]) => <label class="chk"><input type="checkbox" name="roles" value={k} /> {v}</label>)}</div>
+            <p class="error" data-err="roles" hidden></p></fieldset>
+        </fieldset>
+
+        <fieldset data-step="3" hidden>
+          <legend><h2 class="h3">Contracts and response times</h2></legend>
+          <fieldset class="field"><legend class="label">Contract types you run</legend>
+            <div class="chips">
+              <label class="chk"><input type="checkbox" name="contractTypes" value="amc" /> Annual maintenance (AMC)</label>
+              <label class="chk"><input type="checkbox" name="contractTypes" value="warranty" /> Warranty</label>
+              <label class="chk"><input type="checkbox" name="contractTypes" value="adhoc" /> Ad-hoc, quoted per job</label>
+            </div><p class="error" data-err="contractTypes" hidden></p></fieldset>
+          <div class="grid2">
+            <div class="field"><label for="p1Hours">Critical response (hours)</label><input class="input" type="number" inputmode="decimal" min="0.5" step="0.5" id="p1Hours" name="p1Hours" /><p class="error" data-err="p1Hours" hidden></p></div>
+            <div class="field"><label for="p2Hours">Normal response (hours)</label><input class="input" type="number" inputmode="decimal" min="1" id="p2Hours" name="p2Hours" /></div>
+          </div>
+          <label class="choice"><input type="checkbox" name="ppm" /> <span><b>Planned preventive maintenance</b><br /><span class="xs muted">Visits generated from asset schedules.</span></span></label>
+          <p class="error" data-err="ppm" hidden></p>
+        </fieldset>
+
+        <fieldset data-step="4" hidden>
+          <legend><h2 class="h3">Approvals</h2></legend>
+          <label class="choice"><input type="checkbox" name="approvalsOn" /> <span><b>Chargeable work needs approval</b><br /><span class="xs muted">Work below the limit keeps moving.</span></span></label>
+          <p class="error" data-err="approvalsOn" hidden></p>
+          <div class="grid2" data-appr>
+            <div class="field"><label for="threshold">Approval needed above (AED)</label><input class="input" type="number" inputmode="numeric" min="0" step="100" id="threshold" name="threshold" /><p class="hint">0 means every quote.</p><p class="error" data-err="threshold" hidden></p></div>
+            <div class="field"><label for="approver">Who approves</label><select class="select" id="approver" name="approver"><option value="customer">The customer</option><option value="owner">The property owner</option><option value="finance">Our finance approver</option><option value="manager">Our manager</option></select><p class="error" data-err="approver" hidden></p></div>
+          </div>
+        </fieldset>
+
+        <fieldset data-step="5" hidden>
+          <legend><h2 class="h3">Channels and languages</h2></legend>
+          <fieldset class="field"><legend class="label">Requests and updates arrive by</legend>
+            <div class="chips">
+              <label class="chk"><input type="checkbox" name="channels" value="whatsapp" /> WhatsApp</label>
+              <label class="chk"><input type="checkbox" name="channels" value="app" /> Mobile app and portals</label>
+              <label class="chk"><input type="checkbox" name="channels" value="email" /> Email</label>
+              <label class="chk"><input type="checkbox" name="channels" value="sms" /> SMS (proposed)</label>
+            </div><p class="error" data-err="channels" hidden></p></fieldset>
+          <label class="choice" data-consent><input type="checkbox" name="whatsappConsent" /> <span><b>We will collect WhatsApp consent</b><br /><span class="xs muted">Residents and customers opt in before the first message.</span></span></label>
+          <p class="error" data-err="whatsappConsent" hidden></p>
+          <fieldset class="field"><legend class="label">Languages</legend>
+            <div class="chips"><label class="chk"><input type="checkbox" name="languages" value="en" /> English</label><label class="chk"><input type="checkbox" name="languages" value="ar" /> Arabic</label></div>
+            <p class="error" data-err="languages" hidden></p></fieldset>
+        </fieldset>
+
+        <fieldset data-step="6" hidden>
+          <legend><h2 class="h3">Review</h2></legend>
+          <div class="rv-checks" data-checks aria-live="polite"></div>
+          <section class="rv-block"><h3 class="h4">How a chargeable job would flow</h3><ol class="flow" data-flow></ol><p class="xs muted">Illustrative, based on your answers.</p></section>
+          <section class="rv-block"><h3 class="h4">Suggested plan</h3><div data-plan></div><p class="xs muted">Draft prices{pricing.confirmed ? '' : ', not yet confirmed'}. {pricing.vatNote}</p></section>
+          <section class="rv-block"><h3 class="h4">Summary</h3><dl class="sumdl" data-sum></dl></section>
+          <label class="choice"><input type="checkbox" name="assisted" /> <span><b>I’d like assisted onboarding</b><br /><span class="xs muted">A specialist sets up your template, imports your data and configures the first workflows (Guided setup).</span></span></label>
+          <div class="row rv-acts">
+            <a class="btn btn-primary" href="/trial?from=configurator" data-to-trial>Start a trial with this setup</a>
+            <a class="btn" href="/demo?from=configurator">Review it with us in a demo</a>
+            <button class="btn btn-quiet" type="button" data-export><Icon name="download" size={16} /> Download draft (JSON)</button>
+          </div>
+        </fieldset>
+
+        <div class="cf-nav">
+          <button class="btn" type="button" data-prev><Icon name="arrow-left" size={16} /> Back</button>
+          <span class="xs muted" data-stepnote></span>
+          <button class="btn btn-primary" type="button" data-next>Continue <Icon name="arrow-right" size={16} /></button>
+        </div>
+      </form>
+    </div>
+  </section>
+  <p class="sr-only" role="status" aria-live="polite" data-live></p>
+</Base>
+
+<style>
+  .cf { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 40px; align-items: start; }
+  .cf-steps { position: sticky; top: 88px; display: grid; gap: 12px; }
+  .cf-steps ol { display: grid; gap: 2px; margin: 0; }
+  .cf-steps button { width: 100%; display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 6px; border: 0; background: none; font: inherit; font-size: var(--t-sm); color: var(--fg-2); text-align: left; cursor: pointer; min-height: 44px; }
+  .cf-steps button:hover { background: var(--surface); }
+  .cf-steps button[aria-current="step"] { background: var(--surface-selected); color: var(--fg); font-weight: 600; }
+  .cf-steps .n { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--line); font-size: var(--t-xs); font-weight: 600; }
+  .cf-steps button[aria-current="step"] .n { background: var(--accent); color: #fff; border-color: transparent; }
+  .cf-steps .st :global(svg) { display: block; }
+  .cf-steps .st.ok { color: var(--ok); } .cf-steps .st.bl { color: var(--alert); } .cf-steps .st.wn { color: var(--wait); }
+  .cf-prog { height: 6px; background: var(--surface); border-radius: 3px; overflow: hidden; }
+  .cf-prog span { display: block; height: 100%; width: 0; background: var(--accent); transition: width 300ms var(--ease-out); }
+  .cf-form { display: grid; gap: 24px; min-width: 0; }
+  .cf-form > fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 20px; min-width: 0; }
+  .cf-form > fieldset > legend { padding: 0; margin-bottom: 4px; }
+  fieldset.field { border: 0; padding: 0; margin: 0; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .field.sm { max-width: 240px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chk { display: inline-flex; gap: 8px; align-items: center; min-height: 40px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 6px; font-size: var(--t-sm); cursor: pointer; background: var(--surface-raised); }
+  .chk:has(input:checked) { border-color: var(--accent); background: var(--surface-selected); font-weight: 600; }
+  .chk:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .chk input { accent-color: var(--emerald-600); width: 16px; height: 16px; }
+  .cf-nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 20px; border-top: 1px solid var(--line); }
+  .rv-checks { display: grid; gap: 8px; }
+  .rv-checks :global(.ck) { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start; padding: 12px 14px; border-radius: var(--r-sm); font-size: var(--t-sm); }
+  .rv-checks :global(.ck svg) { margin-top: 2px; }
+  .rv-checks :global(.ck.bl) { background: var(--alert-tint); } .rv-checks :global(.ck.bl svg) { color: var(--alert); }
+  .rv-checks :global(.ck.wn) { background: var(--wait-tint); } .rv-checks :global(.ck.wn svg) { color: var(--wait); }
+  .rv-checks :global(.ck.ok) { background: var(--ok-tint); } .rv-checks :global(.ck.ok svg) { color: var(--ok); }
+  .rv-checks :global(.ck b) { display: block; }
+  .rv-checks :global(.ck button) { background: none; border: 0; font: inherit; font-size: var(--t-xs); font-weight: 600; text-decoration: underline; cursor: pointer; color: var(--fg); padding: 4px; }
+  .rv-block { display: grid; gap: 10px; padding: 18px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-raised); }
+  .flow { margin: 0; padding-left: 20px; display: grid; gap: 6px; font-size: var(--t-sm); }
+  .flow :global(li::marker) { color: var(--accent); font-weight: 600; }
+  .sumdl { display: grid; grid-template-columns: 180px 1fr; gap: 6px 16px; margin: 0; font-size: var(--t-sm); }
+  .sumdl :global(dt) { color: var(--fg-2); } .sumdl :global(dd) { margin: 0; }
+  .rv-acts { padding-top: 4px; }
+  [data-to-trial][aria-disabled="true"] { opacity: .5; pointer-events: none; }
+  @media (max-width: 900px) {
+    .cf { grid-template-columns: 1fr; gap: 20px; }
+    .cf-steps { position: static; }
+    .cf-steps ol { grid-auto-flow: column; grid-auto-columns: max-content; overflow-x: auto; }
+    .cf-steps .t { display: none; } .cf-steps button { grid-template-columns: 28px auto; }
+  }
+  @media (max-width: 560px) { .grid2, .sumdl { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+  import { load, update } from '../lib/setup-store';
+  import { auth, track } from '../integrations/index';
+  import { CONFIG_STEPS, defaultConfig, validate, recommendPlan, workflowPreview, type ConfigValues, type Finding } from '../lib/config-rules';
+  import { pricing, formatMoney } from '../content/pricing';
+  import { INDUSTRIES } from '../content/industries';
+  import { icon } from '../lib/icons';
+
+  const form = document.querySelector<HTMLFormElement>('[data-form]')!;
+  const steps = [...form.querySelectorAll<HTMLFieldSetElement>(':scope > fieldset[data-step]')];
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const say = (m: string) => { $('[data-live]').textContent = m; };
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+  const NUM = ['countries', 'sites', 'assets', 'technicians', 'dispatchers', 'p1Hours', 'p2Hours', 'threshold'];
+  const MULTI = ['assetTypes', 'roles', 'contractTypes', 'channels', 'languages'];
+  const BOOL = ['subcontractors', 'ppm', 'approvalsOn', 'whatsappConsent', 'assisted'];
+
+  const setup = load();
+  const qs = new URLSearchParams(location.search);
+  const qIndustry = qs.get('industry') || undefined;
+  let values: ConfigValues = { ...defaultConfig(qIndustry || setup.industry), ...(setup.config?.values as Partial<ConfigValues> || {}) };
+  if (qIndustry) values.industry = qIndustry;
+  let step = Math.min(setup.config?.step ?? 0, CONFIG_STEPS.length - 1);
+  const visited = new Set<number>(Array.from({ length: step + 1 }, (_, i) => i));
+
+  function write() {
+    for (const k of NUM) (form.elements.namedItem(k) as HTMLInputElement).value = String((values as any)[k] ?? '');
+    for (const k of MULTI) form.querySelectorAll<HTMLInputElement>(`input[name="${k}"]`).forEach((i) => (i.checked = ((values as any)[k] as string[]).includes(i.value)));
+    for (const k of BOOL) (form.elements.namedItem(k) as HTMLInputElement).checked = !!(values as any)[k];
+    ($('#industry') as HTMLSelectElement).value = values.industry || '';
+    ($('#company') as HTMLSelectElement).value = values.company || 'provider';
+    ($('#approver') as HTMLSelectElement).value = values.approver;
+  }
+  function read() {
+    const v: any = { ...values };
+    for (const k of NUM) { const raw = (form.elements.namedItem(k) as HTMLInputElement).value; v[k] = raw === '' ? NaN : Number(raw); }
+    for (const k of MULTI) v[k] = [...form.querySelectorAll<HTMLInputElement>(`input[name="${k}"]:checked`)].map((i) => i.value);
+    for (const k of BOOL) v[k] = (form.elements.namedItem(k) as HTMLInputElement).checked;
+    v.industry = ($('#industry') as HTMLSelectElement).value || undefined;
+    v.company = ($('#company') as HTMLSelectElement).value;
+    v.approver = ($('#approver') as HTMLSelectElement).value;
+    values = v;
+  }
+  function persist() {
+    update((s) => { s.config = { step, values: JSON.parse(JSON.stringify(values, (_k, x) => (typeof x === 'number' && isNaN(x) ? null : x))), updatedAt: new Date().toISOString() }; if (values.industry) s.industry = values.industry; });
+    auth.persistAccountCopy();
+    $('[data-saved]').textContent = `Draft saved ${new Date().toLocaleTimeString('en-AE', { hour: '2-digit', minute: '2-digit' })}${auth.current() ? ' to your account' : ' on this device'}`;
+  }
+  const findings = () => validate(values, pricing.plans);
+
+  function showErrors(onlyStep?: number) {
+    const fs = findings();
+    form.querySelectorAll<HTMLElement>('[data-err]').forEach((e) => { e.hidden = true; e.textContent = ''; });
+    form.querySelectorAll('[aria-invalid]').forEach((e) => e.removeAttribute('aria-invalid'));
+    for (const f of fs) {
+      if (onlyStep !== undefined && f.step !== onlyStep) continue;
+      if (f.level !== 'blocker') continue;
+      const el = form.querySelector<HTMLElement>(`[data-err="${f.field}"]`);
+      if (el) { el.hidden = false; el.innerHTML = `${icon('circle-alert', 14)} ${esc(f.text)}`; }
+      const inp = form.querySelector<HTMLElement>(`[name="${f.field}"]`); if (inp && (inp as HTMLInputElement).type !== 'checkbox') inp.setAttribute('aria-invalid', 'true');
+    }
+    return fs;
+  }
+  function paintNav() {
+    const fs = findings();
+    steps.forEach((s, i) => (s.hidden = i !== step));
+    document.querySelectorAll<HTMLButtonElement>('[data-go]').forEach((b) => {
+      const i = Number(b.dataset.go); b.toggleAttribute('aria-current', i === step); if (i === step) b.setAttribute('aria-current', 'step');
+      const st = b.querySelector<HTMLElement>('.st')!; st.className = 'st'; st.innerHTML = '';
+      if (i === CONFIG_STEPS.length - 1 || !visited.has(i) || i === step) return;
+      const bl = fs.some((f) => f.step === i && f.level === 'blocker'); const wn = fs.some((f) => f.step === i);
+      st.classList.add(bl ? 'bl' : wn ? 'wn' : 'ok'); st.innerHTML = icon(bl ? 'circle-alert' : wn ? 'triangle-alert' : 'check', 16);
+      st.setAttribute('aria-label', bl ? 'Needs attention' : wn ? 'Has warnings' : 'Complete'); st.setAttribute('role', 'img');
+    });
+    $('[data-bar]').style.width = `${((step) / (CONFIG_STEPS.length - 1)) * 100}%`;
+    $<HTMLButtonElement>('[data-prev]').hidden = step === 0;
+    $<HTMLButtonElement>('[data-next]').hidden = step === CONFIG_STEPS.length - 1;
+    $('[data-stepnote]').textContent = `Step ${step + 1} of ${CONFIG_STEPS.length}`;
+    ($('[data-appr]') as HTMLElement).hidden = !values.approvalsOn;
+    ($('[data-consent]') as HTMLElement).hidden = !values.channels.includes('whatsapp');
+    if (step === CONFIG_STEPS.length - 1) review();
+  }
+  function review() {
+    const fs = findings(); const bl = fs.filter((f) => f.level === 'blocker'); const wn = fs.filter((f) => f.level === 'warning');
+    const row = (f: Finding) => `<div class="ck ${f.level === 'blocker' ? 'bl' : 'wn'}">${icon(f.level === 'blocker' ? 'circle-alert' : 'triangle-alert', 16)}<span><b>${f.level === 'blocker' ? 'Must fix' : 'Worth checking'} · ${esc(CONFIG_STEPS[f.step].title)}</b>${esc(f.text)}</span><button type="button" data-fix="${f.step}">Fix</button></div>`;
+    $('[data-checks]').innerHTML = (bl.length === 0 ? `<div class="ck ok">${icon('check', 16)}<span><b>Ready for setup</b>No blockers.${wn.length ? ` ${wn.length} item${wn.length > 1 ? 's' : ''} worth checking.` : ''}</span><span></span></div>` : '') + bl.map(row).join('') + wn.map(row).join('');
+    $('[data-flow]').innerHTML = workflowPreview(values).map((l) => `<li>${esc(l)}</li>`).join('');
+    const r = recommendPlan(values.technicians || 1, pricing.plans, pricing.extraTech);
+    $('[data-plan]').innerHTML = `<p><b>${esc(r.plan.name)}</b>, up to ${r.plan.techs} technicians${r.extraTechs ? ` plus ${r.extraTechs} extra` : ''}: <b>${formatMoney(r.total)}</b> a year.${values.assisted ? ` Guided setup ${formatMoney(pricing.services[0].price)}, once.` : ''}</p><p class="xs muted">${esc(r.plan.for)} <a class="link" href="/pricing">Compare plans</a></p>`;
+    const ind = INDUSTRIES.find((i) => i.id === values.industry);
+    const pairs: [string, string][] = [
+      ['Industry', ind?.name || 'Not chosen'], ['Countries', String(values.countries)], ['Sites and assets', `${values.sites} sites · ${values.assets} assets`],
+      ['Equipment', values.assetTypes.join(', ') || 'None chosen'], ['Team', `${values.technicians} technicians · ${values.dispatchers} dispatchers${values.subcontractors ? ' · subcontractors' : ''}`],
+      ['Contracts', values.contractTypes.join(', ').toUpperCase() || 'None'], ['Response', `Critical ${values.p1Hours} h · normal ${values.p2Hours} h`],
+      ['Approvals', values.approvalsOn ? `Above AED ${values.threshold} by ${values.approver}` : 'Off'], ['Channels', values.channels.join(', ') || 'None'], ['Languages', values.languages.map((l) => (l === 'ar' ? 'Arabic' : 'English')).join(', ')],
+    ];
+    $('[data-sum]').innerHTML = pairs.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
+    const trialBtn = $('[data-to-trial]'); trialBtn.setAttribute('aria-disabled', String(bl.length > 0));
+    trialBtn.title = bl.length ? 'Fix the items marked “Must fix” first' : '';
+  }
+  function go(to: number, check = true) {
+    read();
+    if (check && to > step) { const fs = showErrors(step).filter((f) => f.step === step && f.level === 'blocker'); if (fs.length) { say(`${fs.length} item${fs.length > 1 ? 's' : ''} to fix before continuing.`); form.querySelector<HTMLElement>('[aria-invalid="true"], [data-err]:not([hidden])')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; } }
+    step = Math.max(0, Math.min(CONFIG_STEPS.length - 1, to)); visited.add(step); persist(); paintNav();
+    track('configurator_step', { step });
+    steps[step].querySelector<HTMLElement>('h2')?.setAttribute('tabindex', '-1'); steps[step].querySelector<HTMLElement>('h2')?.focus({ preventScroll: true });
+    window.scrollTo({ top: Math.max(0, (form.getBoundingClientRect().top + scrollY) - 100), behavior: 'smooth' });
+    say(`Step ${step + 1}: ${CONFIG_STEPS[step].title}`);
+  }
+  $('[data-next]').addEventListener('click', () => go(step + 1));
+  $('[data-prev]').addEventListener('click', () => go(step - 1, false));
+  document.querySelectorAll<HTMLButtonElement>('[data-go]').forEach((b) => b.addEventListener('click', () => go(Number(b.dataset.go), false)));
+  form.addEventListener('click', (e) => { const f = (e.target as HTMLElement).closest<HTMLElement>('[data-fix]'); if (f) { go(Number(f.dataset.fix), false); showErrors(step); } });
+  form.addEventListener('change', () => { read(); persist(); paintNav(); });
+  form.addEventListener('submit', (e) => e.preventDefault());
+  $('[data-to-trial]').addEventListener('click', (e) => { if (findings().some((f) => f.level === 'blocker')) e.preventDefault(); else track('configurator_to_trial', {}); });
+  $('[data-export]').addEventListener('click', () => {
+    read();
+    const doc = { format: 'tessaro.config-draft', version: 1, createdAt: new Date().toISOString(), values, findings: findings(), note: 'Planning draft. The product validates again before publishing.' };
+    const blob = new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tessaro-setup-draft.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    track('configurator_exported', {});
+  });
+  write(); paintNav();
+  if (setup.config) { $('[data-saved]').textContent = 'Resumed your saved draft'; say('Resumed your saved draft.'); }
+</script>

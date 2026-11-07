@@ -1,0 +1,17 @@
+---
+// A real screen from the clickable prototype, framed and credited, never presented as a live product.
+import { brand } from '../config/brand';
+interface Props { id: string; alt: string; w: number; h: number; caption?: string; phone?: boolean; lazy?: boolean; }
+const { id, alt, w, h, caption, phone = false, lazy = true } = Astro.props;
+---
+<figure class:list={['shot', { phone }]}>
+  <div class="shot-frame"><img src={`/product/${id}.webp`} width={w} height={h} alt={alt} loading={lazy ? 'lazy' : 'eager'} decoding="async" /></div>
+  <figcaption><span class="id">{id}</span> · {caption ?? 'Designed screen'} · <a class="link" href={`${brand.productUrl}/#${id}`} target="_blank" rel="noopener">Open in prototype</a></figcaption>
+</figure>
+<style>
+  .shot { margin: 0; display: grid; gap: 10px; min-width: 0; }
+  .shot-frame { border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--line); background: #fff; box-shadow: var(--e-float); }
+  .phone .shot-frame { border-radius: 30px; border: 6px solid #0E1413; max-width: 300px; }
+  .shot img { width: 100%; height: auto; }
+  figcaption { font-size: var(--t-xs); color: var(--fg-2); }
+</style>

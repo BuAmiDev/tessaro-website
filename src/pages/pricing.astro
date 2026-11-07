@@ -1,0 +1,109 @@
+---
+import Base from '../layouts/Base.astro';
+import PageIntro from '../components/PageIntro.astro';
+import Icon from '../components/Icon.astro';
+import { pricing, formatMoney } from '../content/pricing';
+const faqs = [
+  ['What counts as a technician?', 'Anyone who receives and completes jobs in the technician app, including subcontracted technicians. Office users, residents, customers and owners are not counted.'],
+  ['Can we start small and grow?', 'Yes. Move to a larger package when you add technicians; the difference is prorated for the rest of your year.'],
+  ['Is the trial charged?', `No. ${pricing.trial.cancellation}`],
+  ['Which countries and data region?', 'Workspaces are hosted in the UAE. Packages include operations in up to 3 countries.'],
+];
+---
+<Base title="Pricing" description="Annual Tessaro packages by number of technicians, in AED. Unlimited requesters, residents and customers on every package." current="pricing">
+  <PageIntro title="Priced by technician, not by everyone else" lead="Each package includes a number of technicians. Residents, customers, owners and requesters are always unlimited.">
+    {!pricing.confirmed && <p class="notice notice-test small"><Icon name="info" size={18} /><span><b>Draft prices.</b> These packages come from the current pricing decision and may change before the first release. {pricing.vatNote}</span></p>}
+  </PageIntro>
+
+  <section class="section tight">
+    <div class="wrap">
+      <div class="calc" data-calc>
+        <label for="techs" class="h4">How many technicians?</label>
+        <input id="techs" type="range" min="1" max="60" value="15" aria-describedby="techs-out" />
+        <output id="techs-out" class="calc-out" for="techs" data-out></output>
+      </div>
+      <ul class="plans" role="list">
+        {pricing.plans.map((p) => (
+          <li class:list={['plan', { featured: p.featured }]} data-plan={p.id} data-techs={p.techs}>
+            {p.featured && <span class="chip chip-info">Most common</span>}
+            <h2 class="h3">{p.name}</h2>
+            <p class="price"><span class="num">{formatMoney(p.price)}</span><span class="per">per year</span></p>
+            <p class="small"><b>Up to {p.techs} technicians</b></p>
+            <p class="small muted">{p.for}</p>
+            <a class:list={['btn', { 'btn-primary': p.featured }]} href={`/trial?plan=${p.id}`}>Start a trial</a>
+            <span class="fit xs" data-fit hidden><Icon name="check" size={14} /> Fits your team</span>
+          </li>
+        ))}
+      </ul>
+      <p class="small muted extra">More than {pricing.plans.at(-1)!.techs} technicians? Each extra technician is {formatMoney(pricing.extraTech)} a year on Scale.</p>
+    </div>
+  </section>
+
+  <section class="section tight">
+    <div class="wrap two">
+      <div><h2 class="h3">Every package includes</h2>
+        <ul class="inc" role="list">{pricing.included.map((i) => <li><Icon name="check" size={18} /> {i}</li>)}</ul></div>
+      <div><h2 class="h3" id="services">Optional services</h2>
+        <ul class="svc" role="list">{pricing.services.map((s) => <li><div class="row between"><b>{s.name}</b><span class="num">{formatMoney(s.price)}</span></div><p class="small muted">{s.note}</p></li>)}</ul>
+        <h3 class="h4 trial-h">Trial terms</h3>
+        <ul class="small terms" role="list">
+          <li>{pricing.trial.days} days. {pricing.trial.cardRequired ? 'A card is verified at the start, not charged.' : 'No card needed.'}</li>
+          <li>{pricing.trial.includedUsage}</li><li>{pricing.trial.afterTrial}</li><li>{pricing.trial.cancellation}</li>
+        </ul>
+        <p class="xs muted">Trial length and card requirement are working assumptions until confirmed.</p></div>
+    </div>
+  </section>
+
+  <section class="section tight">
+    <div class="wrap faq">
+      <h2 class="h3">Pricing questions</h2>
+      <div>{faqs.map(([q, a]) => <details><summary>{q}</summary><p class="muted">{a}</p></details>)}</div>
+    </div>
+  </section>
+  <section class="section" data-surface="forest">
+    <div class="wrap row between"><h2 class="h3">Not sure which package?</h2><div class="row"><a class="btn btn-primary" href="/configurator">Get a suggestion</a><a class="btn" href="/demo?topic=pricing">Talk to us</a></div></div>
+  </section>
+</Base>
+<style>
+  .calc { display: grid; grid-template-columns: auto minmax(160px, 420px) auto; gap: 20px; align-items: center; margin-bottom: 24px; }
+  .calc input { accent-color: var(--emerald-600); width: 100%; height: 32px; }
+  .calc-out { font-size: var(--t-sm); font-weight: 600; }
+  .plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; margin: 0; background: var(--line); border: 3px solid var(--line); border-radius: var(--r-xs); }
+  .plan { background: var(--surface-raised); border-radius: 5px; padding: 24px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; position: relative; transition: background-color 200ms ease; }
+  .plan.featured { background: var(--bg); }
+  .plan.fits { background: var(--surface-selected); }
+  .plan .btn { margin-top: auto; width: 100%; justify-content: center; }
+  .price { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .price .num { font-family: var(--font-display); font-size: 1.9rem; font-weight: 600; letter-spacing: -0.02em; }
+  .per { font-size: var(--t-sm); color: var(--fg-2); }
+  .plan > .chip { position: absolute; top: 24px; right: 20px; }
+  .fit { display: inline-flex; gap: 6px; align-items: center; color: var(--ok); font-weight: 600; }
+  .extra { margin-top: 14px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+  .two > div { display: grid; gap: 14px; align-content: start; }
+  .inc, .terms, .svc { display: grid; gap: 10px; margin: 0; }
+  .inc li { display: flex; gap: 10px; } .inc :global(svg) { color: var(--ok); flex: none; margin-top: 3px; }
+  .svc li { padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-sm); display: grid; gap: 4px; }
+  .terms { padding-left: 18px; list-style: disc; }
+  .trial-h { margin-top: 10px; }
+  .between { justify-content: space-between; }
+  .faq { display: grid; grid-template-columns: 1fr 2fr; gap: 32px; }
+  .faq details { border-top: 1px solid var(--line); padding: 16px 0; } .faq details:last-child { border-bottom: 1px solid var(--line); }
+  .faq summary { cursor: pointer; font-weight: 600; } .faq details p { margin-top: 8px; }
+  @media (max-width: 1000px) { .plans { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 760px) { .two, .faq { grid-template-columns: 1fr; } .calc { grid-template-columns: 1fr; gap: 8px; } }
+  @media (max-width: 520px) { .plans { grid-template-columns: 1fr; } }
+</style>
+<script>
+  import { pricing, formatMoney } from '../content/pricing';
+  import { recommendPlan } from '../lib/config-rules';
+  const r = document.querySelector<HTMLInputElement>('#techs')!; const out = document.querySelector('[data-out]')!;
+  const plans = [...document.querySelectorAll<HTMLElement>('[data-plan]')];
+  function paint() {
+    const n = Number(r.value); const rec = recommendPlan(n, pricing.plans, pricing.extraTech);
+    out.textContent = `${n} technician${n > 1 ? 's' : ''}: ${rec.plan.name}${rec.extraTechs ? ` + ${rec.extraTechs} extra` : ''}, ${formatMoney(rec.total)} a year`;
+    r.setAttribute('aria-valuetext', out.textContent);
+    plans.forEach((p) => { const on = p.dataset.plan === rec.plan.id; p.classList.toggle('fits', on); p.querySelector<HTMLElement>('[data-fit]')!.hidden = !on; });
+  }
+  r.addEventListener('input', paint); paint();
+</script>

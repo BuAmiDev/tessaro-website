@@ -1,0 +1,65 @@
+---
+// Email + one-time code sign-in. Test adapter shows the code on screen.
+import Icon from './Icon.astro';
+interface Props { compact?: boolean; }
+const { compact = false } = Astro.props;
+---
+<div class:list={['si', { compact }]} data-signin>
+  <form class="si-step" data-si-email novalidate>
+    <div class="field"><label for="si-email">Work email</label><input class="input" type="email" id="si-email" name="email" autocomplete="email" spellcheck="false" required /><p class="error" data-si-err-email hidden></p></div>
+    <button class="btn btn-primary" type="submit">Send sign-in code</button>
+    <p class="xs muted">No password. We send a 6-digit code to your email.</p>
+  </form>
+  <form class="si-step" data-si-code novalidate hidden>
+    <p class="small">Enter the code sent to <b data-si-to></b>. <button class="linkbtn" type="button" data-si-back>Change email</button></p>
+    <p class="notice notice-test small" data-si-test><Icon name="flask-conical" size={18} /><span><b>Test mode:</b> no email is sent. Your code is <b class="code" data-si-shown></b></span></p>
+    <div class="field"><label for="si-code">6-digit code</label><input class="input code-in" id="si-code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required /><p class="error" data-si-err-code hidden></p></div>
+    <div class="grid2">
+      <div class="field"><label for="si-name">Your name <span class="muted">(new accounts)</span></label><input class="input" id="si-name" name="name" autocomplete="name" /></div>
+      <div class="field"><label for="si-co">Company <span class="muted">(optional)</span></label><input class="input" id="si-co" name="company" autocomplete="organization" /></div>
+    </div>
+    <button class="btn btn-primary" type="submit">Sign in</button>
+    <button class="linkbtn xs" type="button" data-si-resend>Send a new code</button>
+  </form>
+</div>
+<style>
+  .si { display: grid; gap: 16px; max-width: 520px; }
+  .si-step { display: grid; gap: 16px; justify-items: start; }
+  .si-step .field { width: 100%; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+  .code { font-family: ui-monospace, monospace; letter-spacing: .15em; font-size: 1.05em; }
+  .code-in { font-family: ui-monospace, monospace; letter-spacing: .3em; font-size: 1.2rem; max-width: 220px; }
+  .linkbtn { background: none; border: 0; padding: 0; font: inherit; color: var(--accent-text); text-decoration: underline; cursor: pointer; }
+  @media (max-width: 520px) { .grid2 { grid-template-columns: 1fr; } }
+</style>
+<script>
+  import { auth } from '../integrations/index';
+  import { icon } from '../lib/icons';
+  document.querySelectorAll<HTMLElement>('[data-signin]').forEach((root) => {
+    const f1 = root.querySelector<HTMLFormElement>('[data-si-email]')!; const f2 = root.querySelector<HTMLFormElement>('[data-si-code]')!;
+    const show = (el: HTMLElement, m: string) => { el.hidden = !m; el.innerHTML = m ? `${icon('circle-alert', 14)} ${m}` : ''; };
+    let email = '';
+    async function send() {
+      const r = await auth.startSignIn(email);
+      root.querySelector('[data-si-to]')!.textContent = email; root.querySelector('[data-si-shown]')!.textContent = r.codeForTestMode;
+      f1.hidden = true; f2.hidden = false; f2.querySelector<HTMLInputElement>('#si-code')!.focus();
+    }
+    f1.addEventListener('submit', async (e) => {
+      e.preventDefault(); const inp = f1.querySelector<HTMLInputElement>('#si-email')!; email = inp.value.trim();
+      const err = root.querySelector<HTMLElement>('[data-si-err-email]')!;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { show(err, 'Enter an email like name@company.com.'); inp.setAttribute('aria-invalid', 'true'); inp.focus(); return; }
+      show(err, ''); inp.removeAttribute('aria-invalid'); const b = f1.querySelector('button')!; b.disabled = true; b.textContent = 'Sending…';
+      await send(); b.disabled = false; b.textContent = 'Send sign-in code';
+    });
+    f2.addEventListener('submit', async (e) => {
+      e.preventDefault(); const code = f2.querySelector<HTMLInputElement>('#si-code')!; const err = root.querySelector<HTMLElement>('[data-si-err-code]')!;
+      const b = f2.querySelector<HTMLButtonElement>('button[type="submit"]')!; b.disabled = true;
+      const r = await auth.verify(code.value, { name: f2.querySelector<HTMLInputElement>('#si-name')!.value.trim() || undefined, company: f2.querySelector<HTMLInputElement>('#si-co')!.value.trim() || undefined });
+      b.disabled = false;
+      if (!r.ok) { show(err, r.error); code.setAttribute('aria-invalid', 'true'); code.focus(); return; }
+      root.dispatchEvent(new CustomEvent('signed-in', { bubbles: true, detail: r }));
+    });
+    root.querySelector('[data-si-back]')!.addEventListener('click', () => { f2.hidden = true; f1.hidden = false; f1.querySelector<HTMLInputElement>('#si-email')!.focus(); });
+    root.querySelector('[data-si-resend]')!.addEventListener('click', () => send());
+  });
+</script>

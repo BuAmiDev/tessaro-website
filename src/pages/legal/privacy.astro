@@ -1,0 +1,17 @@
+---
+import Legal from '../../components/Legal.astro';
+import { brand } from '../../config/brand';
+---
+<Legal title="Privacy notice" description={`How ${brand.name}'s website handles your information.`} updated="7 November 2026">
+  <p>{brand.legalEntity} (“we”) runs this website for {brand.name}. This notice covers the website only. Customer workspaces have their own data processing terms.</p>
+  <h2>What this website stores on your device</h2>
+  <ul><li>Your saved setup: industry, chosen capabilities, scenario inputs, configuration draft and notes. It stays in your browser’s storage until you clear it from My setup.</li>
+    <li>In test mode, test accounts, demo and support requests and trial progress are also stored only in your browser.</li></ul>
+  <h2>What we receive</h2>
+  <ul><li>When you request a demo or contact support: your name, work email, company and optional phone, plus a summary of your setup without personal details.</li>
+    <li>Usage events such as “scenario saved” or “trial step reached”. Names, emails, phone numbers, company names and free text are removed before an event is recorded. No advertising cookies are used.</li></ul>
+  <h2>Why and how long</h2>
+  <p>We use contact details only to answer your request and follow up on it. The retention period is to be confirmed before launch.</p>
+  <h2>Your choices</h2>
+  <p>You can clear your saved setup at any time from My setup, and ask us to access, correct or delete what we hold by writing to <a class="link" href={`mailto:${brand.supportEmail}`}>{brand.supportEmail}</a>.</p>
+</Legal>

@@ -1,0 +1,15 @@
+---
+import Legal from '../../components/Legal.astro';
+import { brand } from '../../config/brand';
+---
+<Legal title="Website terms" description={`Terms for using the ${brand.name} website.`} updated="7 November 2026">
+  <p>These terms cover this website. Use of the {brand.name} product is governed by your subscription agreement.</p>
+  <h2>What the website shows</h2>
+  <ul><li>Capabilities are labelled Available, Pilot release, Designed or Proposed. Only Available means running in production. Designed and proposed capabilities may change or not be released.</li>
+    <li>Scenarios, simulations and product screens use sample data and compressed timelines. Company and person names in them are fictional.</li>
+    <li>Prices are shown as drafts until confirmed and exclude VAT. A quotation or order form takes precedence.</li></ul>
+  <h2>Trials</h2>
+  <p>The terms shown at trial signup (what is charged, whether a card is required and what happens when the trial ends) apply to that trial.</p>
+  <h2>Contact</h2>
+  <p><a class="link" href={`mailto:${brand.salesEmail}`}>{brand.salesEmail}</a></p>
+</Legal>

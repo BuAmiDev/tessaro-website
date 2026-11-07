@@ -1,0 +1,25 @@
+---
+interface Props { title: string; lead?: string; tone?: 'dark' | 'light'; crumbs?: [string, string][]; }
+const { title, lead, tone = 'dark', crumbs } = Astro.props;
+---
+<section class="intro" data-surface={tone === 'dark' ? 'dark' : undefined}>
+  <div class="wrap intro-in">
+    {crumbs && <nav aria-label="Breadcrumb" class="crumbs"><ol role="list">{crumbs.map(([l, h]) => <li><a href={h}>{l}</a></li>)}<li aria-current="page">{title}</li></ol></nav>}
+    <div class="intro-grid">
+      <div class="intro-copy"><h1>{title}</h1>{lead && <p class="lead">{lead}</p>}</div>
+      <div class="intro-aside"><slot /></div>
+    </div>
+  </div>
+</section>
+<style>
+  .intro { background: var(--bg); padding: clamp(40px, 5vw, 72px) 0 clamp(32px, 4vw, 56px); border-bottom: 1px solid var(--line); }
+  .intro[data-surface="dark"] { background: var(--graphite-900); }
+  .intro-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 32px; align-items: end; }
+  .intro-copy { display: grid; gap: 16px; }
+  .intro-aside:empty { display: none; }
+  .crumbs ol { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 20px; font-size: var(--t-xs); color: var(--fg-2); }
+  .crumbs li + li::before { content: "/"; margin-right: 6px; color: var(--fg-3); }
+  .crumbs a { text-decoration: none; } .crumbs a:hover { text-decoration: underline; }
+  .intro-aside { min-width: 0; } .intro-aside :global(.btn) { white-space: normal; }
+  @media (max-width: 860px) { .intro-grid { grid-template-columns: minmax(0, 1fr); } }
+</style>

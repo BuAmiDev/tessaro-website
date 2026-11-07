@@ -1,0 +1,68 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+const TASKS = [
+  { id: 'admin', t: 'Confirm your administrator details', d: 'Check who owns the workspace and set a second administrator.', help: 'roles' },
+  { id: 'site', t: 'Add your first site', d: 'One building or customer site with its floors and rooms.', help: 'import-sites' },
+  { id: 'assets', t: 'Import assets for that site', d: 'Use the spreadsheet template. Ten assets are enough to start.', help: 'import-assets' },
+  { id: 'team', t: 'Invite a dispatcher and two technicians', d: 'They receive an invitation and install the technician app.', help: 'roles' },
+  { id: 'rules', t: 'Review response times and approval limits', d: 'Imported from your configuration draft, if you made one.', help: 'approvals' },
+  { id: 'channel', t: 'Connect WhatsApp or the resident app', d: 'Set the consent message and the languages you support.', help: 'whatsapp' },
+  { id: 'job', t: 'Run your first real job', d: 'From request to sign-off, with evidence attached.', help: 'getting-started' },
+];
+---
+<Base title="Activation checklist" description="The first steps to get your Tessaro workspace working." noindex>
+  <section class="section tight">
+    <div class="wrap ob">
+      <header class="ob-h">
+        <h1>Get your workspace working</h1>
+        <p class="lead">Seven steps, in order of what unblocks the most. Your progress is saved; come back any time.</p>
+        <p class="notice notice-test small"><Icon name="flask-conical" size={18} /><span><b>Test mode.</b> Ticking a step here simulates doing it in the workspace.</span></p>
+        <div class="ob-none notice" data-none hidden><Icon name="info" size={18} /><span>No trial workspace in this browser yet. <a class="link" href="/trial">Start a trial</a> to create one.</span></div>
+        <div class="ob-prog"><div class="bar"><span data-bar></span></div><p class="small" data-count aria-live="polite"></p></div>
+      </header>
+      <ol class="tasks" role="list">
+        {TASKS.map((x, i) => (
+          <li data-task={x.id}>
+            <label class="tk"><input type="checkbox" value={x.id} /><span class="n" aria-hidden="true">{i + 1}</span><span><b>{x.t}</b><span class="small muted">{x.d}</span></span></label>
+            <a class="link xs" href={`/help#${x.help}`}>How to</a>
+          </li>
+        ))}
+      </ol>
+      <div class="ob-done notice" data-done hidden><Icon name="circle-check" size={18} /><span><b>Your workspace is active.</b> Next: add the rest of your sites, or <a class="link" href="/support">ask us to import them for you</a>.</span></div>
+      <div class="ob-help"><h2 class="h4">Stuck?</h2><p class="small muted">Book a 30-minute session with an onboarding specialist, or ask support. Guided setup can do all of this for you.</p><div class="row"><a class="btn btn-sm" href="/support?topic=onboarding">Get help</a><a class="btn btn-sm btn-quiet" href="/pricing#services">Guided setup</a></div></div>
+    </div>
+  </section>
+</Base>
+<style>
+  .ob { display: grid; gap: 24px; max-width: 820px; }
+  .ob-h { display: grid; gap: 14px; }
+  .ob-prog { display: grid; gap: 6px; } .bar { height: 8px; background: var(--surface); border-radius: 4px; overflow: hidden; } .bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width 300ms var(--ease-out); }
+  .tasks { display: grid; gap: 8px; margin: 0; }
+  .tasks li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface-raised); }
+  .tasks li.on { background: var(--ok-tint); border-color: transparent; }
+  .tasks li.on b { text-decoration: line-through; text-decoration-color: var(--fg-3); }
+  .tk { display: flex; gap: 14px; align-items: center; cursor: pointer; flex: 1; }
+  .tk > span:last-child { display: grid; gap: 2px; }
+  .tk input { width: 20px; height: 20px; accent-color: var(--emerald-600); flex: none; }
+  .tk .n { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; background: var(--surface); font-size: var(--t-xs); font-weight: 600; flex: none; }
+  .ob-help { padding: 18px; border: 1px dashed var(--line-strong); border-radius: var(--r-md); display: grid; gap: 8px; }
+</style>
+<script>
+  import { trial, track } from '../integrations/index';
+  const t = trial.get();
+  const boxes = [...document.querySelectorAll<HTMLInputElement>('.tk input')];
+  if (!t.provisioned) document.querySelector<HTMLElement>('[data-none]')!.hidden = false;
+  function paint() {
+    const done = boxes.filter((b) => b.checked).length;
+    boxes.forEach((b) => b.closest('li')!.classList.toggle('on', b.checked));
+    document.querySelector<HTMLElement>('[data-bar]')!.style.width = `${(done / boxes.length) * 100}%`;
+    document.querySelector('[data-count]')!.textContent = `${done} of ${boxes.length} done`;
+    document.querySelector<HTMLElement>('[data-done]')!.hidden = done < boxes.length;
+  }
+  boxes.forEach((b) => { b.checked = t.activationDone.includes(b.value); b.addEventListener('change', () => {
+    t.activationDone = boxes.filter((x) => x.checked).map((x) => x.value); trial.set(t); paint();
+    track('activation_step', { id: b.value, done: b.checked, total: t.activationDone.length });
+  }); });
+  paint();
+</script>

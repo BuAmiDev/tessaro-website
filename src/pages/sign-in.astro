@@ -1,0 +1,40 @@
+---
+import Base from '../layouts/Base.astro';
+import SignInForm from '../components/SignInForm.astro';
+import Icon from '../components/Icon.astro';
+---
+<Base title="Sign in" description="Sign in to keep your Tessaro setup on any device." noindex>
+  <section class="section">
+    <div class="wrap si-wrap">
+      <div class="si-copy">
+        <h1>Sign in</h1>
+        <p class="lead">Keep your saved scenarios, capabilities and configuration on any device. Anything you saved on this device moves into your account.</p>
+        <div data-signed hidden class="card"><p data-who></p><div class="row"><a class="btn btn-primary" href="/my-setup">Go to my setup</a><button class="btn" type="button" data-out>Sign out</button></div></div>
+      </div>
+      <div class="si-box" data-box><SignInForm /></div>
+      <div class="si-box" data-done hidden tabindex="-1"><p class="ok"><Icon name="circle-check" size={24} /></p><h2 class="h3">You’re signed in</h2><p data-carried class="muted"></p><a class="btn btn-primary" data-next href="/my-setup">Continue</a></div>
+    </div>
+  </section>
+</Base>
+<style>
+  .si-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+  .si-copy { display: grid; gap: 16px; }
+  .si-box { padding: 28px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-raised); display: grid; gap: 14px; }
+  .card { padding: 18px; border: 1px solid var(--line); border-radius: var(--r-md); display: grid; gap: 12px; }
+  .ok { color: var(--ok); }
+  @media (max-width: 860px) { .si-wrap { grid-template-columns: 1fr; } }
+</style>
+<script>
+  import { auth } from '../integrations/index';
+  const raw = new URLSearchParams(location.search).get('next') || '/my-setup';
+  const next = raw.startsWith('/') && !raw.startsWith('//') ? raw : '/my-setup';   // same-site only
+  const acc = auth.current();
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  if (acc) { $('[data-signed]').hidden = false; $('[data-who]').textContent = `Signed in as ${acc.email}.`; $('[data-box]').hidden = true; }
+  $('[data-out]').addEventListener('click', () => { auth.signOut(); location.reload(); });
+  document.addEventListener('signed-in', (e: any) => {
+    $('[data-box]').hidden = true; const d = $('[data-done]'); d.hidden = false; d.focus();
+    $('[data-carried]').textContent = e.detail.carried ? 'Your saved setup from this device is now in your account.' : 'Your setup will be saved to your account from now on.';
+    ($('[data-next]') as HTMLAnchorElement).href = next;
+  });
+</script>

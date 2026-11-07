@@ -1,0 +1,47 @@
+---
+import Base from '../layouts/Base.astro';
+import PageIntro from '../components/PageIntro.astro';
+import Icon from '../components/Icon.astro';
+import { brand, STATUS } from '../config/brand';
+const principles = [
+  ['Show the reason', 'Every suggestion says what it looked at and which rule applied. If it can’t explain itself, it doesn’t suggest.'],
+  ['People decide what matters', 'Spend, assignments and anything a customer will see are confirmed by a person, or by a rule that person configured.'],
+  ['One record, many views', 'Residents, owners, customers and technicians see the same job from their side. Nobody re-types it.'],
+  ['Say what exists', 'Every capability on this site is labelled designed, pilot or proposed. We don’t show prototype companies as customers.'],
+];
+---
+<Base title="About" description={`${brand.name} is built by ${brand.legalEntity} for service, maintenance and facilities teams in the Gulf.`} current="company">
+  <PageIntro title={`About ${brand.name}`} lead={`${brand.name} is a service operations platform for teams that maintain buildings and equipment. It is built by ${brand.legalEntity} for operators in the ${brand.region} region.`} />
+  <section class="section">
+    <div class="wrap two">
+      <div class="stack"><h2 class="h3">Where we are</h2>
+        <p>{brand.name} 2.0 is designed end to end: 256 screens across the office web app, technician and resident apps, portals, WhatsApp flows and the Control Center, all clickable in the prototype. The first pilot release is being prepared.</p>
+        <p class="muted">Nothing in {brand.name} 2.0 is running in production yet. That is why every claim on this site carries a status.</p>
+        <dl class="st">{Object.values(STATUS).map((s) => <div><dt>{s.label}</dt><dd>{s.note}</dd></div>)}</dl>
+        <a class="btn" href={brand.productUrl} target="_blank" rel="noopener">Open the prototype <Icon name="arrow-up-right" size={16} /></a>
+      </div>
+      <div class="stack"><h2 class="h3">How we build</h2>
+        <ul class="pr" role="list">{principles.map(([t, d]) => <li><b>{t}</b><span class="muted small">{d}</span></li>)}</ul>
+      </div>
+    </div>
+  </section>
+  <section class="section tight">
+    <div class="wrap contact">
+      <h2 class="h3">Contact</h2>
+      <ul role="list">
+        <li><span class="muted small">Sales and partnerships</span><a class="link" href={`mailto:${brand.salesEmail}`}>{brand.salesEmail}</a></li>
+        <li><span class="muted small">Support</span><a class="link" href={`mailto:${brand.supportEmail}`}>{brand.supportEmail}</a></li>
+        <li><span class="muted small">Phone and WhatsApp</span><a class="link" href={`tel:${brand.phone.replace(/\s/g, '')}`}>{brand.phone}</a></li>
+      </ul>
+    </div>
+  </section>
+</Base>
+<style>
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; }
+  .stack { display: grid; gap: 16px; align-content: start; justify-items: start; }
+  .st { display: grid; gap: 8px; margin: 0; font-size: var(--t-sm); } .st div { display: grid; grid-template-columns: 110px 1fr; gap: 12px; } .st dt { font-weight: 600; } .st dd { margin: 0; color: var(--fg-2); }
+  .pr { display: grid; gap: 3px; margin: 0; background: var(--line); border: 3px solid var(--line); border-radius: var(--r-xs); width: 100%; }
+  .pr li { background: var(--surface-raised); border-radius: 5px; padding: 16px 18px; display: grid; gap: 4px; }
+  .contact { display: grid; gap: 16px; } .contact ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; } .contact li { display: grid; gap: 4px; }
+  @media (max-width: 860px) { .two, .contact ul { grid-template-columns: 1fr; } }
+</style>

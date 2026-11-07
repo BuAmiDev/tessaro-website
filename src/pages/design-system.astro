@@ -1,0 +1,78 @@
+---
+import Base from '../layouts/Base.astro';
+import Status from '../components/Status.astro';
+import Icon from '../components/Icon.astro';
+import Logo from '../components/Logo.astro';
+const palette = [
+  ['Graphite 950', '--graphite-950'], ['Graphite 900', '--graphite-900'], ['Graphite 800', '--graphite-800'], ['Forest 900', '--forest-900'], ['Forest 800', '--forest-800'],
+  ['Emerald 700', '--emerald-700'], ['Emerald 600', '--emerald-600'], ['Emerald 400', '--emerald-400'], ['Mint 100', '--mint-100'],
+  ['Porcelain 50', '--porcelain-50'], ['Porcelain 100', '--porcelain-100'], ['Porcelain 200', '--porcelain-200'], ['Steel 500', '--steel-500'], ['Ink 900', '--ink-900'],
+];
+const semantic = [['OK', '--ok'], ['Waiting', '--wait'], ['Needs action', '--alert'], ['Information', '--info'], ['Neutral', '--neutral']];
+const type = [['Hero', '--t-hero', 'display'], ['3XL', '--t-3xl', 'display'], ['2XL', '--t-2xl', 'display'], ['XL', '--t-xl', 'display'], ['LG', '--t-lg', 'body'], ['MD', '--t-md', 'body'], ['SM', '--t-sm', 'body'], ['XS', '--t-xs', 'body']];
+const radii = [['XS', '--r-xs'], ['SM', '--r-sm'], ['MD', '--r-md'], ['LG', '--r-lg']];
+---
+<Base title="Design system" description="Tessaro website tokens, type specimen and components." noindex>
+  <section class="section tight"><div class="wrap ds">
+    <header class="ds-h"><Logo /><h1>Design system</h1><p class="lead">The mosaic: every operational piece is a tile with a crisp outer edge and soft inner corners, set on a 3-unit grout line. Emerald marks the one thing that matters now.</p></header>
+
+    <section aria-labelledby="ds-type"><h2 id="ds-type">Type</h2>
+      <div class="pair"><div><p class="xs muted">Display · Sora variable, 600</p><p class="spec-d">Every operational piece, intelligently connected.</p></div><div><p class="xs muted">Body · IBM Plex Sans 400/500/600</p><p class="spec-b">Coverage is checked against the AMC. The quote is above the AED 2,000 limit, so it waits for the owner while the technician makes the unit safe.</p></div><div lang="ar" dir="rtl"><p class="xs muted" dir="ltr">Arabic · IBM Plex Sans Arabic</p><p class="spec-b">تم استلام طلبك وسيصل الفني خلال أربع ساعات.</p></div></div>
+      <table class="scale"><caption class="sr-only">Type scale</caption><thead><tr><th scope="col">Token</th><th scope="col">Sample</th></tr></thead><tbody>
+        {type.map(([n, v, f]) => <tr><td class="xs"><code>{v}</code></td><td style={`font-size:var(${v});font-family:var(--font-${f});font-weight:${f === 'display' ? 600 : 400};line-height:1.1`}>{n} Keep every operation moving</td></tr>)}
+      </tbody></table>
+    </section>
+
+    <section aria-labelledby="ds-color"><h2 id="ds-color">Color</h2>
+      <ul class="sw" role="list">{palette.map(([n, v]) => <li><span class="chip-c" style={`background:var(${v})`}></span><b class="small">{n}</b><code class="xs">{v}</code></li>)}</ul>
+      <h3 class="h4">Status colors, always with text and an icon</h3>
+      <ul class="sw" role="list">{semantic.map(([n, v]) => <li><span class="chip-c" style={`background:var(${v})`}></span><b class="small">{n}</b><code class="xs">{v}</code></li>)}</ul>
+      <div class="row"><Status status="live" /><Status status="pilot" /><Status status="designed" /><Status status="proposed" /><span class="sample">Illustrative</span></div>
+    </section>
+
+    <section aria-labelledby="ds-tiles"><h2 id="ds-tiles">Tiles and radii</h2>
+      <div class="tilegrid demo-tiles"><div>Request</div><div>Contract</div><div class="acc">Approval</div><div>Technician</div><div>Asset</div><div>Record</div></div>
+      <ul class="rad" role="list">{radii.map(([n, v]) => <li><span style={`border-radius:var(${v})`}></span><code class="xs">{v}</code></li>)}</ul>
+    </section>
+
+    <section aria-labelledby="ds-comp"><h2 id="ds-comp">Components</h2>
+      <div class="row"><button class="btn btn-primary" type="button">Primary</button><button class="btn" type="button">Secondary</button><button class="btn btn-quiet" type="button">Quiet</button><button class="btn btn-sm" type="button"><Icon name="plus" size={16} /> Small</button><button class="btn" type="button" disabled>Disabled</button></div>
+      <div class="forms">
+        <div class="field"><label for="ds1">Label</label><input class="input" id="ds1" placeholder="Placeholder" /><p class="hint">Hint text explains format.</p></div>
+        <div class="field"><label for="ds2">With error</label><input class="input" id="ds2" aria-invalid="true" value="name@" /><p class="error"><Icon name="circle-alert" size={14} /> Enter an email like name@company.com.</p></div>
+        <div class="field"><label for="ds3">Select</label><select class="select" id="ds3"><option>Business</option></select></div>
+        <label class="choice"><input type="checkbox" checked /> <span><b>Choice</b><br /><span class="xs muted">Selected state uses Mint.</span></span></label>
+      </div>
+      <p class="notice small"><Icon name="info" size={18} /><span><b>Notice.</b> Neutral information.</span></p>
+      <p class="notice notice-test small"><Icon name="flask-conical" size={18} /><span><b>Test mode.</b> Shown wherever a test adapter stands in for a real service.</span></p>
+    </section>
+
+    <section aria-labelledby="ds-motion"><h2 id="ds-motion">Motion</h2>
+      <p class="muted">Ease-out for entering, ease-in-out for moving. Presses 120 ms, panels 280 ms. Under reduced motion, transitions become fades and the hero shows its final frame with a Play button.</p>
+      <div class="row"><code class="xs">--ease-out</code><code class="xs">--ease-in-out</code><code class="xs">--ease-drawer</code><code class="xs">--d-press</code><code class="xs">--d-fast</code><code class="xs">--d-panel</code></div>
+    </section>
+    <section data-surface="dark" class="dark-demo"><h2 class="h3">Dark surface</h2><p class="muted">Sections opt in with <code>data-surface="dark"</code> or <code>"forest"</code>; every token re-maps.</p><div class="row"><button class="btn btn-primary" type="button">Primary</button><button class="btn" type="button">Secondary</button><Status status="designed" /></div></section>
+  </div></section>
+</Base>
+<style>
+  .ds { display: grid; gap: 56px; }
+  .ds > section { display: grid; gap: 20px; }
+  .ds-h { display: grid; gap: 16px; max-width: 760px; }
+  .pair { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+  .pair > div { display: grid; gap: 8px; align-content: start; }
+  .spec-d { font-family: var(--font-display); font-size: var(--t-2xl); font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; }
+  .spec-b { font-size: var(--t-md); }
+  [lang="ar"] .spec-b { font-family: var(--font-arabic); }
+  .scale { width: 100%; border-collapse: collapse; } .scale td, .scale th { border-top: 1px solid var(--line); padding: 10px 12px 10px 0; text-align: left; vertical-align: middle; } .scale th { font-size: var(--t-xs); color: var(--fg-2); }
+  .scale td:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 0; width: 80%; }
+  .sw { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin: 0; }
+  .sw li { display: grid; gap: 4px; }
+  .chip-c { height: 56px; border-radius: var(--r-sm); border: 1px solid var(--line); }
+  .demo-tiles { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .demo-tiles div { padding: 22px 14px; font-weight: 600; font-size: var(--t-sm); }
+  .demo-tiles .acc { background: var(--accent); color: #fff; }
+  .rad { display: flex; gap: 20px; flex-wrap: wrap; margin: 0; } .rad li { display: grid; gap: 6px; justify-items: center; } .rad span { width: 72px; height: 72px; background: var(--surface); border: 2px solid var(--line-strong); }
+  .forms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; max-width: 760px; }
+  .dark-demo { padding: 32px; border-radius: var(--r-lg); background: var(--bg); }
+  @media (max-width: 860px) { .pair, .forms { grid-template-columns: 1fr; } .demo-tiles { grid-template-columns: repeat(3, 1fr); } }
+</style>

@@ -1,0 +1,18 @@
+---
+import Base from '../layouts/Base.astro';
+interface Props { title: string; description: string; updated: string; }
+const { title, description, updated } = Astro.props;
+---
+<Base title={title} description={description} current="company">
+  <article class="section"><div class="wrap legal">
+    <h1>{title}</h1>
+    <p class="notice notice-test small"><span><b>Draft for legal review.</b> This text describes how this website behaves today. It must be reviewed by counsel before launch. Last updated {updated}.</span></p>
+    <slot />
+  </div></article>
+</Base>
+<style>
+  .legal { max-width: 72ch; display: grid; gap: 18px; }
+  .legal :global(h2) { font-size: var(--t-lg); margin-top: 16px; }
+  .legal :global(ul) { padding-left: 20px; list-style: disc; display: grid; gap: 6px; margin: 0; }
+  .legal :global(p), .legal :global(li) { color: var(--fg-2); }
+</style>

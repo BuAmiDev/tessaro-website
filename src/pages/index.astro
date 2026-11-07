@@ -1,0 +1,434 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Icon from '../components/Icon.astro';
+import Status from '../components/Status.astro';
+import ProductShot from '../components/ProductShot.astro';
+import MiniSim from '../components/MiniSim.astro';
+import { TILE_RECTS } from '../hero/tiles';
+import { INDUSTRIES } from '../content/industries';
+import { FAQS } from '../content/site';
+import { brand } from '../config/brand';
+import { scenarioById } from '../lib/scenario-engine';
+
+const pieces = [
+  { t: 'A request', d: 'Freezer FZ-07 stops cooling at 14:02', icon: 'thermometer-snowflake' },
+  { t: 'Technicians', d: 'Skills, certificates, shifts', icon: 'hard-hat' },
+  { t: 'Equipment', d: 'History, warranty, tags', icon: 'refrigerator' },
+  { t: 'Contracts', d: 'Coverage and response clocks', icon: 'file-check-2' },
+  { t: 'Residents', d: '', icon: 'house' },
+  { t: 'Customers', d: '', icon: 'store' },
+  { t: 'Owners', d: '', icon: 'landmark' },
+  { t: 'Quotes and approvals', d: '', icon: 'receipt-text' },
+  { t: 'Evidence', d: '', icon: 'camera' },
+  { t: 'Sites', d: '', icon: 'map-pin' },
+  { t: 'Reports', d: '', icon: 'chart-column' },
+];
+
+const structure = [
+  { k: 'An event occurs', ex: 'The cold-room supervisor scans FZ-07 and reports it is not cooling.', who: 'auto', whoT: 'Recorded' },
+  { k: 'Context is gathered', ex: 'Asset history, the Gold contract, open jobs at the site, who is on shift.', who: 'auto', whoT: 'Automatic' },
+  { k: 'A rule applies', ex: 'P1 refrigeration: respond within 2 hours. Parts above AED 1,000 need the customer’s approval.', who: 'auto', whoT: 'Automatic' },
+  { k: 'An action is proposed', ex: '“Joseph M. matches the equipment skill and is available within the response window.”', who: 'approval', whoT: 'Waits for a person' },
+  { k: 'A person decides', ex: 'The dispatcher confirms Joseph. The customer approves the AED 1,147 quote.', who: 'person', whoT: 'People' },
+  { k: 'The result is recorded', ex: 'Photos, readings, the sign-off code and every decision land on one timeline.', who: 'auto', whoT: 'Recorded' },
+];
+
+const outcomes = [
+  { t: 'Receive and understand requests', d: 'Calls, QR scans, WhatsApp and portals arrive complete, with a suggested priority you can see the reason for.', href: '/platform/intake', s: 'designed' as const },
+  { t: 'Coordinate dispatch and scheduling', d: 'A board of technicians and response deadlines, with assignment suggestions that state their reasons.', href: '/platform/coordination', s: 'designed' as const },
+  { t: 'Manage equipment, locations and maintenance', d: 'Every unit, where it is, what happened to it and when it is next due.', href: '/platform/assets', s: 'designed' as const },
+  { t: 'Apply contracts and service commitments', d: 'Coverage and response clocks come from the contract, so the right work is charged and the right clock runs.', href: '/platform/contracts', s: 'designed' as const },
+  { t: 'Prepare quotations and route approvals', d: 'Quotes from price lists, sent to the person who pays, with limits you set.', href: '/platform/commercial', s: 'designed' as const },
+  { t: 'Record evidence, completion and sign-off', d: 'In-app photos, readings, arrival checks and the customer’s code close the job.', href: '/platform/field', s: 'designed' as const },
+];
+
+const roles = [
+  { id: 'manager', t: 'Service manager', sees: 'A clock pause to approve while the customer decides on a quote, among 14 items sorted exceptions first.', shot: { id: 'W-006', w: 1150, h: 720, alt: 'My work queue showing an approval to pause the rectification clock for freezer FZ-07, with the clause and remaining time.' } },
+  { id: 'technician', t: 'Technician', sees: 'An emergency offer with drive time, respond-by time and cabinet temperature. Declining needs a reason.', shot: { id: 'M-02-1', w: 360, h: 760, alt: 'Technician app offering the emergency job Freezer FZ-07 not cooling, with drive time 22 minutes and Accept job button.' }, phone: true },
+  { id: 'resident', t: 'Resident', sees: 'Who is coming, how far away they are, and the steps from request to done.', shot: { id: 'R-01-5', w: 360, h: 760, alt: 'Resident app home showing Joseph 14 minutes away with progress Sent, Booked, On the way, Done.' }, phone: true },
+  { id: 'customer', t: 'Customer', sees: 'Quotations and sign-offs waiting for them, with photos and the reason for each charge.', shot: { id: 'PT-016', w: 1440, h: 900, alt: 'Customer portal listing quotations and sign-offs waiting for the customer.' } },
+  { id: 'owner', t: 'Owner', sees: 'Spend above the limit, with the evidence, the provider and the budget it comes from.', shot: { id: 'PT-011', w: 1440, h: 833, alt: 'Owner portal approvals list with amounts, buildings and approve or decline actions.' } },
+];
+---
+<Base title="Tessaro" description="Tessaro connects service requests, technicians, equipment, contracts and approvals in one platform for facilities management, property maintenance and equipment service." headerTone="dark">
+  <Hero />
+
+  <!-- 2. Operational context -->
+  <section class="section ctx" aria-labelledby="ctx-t">
+    <div class="wrap ctx-grid">
+      <div class="ctx-copy">
+        <h2 id="ctx-t">Every piece of the work, in one place</h2>
+        <p class="lead">A freezer failure touches a customer, a contract, a technician, a quote, a clock and a report. Tessaro keeps them in one connected record, so nobody has to rebuild the story from phone calls and spreadsheets.</p>
+        <ul class="ctx-list" role="list">
+          <li><Icon name="users" size={18} /><span><b>People</b> dispatchers, technicians, residents, customers and owners, each with their own view</span></li>
+          <li><Icon name="building-2" size={18} /><span><b>Places</b> portfolios, buildings, units, customer sites and rooms</span></li>
+          <li><Icon name="cpu" size={18} /><span><b>Assets</b> every installed unit with its contract, warranty and history</span></li>
+          <li><Icon name="scale" size={18} /><span><b>Decisions</b> coverage, priorities, approvals and sign-offs, with who made them</span></li>
+        </ul>
+      </div>
+      <div class="mosaic" role="img" aria-label="The Tessaro mosaic: a request tile surrounded by tiles for technicians, equipment, contracts, residents, customers, owners, quotes and approvals, evidence, sites and reports.">
+        {TILE_RECTS.map(([x, y, w, h], i) => (
+          <div class:list={['mt', { 'mt-acc': i === 0, 'mt-sm': w < 20 || h < 20 }]} style={`left:${x / 104 * 100}%;top:${y / 104 * 100}%;width:${w / 104 * 100}%;height:${h / 104 * 100}%`}>
+            <Icon name={pieces[i].icon} size={i < 4 ? 20 : 16} />
+            <span class="mt-t">{pieces[i].t}</span>
+            {pieces[i].d && <span class="mt-d">{pieces[i].d}</span>}
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. AI coordination story -->
+  <section class="section story" data-surface="dark" aria-labelledby="story-t">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="story-t">Assistance you can follow, step by step</h2>
+        <p>Tessaro’s assistance works in the open. It gathers context, applies your rules and proposes the next action with its reason. People confirm where the rules say they must, and everything is recorded.</p>
+      </div>
+      <ol class="flow" role="list">
+        {structure.map((s, i) => (
+          <li class={`flow-i who-${s.who}`}>
+            <span class="flow-n num">{i + 1}</span>
+            <h3 class="flow-k">{s.k}</h3>
+            <p class="flow-ex">{s.ex}</p>
+            <span class="flow-who">{s.who === 'person' ? <Icon name="user" size={14} /> : s.who === 'approval' ? <Icon name="hand" size={14} /> : <Icon name="check" size={14} />}{s.whoT}</span>
+          </li>
+        ))}
+      </ol>
+      <div class="story-foot">
+        <p class="small muted"><b class="fg">What exists today:</b> suggested triage, assignment suggestions with reasons, drafted messages and quotations, and rule-based approvals are designed in the product prototype. Carrying several steps on its own is a <a class="link" href="/features?q=orchestration">proposed direction</a>, shown here as an illustration.</p>
+        <a class="btn" href="/simulator?scenario=freezer-p1">Walk through it in the simulator <Icon name="arrow-right" size={16} /></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Industry entry points -->
+  <section class="section" aria-labelledby="ind-t">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="ind-t">Start from how your operation runs</h2>
+        <p>Each operating model has its own template, scenarios and setup path.</p>
+      </div>
+      <ul class="inds" role="list">
+        {INDUSTRIES.map((ind) => (
+          <li class:list={['ind', { 'ind-proposed': ind.status === 'proposed' }]}>
+            <Status status={ind.status} />
+            <h3><a href={`/industries/${ind.id}`} class="ind-a">{ind.name}</a></h3>
+            <p class="xs muted ind-model">{ind.operatingModel}</p>
+            <p class="small muted">{ind.who}</p>
+            <a class="link small" href={`/simulator?industry=${ind.id}&scenario=${ind.scenarios[0]}`}>Try: {scenarioById[ind.scenarios[0]].name}</a>
+          </li>
+        ))}
+        <li class="ind ind-other">
+          <h3>Something else?</h3>
+          <p class="small muted">Tell us how your operation runs. If the workflows fit, we will build your scenario for the demo.</p>
+          <a class="link small" href="/demo?topic=other-industry">Describe your operation</a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5. Interactive scenario preview -->
+  <section class="section" data-surface="forest" aria-labelledby="sim-t">
+    <div class="wrap sim-grid">
+      <div class="stack-lg">
+        <h2 id="sim-t">Change one thing. Watch the outcome change.</h2>
+        <p class="lead">Take a critical freezer fault. Make the technician unavailable or lower the approval limit, and see how Tessaro keeps the work moving within your rules.</p>
+        <p class="small muted">Sample data and a compressed timeline. The outcome is calculated from the rules shown, not by a live system.</p>
+        <a class="btn btn-primary" href="/simulator?scenario=freezer-p1">Open the full simulator <Icon name="arrow-right" size={16} /></a>
+      </div>
+      <MiniSim />
+    </div>
+  </section>
+
+  <!-- 6. Capability overview -->
+  <section class="section" aria-labelledby="cap-t">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="cap-t">What Tessaro helps you do</h2>
+        <p>Six outcomes, each with the designed screens behind it. The feature explorer lists all 40 capabilities with their status.</p>
+      </div>
+      <div class="caps">
+        {outcomes.map((o, i) => (
+          <a class="cap" href={o.href}>
+            <span class="cap-i" aria-hidden="true">{String.fromCharCode(65 + i)}</span>
+            <span class="cap-b"><span class="cap-t">{o.t}</span><span class="cap-d">{o.d}</span></span>
+            <Status status={o.s} />
+          </a>
+        ))}
+      </div>
+      <div class="row" style="margin-top:28px"><a class="btn" href="/features">Explore every capability</a><a class="btn btn-quiet" href="/platform">Platform overview <Icon name="arrow-right" size={16} /></a></div>
+    </div>
+  </section>
+
+  <!-- 7. Role perspectives -->
+  <section class="section roles" data-surface="dark" aria-labelledby="roles-t">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="roles-t">One event, five people, five views</h2>
+        <p>The same freezer failure, as each person sees it in the designed product.</p>
+      </div>
+      <div class="tabs" data-tabs>
+        <div class="tablist" role="tablist" aria-label="Choose a role">
+          {roles.map((r, i) => <button role="tab" id={`tab-${r.id}`} aria-controls={`panel-${r.id}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>{r.t}</button>)}
+        </div>
+        {roles.map((r, i) => (
+          <div class="tabpanel" role="tabpanel" id={`panel-${r.id}`} aria-labelledby={`tab-${r.id}`} hidden={i !== 0}>
+            <div class="role-sees"><h3>{r.t}</h3><p>{r.sees}</p></div>
+            <ProductShot id={r.shot.id} w={r.shot.w} h={r.shot.h} alt={r.shot.alt} phone={r.phone} />
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Configuration story -->
+  <section class="section" aria-labelledby="conf-t">
+    <div class="wrap conf-grid">
+      <div class="stack-lg">
+        <h2 id="conf-t">Configured to your rules, not rebuilt for them</h2>
+        <p class="lead">Priorities, response targets, approval limits, checklists and messages are tables and forms your administrators edit. Changes are compared, reviewed by a second person and published with a history.</p>
+        <ul class="ticks" role="list">
+          <li><Icon name="check" size={18} />Industry templates for equipment service, property management and facilities</li>
+          <li><Icon name="check" size={18} />Approval matrices by amount, site and who pays</li>
+          <li><Icon name="check" size={18} />Checklists that block closing until readings and photos exist</li>
+          <li><Icon name="check" size={18} />Your logo, colours and English or Arabic for residents</li>
+        </ul>
+        <div class="row"><a class="btn btn-primary" href="/configurator">Draft your setup</a><a class="btn btn-quiet" href="/platform/configuration">How configuration works</a></div>
+      </div>
+      <ProductShot id="W-099" w={1150} h={760} alt="Approval matrix editor with amount bands, approver roles and a pending publish." />
+    </div>
+  </section>
+
+  <!-- 9. Trust and control -->
+  <section class="section trust" aria-labelledby="trust-t">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="trust-t">Control that holds up when someone asks</h2>
+        <p>Owners and auditors ask who decided, when and on what basis. These controls are designed into every workflow.</p>
+      </div>
+      <div class="trust-grid tilegrid">
+        <div><Icon name="key-round" size={22} /><h3>Permissions by role and place</h3><p>Access is scoped to organizations, regions and sites. A technician can assign in their region without seeing prices.</p><Status status="designed" /></div>
+        <div><Icon name="hand" size={22} /><h3>Approvals by rule</h3><p>Spend goes to the person who pays, by amount and site. Work below the limit continues without waiting.</p><Status status="designed" /></div>
+        <div><Icon name="scroll-text" size={22} /><h3>A full audit log</h3><p>Every change to a record or setting shows who, when and why. Clock pauses carry the contract clause.</p><Status status="pilot" /></div>
+        <div><Icon name="shield-check" size={22} /><h3>Support access you approve</h3><p>Vendor staff only see your records inside a time-limited grant you approve. It expires and is logged.</p><Status status="designed" /></div>
+        <div><Icon name="lock" size={22} /><h3>Data region</h3><p>The platform plan places customer data in a UAE cloud region. Hosting terms are confirmed in your agreement.</p><Status status="pilot" /></div>
+        <div><Icon name="camera" size={22} /><h3>Evidence that cannot be swapped</h3><p>Completion photos are taken in the app and stamped with time and job number. Gallery images are refused.</p><Status status="designed" /></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. Getting started -->
+  <section class="section" data-surface="dark" aria-labelledby="start-t">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="start-t">Two ways to get started</h2>
+        <p>Your saved scenarios and selections travel with you either way.</p>
+      </div>
+      <div class="paths">
+        <div class="path">
+          <h3>Guided demo</h3>
+          <p class="muted">For teams who want to see their own scenario with a specialist.</p>
+          <ol role="list" class="steps">
+            <li><span class="num">1</span>Tell us what you want to evaluate</li>
+            <li><span class="num">2</span>We prepare your scenario in the product</li>
+            <li><span class="num">3</span>A 45-minute session with your team</li>
+            <li><span class="num">4</span>A written setup proposal</li>
+          </ol>
+          <a class="btn btn-primary" href="/demo">Book a demo</a>
+        </div>
+        <div class="path">
+          <h3>Self-service trial</h3>
+          <p class="muted">For teams who want to set up a workspace themselves.</p>
+          <ol role="list" class="steps">
+            <li><span class="num">1</span>Create your account</li>
+            <li><span class="num">2</span>Choose a template or continue your saved setup</li>
+            <li><span class="num">3</span>Review the plan and trial terms</li>
+            <li><span class="num">4</span>Workspace ready, guided first steps</li>
+          </ol>
+          <a class="btn" href="/trial">Start a trial</a>
+          <p class="xs muted">The trial journey runs in test mode until the platform’s pilot release.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11. Support and questions -->
+  <section class="section" aria-labelledby="faq-t">
+    <div class="wrap faq-grid">
+      <div class="stack-lg">
+        <h2 id="faq-t">Questions teams ask before they start</h2>
+        <p class="muted">Can’t find yours? Talk to a person.</p>
+        <div class="row">
+          <a class="btn" href="/support"><Icon name="life-buoy" size={18} /> Contact support</a>
+          <a class="btn btn-quiet" href="/help">Browse the help center</a>
+        </div>
+      </div>
+      <div class="faqs">
+        {FAQS.map((f) => (
+          <details class="faq">
+            <summary><span>{f.q}</span><Icon name="plus" size={18} /></summary>
+            <p>{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- 12. Closing -->
+  <section class="close" data-surface="dark" aria-labelledby="close-t">
+    <div class="wrap close-grid">
+      <div class="close-copy">
+        <h2 id="close-t" class="close-t">Start with one job.</h2>
+        <p class="lead">Pick the scenario closest to your work and follow it to sign-off. Then decide how you want to continue.</p>
+        <div class="row">
+          <a class="btn btn-primary btn-lg" href="/simulator">Explore your scenario</a>
+          <a class="btn btn-lg" href="/demo">Book a demo</a>
+        </div>
+      </div>
+      <div class="close-mosaic" aria-hidden="true">
+        {TILE_RECTS.map(([x, y, w, h], i) => <i class:list={{ acc: i === 0 }} style={`left:${x / 104 * 100}%;top:${y / 104 * 100}%;width:${w / 104 * 100}%;height:${h / 104 * 100}%;--d:${i * 70}ms`}></i>)}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .fg { color: var(--fg); }
+  /* Context mosaic: the logo's own tile geometry, used as an information layout */
+  .ctx-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(32px, 5vw, 80px); align-items: center; }
+  .ctx-copy { display: grid; gap: 22px; }
+  .ctx-list { display: grid; gap: 12px; margin: 6px 0 0; }
+  .ctx-list li { display: flex; gap: 12px; align-items: flex-start; font-size: var(--t-sm); color: var(--fg-2); }
+  .ctx-list li :global(svg) { color: var(--accent-text); margin-top: 2px; flex: 0 0 auto; }
+  .ctx-list b { color: var(--fg); margin-right: 4px; }
+  .mosaic { position: relative; aspect-ratio: 1; width: 100%; max-width: 600px; justify-self: end; }
+  .mt { container-type: inline-size; }
+  @container (max-width: 66px) { .mt-t, .mt-d { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } }
+  .mt { position: absolute; background: var(--surface-raised); border: 1px solid var(--line); border-radius: 8px; padding: clamp(8px, 1.4vw, 16px); display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+  .mt :global(svg) { color: var(--accent-text); margin-bottom: auto; }
+  .mt-t { font-weight: 600; font-size: clamp(.72rem, .55rem + .45vw, .95rem); line-height: 1.2; }
+  .mt-d { font-size: var(--t-xs); color: var(--fg-2); line-height: 1.35; }
+  .mt-sm { padding: 8px; }
+  .mt-sm .mt-t { font-size: clamp(.62rem, .5rem + .3vw, .78rem); }
+  .mt-acc { background: var(--emerald-600); border-color: var(--emerald-600); color: #fff; }
+  .mt-acc :global(svg) { color: #fff; }
+  .mt-acc .mt-d { color: #fff; }
+
+  /* AI flow */
+  .flow { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; background: var(--line); border: 3px solid var(--line); border-radius: var(--r-xs); }
+  .flow-i { background: var(--surface); border-radius: 6px; padding: 20px 18px 18px; display: flex; flex-direction: column; gap: 10px; min-height: 260px; }
+  .flow-n { font-family: var(--font-display); font-weight: 600; color: var(--fg-3); font-size: 1rem; }
+  .flow-k { font-size: 1.125rem; line-height: 1.25; letter-spacing: -.01em; }
+  .flow-ex { font-size: var(--t-sm); color: var(--fg-2); line-height: 1.5; }
+  .flow-who { margin-top: auto; display: inline-flex; gap: 6px; align-items: center; font-size: var(--t-xs); font-weight: 600; padding: 4px 8px; border-radius: 4px; align-self: flex-start; }
+  .who-auto .flow-who { background: var(--ok-tint); color: var(--ok); }
+  .who-approval .flow-who { background: var(--wait-tint); color: var(--wait); }
+  .who-person .flow-who { background: var(--info-tint); color: var(--info); }
+  .who-approval { background: #232E2A; }
+  .story-foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px; margin-top: 28px; }
+  .story-foot p { max-width: 70ch; }
+
+  /* Industries */
+  .inds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; }
+  .ind { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 24px; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--r-md); transition: border-color var(--d-fast) ease; }
+  .ind:hover { border-color: var(--line-strong); }
+  .ind h3 { font-size: 1.25rem; }
+  .ind-a { text-decoration: none; }
+  .ind-a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+  .ind .link { position: relative; z-index: 1; margin-top: auto; }
+  .ind-proposed { background: transparent; border-style: dashed; }
+  .ind-model { margin-top: -6px; }
+  .ind-other { background: transparent; border-style: dashed; justify-content: flex-start; }
+  .inds li:nth-child(4), .inds li:nth-child(5) { grid-column: span 1; }
+
+  .sim-grid { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(28px, 4vw, 64px); align-items: start; }
+
+  /* Capabilities: a lettered index, not a card wall */
+  .caps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line); }
+  .cap { display: grid; grid-template-columns: 40px 1fr auto; gap: 16px; align-items: start; padding: 24px 8px 24px 0; border-bottom: 1px solid var(--line); text-decoration: none; transition: background-color var(--d-fast) ease; }
+  .cap:nth-child(odd) { padding-right: 32px; }
+  .cap:nth-child(even) { padding-left: 32px; border-left: 1px solid var(--line); }
+  .cap:hover .cap-t { text-decoration: underline; text-decoration-color: var(--accent); }
+  .cap-i { font-family: var(--font-display); font-weight: 600; font-size: 1.25rem; color: var(--accent-text); }
+  .cap-b { display: grid; gap: 6px; }
+  .cap-t { font-family: var(--font-display); font-weight: 600; font-size: 1.2rem; letter-spacing: -.01em; line-height: 1.25; }
+  .cap-d { color: var(--fg-2); font-size: var(--t-sm); }
+
+  /* Roles */
+  .tablist { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; }
+  .tablist button { min-height: 44px; padding: 0 16px; border-radius: var(--r-sm); border: 1px solid var(--line-strong); background: transparent; font-weight: 600; font-size: var(--t-sm); cursor: pointer; color: var(--fg-2); }
+  .tablist button[aria-selected="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  .tabpanel { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 40px; align-items: start; }
+  .role-sees { display: grid; gap: 10px; font-size: var(--t-lg); line-height: 1.5; color: var(--fg-2); }
+  .tabpanel :global(.phone) { justify-self: start; }
+
+  .conf-grid { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: clamp(28px, 4vw, 64px); align-items: center; }
+  .ticks { display: grid; gap: 10px; margin: 0; }
+  .ticks li { display: flex; gap: 10px; align-items: flex-start; color: var(--fg-2); }
+  .ticks :global(svg) { color: var(--accent-text); margin-top: 3px; flex: 0 0 auto; }
+
+  .trust { background: var(--porcelain-200); }
+  .trust-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .trust-grid > div { padding: 26px 24px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+  .trust-grid h3 { font-size: 1.125rem; }
+  .trust-grid p { color: var(--fg-2); font-size: var(--t-sm); }
+  .trust-grid :global(svg) { color: var(--accent-text); }
+  .trust-grid :global(.status) { margin-top: auto; }
+
+  .paths { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .path { display: flex; flex-direction: column; gap: 16px; padding: 32px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); align-items: flex-start; }
+  .steps { display: grid; gap: 10px; margin: 0; }
+  .steps li { display: flex; gap: 12px; align-items: center; color: var(--fg-2); }
+  .steps .num { width: 28px; height: 28px; border-radius: 6px; background: var(--surface-raised); border: 1px solid var(--line-strong); display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: var(--t-xs); color: var(--fg); flex: 0 0 auto; }
+
+  .faq-grid { display: grid; grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr); gap: clamp(28px, 5vw, 80px); }
+  .faqs { border-top: 1px solid var(--line); }
+  .faq { border-bottom: 1px solid var(--line); }
+  .faq summary { display: flex; justify-content: space-between; gap: 16px; align-items: center; min-height: 64px; padding: 14px 0; font-weight: 600; cursor: pointer; list-style: none; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary :global(svg) { flex: 0 0 auto; transition: transform var(--d-fast) var(--ease-out); color: var(--fg-2); }
+  .faq[open] summary :global(svg) { transform: rotate(45deg); }
+  .faq p { padding: 0 40px 20px 0; color: var(--fg-2); max-width: 68ch; }
+
+  .close { position: relative; overflow: hidden; background: var(--graphite-900); padding: clamp(80px, 9vw, 150px) 0; }
+  .close-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 48px; align-items: center; }
+  .close-copy { display: grid; gap: 24px; }
+  .close-t { font-size: clamp(3rem, 1.6rem + 6vw, 7rem); line-height: .95; letter-spacing: -0.05em; max-width: 8ch; }
+  .close-mosaic { position: relative; aspect-ratio: 1; width: min(100%, 440px); justify-self: end; }
+  .close-mosaic i { position: absolute; border-radius: 6px; background: var(--graphite-700); border: 1px solid #34413C; }
+  .close-mosaic i.acc { background: var(--emerald-400); border-color: var(--emerald-400); }
+
+  @media (max-width: 1080px) { .flow { grid-template-columns: repeat(3, minmax(0, 1fr)); } .inds { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 900px) {
+    .ctx-grid, .sim-grid, .conf-grid, .faq-grid, .close-grid, .tabpanel { grid-template-columns: 1fr; }
+    .mosaic { justify-self: center; } .close-mosaic { justify-self: start; width: min(100%, 300px); }
+    .caps { grid-template-columns: 1fr; } .cap:nth-child(n) { padding: 20px 0; border-left: 0; }
+    .trust-grid { grid-template-columns: 1fr 1fr; } .paths { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .flow { grid-template-columns: 1fr; } .flow-i { min-height: 0; }
+    .inds { grid-template-columns: 1fr; } .trust-grid { grid-template-columns: 1fr; }
+    .mt-d { display: none; } .mt-sm .mt-t { font-size: 11px; line-height: 1.15; } .mt-sm :global(svg) { display: none; }
+    .path { padding: 22px; }
+  }
+</style>
+
+<script>
+  // Accessible tabs: arrow keys move between roles, Home/End jump.
+  document.querySelectorAll<HTMLElement>('[data-tabs]').forEach((root) => {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const select = (t: HTMLButtonElement) => {
+      tabs.forEach((x) => { const on = x === t; x.setAttribute('aria-selected', String(on)); x.tabIndex = on ? 0 : -1; (document.getElementById(x.getAttribute('aria-controls')!) as HTMLElement).hidden = !on; });
+      t.focus();
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => select(t));
+      t.addEventListener('keydown', (e) => {
+        const n = e.key === 'ArrowRight' ? i + 1 : e.key === 'ArrowLeft' ? i - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : null;
+        if (n === null) return; e.preventDefault(); select(tabs[(n + tabs.length) % tabs.length]);
+      });
+    });
+  });
+</script>

@@ -1,0 +1,202 @@
+---
+import Base from '../layouts/Base.astro';
+import SignInForm from '../components/SignInForm.astro';
+import Icon from '../components/Icon.astro';
+import { INDUSTRIES } from '../content/industries';
+import { pricing, formatMoney } from '../content/pricing';
+import { PROVISION_STEPS } from '../integrations/index';
+const STEPS = ['Account', 'Company', 'Plan', 'Payment', 'Workspace', 'Welcome'];
+---
+<Base title="Start a trial" description={`Start a ${pricing.trial.days}-day Tessaro trial with your saved setup.`} current="trial" noindex>
+  <section class="section tight">
+    <div class="wrap tr">
+      <header class="tr-head">
+        <h1>Start your trial</h1>
+        <p class="notice notice-test small"><Icon name="flask-conical" size={18} /><span><b>Test mode.</b> Accounts, payment and workspace creation are simulated in this browser. No card is charged and no workspace is created.</span></p>
+        <ol class="tr-steps" role="list" aria-label="Trial steps">{STEPS.map((s, i) => <li data-i={i}><span class="n">{i + 1}</span><span class="t">{s}</span></li>)}</ol>
+      </header>
+
+      <div class="tr-body">
+        <section data-panel="0" aria-labelledby="t0"><h2 id="t0" class="h3" tabindex="-1">Create your account</h2>
+          <p class="muted">Use your work email. Your saved setup moves into the account.</p><SignInForm /></section>
+
+        <section data-panel="1" aria-labelledby="t1" hidden><h2 id="t1" class="h3" tabindex="-1">Your company</h2>
+          <form class="stack" data-company novalidate>
+            <div class="field"><label for="co">Company name</label><input class="input" id="co" autocomplete="organization" required /><p class="error" data-err="co" hidden></p></div>
+            <div class="field"><label for="ind">Industry</label><select class="select" id="ind" required><option value="">Choose…</option>{INDUSTRIES.map((i) => <option value={i.id}>{i.name}{i.status === 'proposed' ? ' (proposed)' : ''}</option>)}</select><p class="error" data-err="ind" hidden></p></div>
+            <div class="field"><label for="ws">Workspace address</label><div class="ws"><input class="input" id="ws" spellcheck="false" autocapitalize="off" required aria-describedby="ws-hint" /><span class="muted">.tessaropro.com</span></div><p class="hint" id="ws-hint">Lowercase letters, numbers and hyphens.</p><p class="error" data-err="ws" hidden></p></div>
+            <button class="btn btn-primary" type="submit">Continue</button>
+          </form></section>
+
+        <section data-panel="2" aria-labelledby="t2" hidden><h2 id="t2" class="h3" tabindex="-1">Choose a plan for after the trial</h2>
+          <form class="stack" data-plan>
+            <fieldset class="plans"><legend class="sr-only">Plan</legend>
+              {pricing.plans.map((p) => <label class="choice"><input type="radio" name="plan" value={p.id} /><span><b>{p.name}</b> · up to {p.techs} technicians · {formatMoney(p.price)} a year<br /><span class="xs muted">{p.for}</span></span></label>)}
+            </fieldset>
+            <div class="terms"><h3 class="h4">What happens</h3><ul class="small" role="list">
+              <li><b>Today: {formatMoney(pricing.trial.amountNow)}.</b> {pricing.trial.cardRequired ? 'Your card is verified, not charged.' : ''}</li>
+              <li>{pricing.trial.days} days with {pricing.trial.includedUsage.toLowerCase()}</li>
+              <li>{pricing.trial.afterTrial}</li><li>{pricing.trial.cancellation}</li></ul>
+              <p class="xs muted">Draft prices and trial terms, to be confirmed. {pricing.vatNote}</p></div>
+            <div class="carry small" data-carry></div>
+            <button class="btn btn-primary" type="submit">Continue to payment</button>
+          </form></section>
+
+        <section data-panel="3" aria-labelledby="t3" hidden><h2 id="t3" class="h3" tabindex="-1">Verify a card</h2>
+          <div class="stack">
+            <p class="muted">In live mode you would be sent to a secure hosted payment page and returned here. Tessaro never sees card numbers.</p>
+            <fieldset class="field test-out"><legend class="label">Test outcome</legend>
+              <div class="row"><label class="choice sm"><input type="radio" name="outcome" value="success" checked /> Approved</label><label class="choice sm"><input type="radio" name="outcome" value="decline" /> Declined</label><label class="choice sm"><input type="radio" name="outcome" value="cancel" /> Closed before finishing</label></div></fieldset>
+            <div class="pay-res" data-payres aria-live="polite"></div>
+            <button class="btn btn-primary" type="button" data-pay>Go to secure checkout</button>
+            <p class="xs muted" data-idem></p>
+          </div></section>
+
+        <section data-panel="4" aria-labelledby="t4" hidden><h2 id="t4" class="h3" tabindex="-1">Creating your workspace</h2>
+          <ol class="prov" role="list" data-prov>{PROVISION_STEPS.map((s, i) => <li data-p={i}><span class="dot" aria-hidden="true"></span><span>{s}</span><span class="sr-only" data-ps></span></li>)}</ol>
+          <label class="xs muted failt"><input type="checkbox" data-failtest /> Test: interrupt at “Industry template applied”</label>
+          <div data-provres aria-live="polite"></div></section>
+
+        <section data-panel="5" aria-labelledby="t5" hidden><h2 id="t5" class="h3" tabindex="-1">Welcome to Tessaro</h2>
+          <article class="mail" aria-label="Welcome email preview"><p class="xs muted">Email preview (test mode: not sent)</p><div data-mail></div></article>
+          <div class="row"><a class="btn btn-primary" href="/onboarding">Open the activation checklist</a><a class="btn" href={`https://tessaro-prototype.vercel.app`} target="_blank" rel="noopener">Explore the prototype workspace</a></div>
+          <button class="linkbtn xs" type="button" data-reset>Start the test trial again</button></section>
+      </div>
+    </div>
+  </section>
+  <p class="sr-only" role="status" aria-live="polite" data-live></p>
+</Base>
+<style>
+  .tr { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; max-width: 880px; }
+  .tr-head { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .tr-head h1 { overflow-wrap: anywhere; }
+  .tr-steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; margin: 0; background: var(--line); border: 3px solid var(--line); border-radius: var(--r-xs); }
+  .tr-steps li { background: var(--surface-raised); border-radius: 5px; padding: 8px 10px; display: flex; gap: 8px; align-items: center; font-size: var(--t-xs); color: var(--fg-2); }
+  .tr-steps .n { width: 22px; height: 22px; border-radius: 5px; display: grid; place-items: center; background: var(--surface); font-weight: 600; flex: none; }
+  .tr-steps li.done { color: var(--fg); } .tr-steps li.done .n { background: var(--ok-tint); color: var(--ok); }
+  .tr-steps li.now { background: var(--surface-selected); color: var(--fg); font-weight: 600; } .tr-steps li.now .n { background: var(--accent); color: #fff; }
+  .tr-body > section { display: grid; gap: 16px; padding: 28px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-raised); }
+  .stack { display: grid; gap: 16px; justify-items: start; } .stack > .field, .stack > fieldset, .stack > div { width: 100%; }
+  .ws { display: flex; gap: 8px; align-items: center; } .ws .input { max-width: 260px; }
+  .plans { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .terms { padding: 16px; background: var(--surface); border-radius: var(--r-sm); display: grid; gap: 8px; } .terms ul { display: grid; gap: 4px; padding-left: 18px; list-style: disc; margin: 0; }
+  .carry:empty { display: none; } .carry { padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-sm); }
+  .test-out { border: 1px dashed var(--line-strong); border-radius: var(--r-sm); padding: 12px; margin: 0; }
+  .choice.sm { padding: 10px 12px; }
+  .pay-res:empty { display: none; }
+  .prov { display: grid; gap: 10px; margin: 0; }
+  .prov li { display: flex; gap: 12px; align-items: center; color: var(--fg-2); }
+  .prov .dot { width: 14px; height: 14px; border-radius: 4px; border: 2px solid var(--line-strong); flex: none; }
+  .prov li.done { color: var(--fg); } .prov li.done .dot { background: var(--ok); border-color: var(--ok); }
+  .prov li.now .dot { border-color: var(--accent); animation: pulse 1s ease-in-out infinite; }
+  .prov li.fail { color: var(--alert); } .prov li.fail .dot { background: var(--alert); border-color: var(--alert); }
+  @keyframes pulse { 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) { .prov li.now .dot { animation: none; background: var(--accent); } }
+  .failt { display: flex; gap: 8px; align-items: center; }
+  .mail { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 20px; background: var(--bg); display: grid; gap: 10px; }
+  .mail :global(p) { margin-bottom: 8px; }
+  .linkbtn { background: none; border: 0; padding: 0; font: inherit; color: var(--accent-text); text-decoration: underline; cursor: pointer; justify-self: start; }
+  @media (max-width: 760px) { .tr-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } .tr-steps .t { overflow-wrap: anywhere; } .tr-body > section { padding: 20px; } }
+</style>
+<script>
+  import { auth, trial, payments, provisioning, track, PROVISION_STEPS } from '../integrations/index';
+  import { load, countItems } from '../lib/setup-store';
+  import { pricing, formatMoney } from '../content/pricing';
+  import { recommendPlan } from '../lib/config-rules';
+  import { icon } from '../lib/icons';
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+  const say = (m: string) => { $('[data-live]').textContent = m; };
+  const panels = [...document.querySelectorAll<HTMLElement>('[data-panel]')];
+  const lis = [...document.querySelectorAll<HTMLElement>('.tr-steps li')];
+  let t = trial.get();
+  const qs = new URLSearchParams(location.search);
+  if (qs.get('plan')) t.plan = qs.get('plan')!;
+  const setup = load();
+
+  function show(i: number, focus = true) {
+    t.step = i; trial.set(t);
+    panels.forEach((p, j) => (p.hidden = j !== i));
+    lis.forEach((l, j) => { l.classList.toggle('done', j < i); l.classList.toggle('now', j === i); if (j === i) l.setAttribute('aria-current', 'step'); else l.removeAttribute('aria-current'); });
+    if (i === 1) { const acc = auth.current(); ($('#co') as HTMLInputElement).value = t.company || acc?.company || ''; ($('#ind') as HTMLSelectElement).value = t.industry || setup.industry || ''; ($('#ws') as HTMLInputElement).value = t.workspace || slug(t.company || acc?.company || ''); }
+    if (i === 2) planPanel();
+    if (i === 3) $('[data-idem]').textContent = `Checkout reference ${t.idempotencyKey}. Retrying uses the same reference, so you are never charged twice.`;
+    if (i === 4) runProvision();
+    if (i === 5) welcome();
+    if (focus) { panels[i].querySelector<HTMLElement>('h2')?.focus(); }
+    track('trial_step', { step: i });
+  }
+  const slug = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30);
+  const err = (k: string, m: string) => { const e = document.querySelector<HTMLElement>(`[data-err="${k}"]`)!; e.hidden = !m; e.innerHTML = m ? `${icon('circle-alert', 14)} ${m}` : ''; const i = document.getElementById(k); if (i) m ? i.setAttribute('aria-invalid', 'true') : i.removeAttribute('aria-invalid'); return !!m; };
+
+  // 0 Account
+  document.addEventListener('signed-in', () => { say('Signed in.'); show(1); });
+  // 1 Company
+  $('#co').addEventListener('input', (e) => { const ws = $('#ws') as HTMLInputElement; if (!ws.dataset.touched) ws.value = slug((e.target as HTMLInputElement).value); });
+  $('#ws').addEventListener('input', (e) => { (e.target as HTMLElement).dataset.touched = '1'; });
+  $('[data-company]').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const co = ($('#co') as HTMLInputElement).value.trim(), ind = ($('#ind') as HTMLSelectElement).value, ws = ($('#ws') as HTMLInputElement).value.trim();
+    const bad = [err('co', co ? '' : 'Enter your company name.'), err('ind', ind ? '' : 'Choose an industry.'),
+      err('ws', /^[a-z0-9](?:[a-z0-9-]{1,28}[a-z0-9])$/.test(ws) ? (['www', 'admin', 'app', 'api'].includes(ws) ? 'That address is reserved. Try another.' : '') : 'Use 3–30 lowercase letters, numbers or hyphens.')].some(Boolean);
+    if (bad) { document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(); return; }
+    Object.assign(t, { company: co, industry: ind, workspace: ws }); show(2);
+  });
+  // 2 Plan
+  function planPanel() {
+    const techs = Number((setup.config?.values as any)?.technicians) || 0;
+    const rec = techs ? recommendPlan(techs, pricing.plans, pricing.extraTech).plan.id : 'business';
+    const v = t.plan || rec; const r = document.querySelector<HTMLInputElement>(`input[name="plan"][value="${v}"]`); if (r) r.checked = true;
+    const n = countItems(setup);
+    $('[data-carry]').innerHTML = n ? `${icon('check', 16)} <b>Your setup comes with you:</b> ${setup.scenarios.length} scenarios, ${setup.capabilities.length} capabilities${setup.config ? ', configuration draft' : ''}. It will be imported into the workspace.${techs ? ` Suggested plan for ${techs} technicians.` : ''}` : '';
+  }
+  $('[data-plan]').addEventListener('submit', (e) => { e.preventDefault(); const p = (document.querySelector<HTMLInputElement>('input[name="plan"]:checked'))?.value; if (!p) return; t.plan = p; show(3); });
+  // 3 Payment (hosted checkout, test)
+  $('[data-pay]').addEventListener('click', async () => {
+    const btn = $<HTMLButtonElement>('[data-pay]'); const res = $('[data-payres]');
+    const outcome = (document.querySelector<HTMLInputElement>('input[name="outcome"]:checked')!.value) as 'success' | 'decline' | 'cancel';
+    btn.disabled = true; btn.textContent = 'Waiting for checkout…'; res.innerHTML = '';
+    t.paymentAttempts++; trial.set(t);
+    const r = await payments.checkout({ idempotencyKey: t.idempotencyKey, amountNow: pricing.trial.amountNow, currency: pricing.currency, outcome });
+    btn.disabled = false; btn.textContent = 'Go to secure checkout';
+    track('trial_payment', { status: r.status, attempt: t.paymentAttempts });
+    if (r.status === 'paid') { t.paymentRef = r.reference; res.innerHTML = `<p class="notice small">${icon('check', 16)} <span>Card verified. Reference ${esc(r.reference)}.</span></p>`; setTimeout(() => show(4), 700); return; }
+    if (r.status === 'failed') {
+      // Recover: a declined key can be retried with a fresh key, nothing was charged.
+      t.idempotencyKey = 'chk_' + Math.random().toString(36).slice(2, 10); trial.set(t);
+      res.innerHTML = `<p class="notice small" role="alert">${icon('circle-alert', 16)} <span><b>${esc(r.reason)}</b> Nothing was charged and your details are kept. Try again or use another card.</span></p>`;
+      $('[data-idem]').textContent = `New checkout reference ${t.idempotencyKey}.`; btn.textContent = 'Try again'; return;
+    }
+    res.innerHTML = `<p class="notice small">${icon('info', 16)} <span>Checkout was closed before finishing. Nothing was charged. You can continue whenever you’re ready.</span></p>`; btn.textContent = 'Return to checkout';
+  });
+  // 4 Provisioning
+  async function runProvision() {
+    const items = [...document.querySelectorAll<HTMLElement>('[data-p]')]; const out = $('[data-provres]');
+    if (t.provisioned) { items.forEach((li) => li.classList.add('done')); setTimeout(() => show(5), 400); return; }
+    items.forEach((li) => li.classList.remove('done', 'now', 'fail')); out.innerHTML = ''; items[0].classList.add('now');
+    const fail = ($('[data-failtest]') as HTMLInputElement).checked ? 2 : undefined;
+    const r = await provisioning.run((i) => { items[i].classList.remove('now'); items[i].classList.add('done'); items[i].querySelector('[data-ps]')!.textContent = ' done'; if (items[i + 1]) items[i + 1].classList.add('now'); say(PROVISION_STEPS[i] + '.'); }, { failAt: fail });
+    if (!r.ok) {
+      const li = items[r.failedStep!]; li.classList.remove('now'); li.classList.add('fail');
+      out.innerHTML = `<div class="notice small" role="alert">${icon('circle-alert', 16)}<span><b>We couldn’t finish “${esc(PROVISION_STEPS[r.failedStep!])}”.</b> Earlier steps are kept and nothing is charged twice. <button class="btn btn-sm" type="button" data-retry>Retry from here</button> or <a class="link" href="/support?topic=trial">contact support</a>.</span></div>`;
+      out.querySelector('[data-retry]')!.addEventListener('click', () => { ($('[data-failtest]') as HTMLInputElement).checked = false; runProvision(); });
+      track('trial_provision_failed', { step: r.failedStep }); return;
+    }
+    t.provisioned = true; trial.set(t); track('trial_provisioned', {}); setTimeout(() => show(5), 600);
+  }
+  // 5 Welcome
+  function welcome() {
+    const acc = auth.current(); const plan = pricing.plans.find((p) => p.id === t.plan);
+    const end = new Date(Date.now() + pricing.trial.days * 864e5).toLocaleDateString('en-AE', { day: 'numeric', month: 'long', year: 'numeric' });
+    $('[data-mail]').innerHTML = `<p><b>Subject:</b> Your Tessaro workspace is ready</p><p>Hello${acc?.name ? ' ' + esc(acc.name.split(' ')[0]) : ''},</p>
+      <p>Your workspace <b>${esc(t.workspace || '')}.tessaropro.com</b> for ${esc(t.company || '')} is ready. Your trial runs until <b>${end}</b>. After that, ${esc(plan?.name || 'your plan')} starts at ${formatMoney(plan?.price || 0)} a year unless you cancel.</p>
+      <p>Start with the activation checklist: invite your team, add a site and run your first job.</p><p>Need a hand? Reply to this email or call us.</p>`;
+  }
+  $('[data-reset]').addEventListener('click', () => { trial.reset(); location.href = '/trial'; });
+
+  // Resume where the visitor left off. Account step is skipped when already signed in.
+  let start = t.step || 0;
+  if (!auth.current()) start = 0; else if (start === 0) start = 1;
+  if (start === 4 && !t.paymentRef) start = 3;
+  show(start, false);
+</script>

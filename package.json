@@ -1,0 +1,30 @@
+{
+  "name": "tessaro-website",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.23.4"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && node scripts/apply-brand.mjs",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "node --experimental-strip-types --no-warnings --test tests/*.test.ts",
+    "test:journeys": "python3 tests/e2e/journeys.py dist .e2e-out"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "3.7.4",
+    "@fontsource-variable/sora": "5.3.0",
+    "@fontsource/ibm-plex-sans": "5.3.0",
+    "@fontsource/ibm-plex-sans-arabic": "5.3.0",
+    "astro": "7.4.2",
+    "lucide-static": "1.70.0",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@types/three": "0.186.0",
+    "typescript": "7.0.2"
+  }
+}

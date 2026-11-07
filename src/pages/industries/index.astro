@@ -1,0 +1,38 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageIntro from '../../components/PageIntro.astro';
+import Status from '../../components/Status.astro';
+import Icon from '../../components/Icon.astro';
+import { INDUSTRIES } from '../../content/industries';
+import { scenarioById } from '../../lib/scenario-engine';
+---
+<Base title="Industries" description="How Tessaro works for HVAC and refrigeration service, property management, facilities maintenance, retail facilities and cold-chain operations." current="industries">
+  <PageIntro title="Built around how service work actually happens" lead="Start from your industry. Each page shows the typical jobs, the parts of Tessaro that matter most and a scenario you can run with your own numbers." />
+  <section class="section">
+    <div class="wrap">
+      <ul class="ind" role="list">
+        {INDUSTRIES.map((ind) => (
+          <li data-status={ind.status}>
+            <div class="row between"><p class="xs muted">{ind.operatingModel}</p><Status status={ind.status} /></div>
+            <h2 class="h3"><a href={`/industries/${ind.id}`}>{ind.name}</a></h2>
+            <p class="muted">{ind.who}</p>
+            <a class="link small" href={`/simulator?industry=${ind.id}&scenario=${ind.scenarios[0]}`}>Try: {scenarioById[ind.scenarios[0]].name} <Icon name="arrow-right" size={14} /></a>
+          </li>
+        ))}
+        <li class="other"><h2 class="h3">Something else?</h2><p class="muted">Lifts, fire safety, security systems or another trade. Tell us how your work runs and we will show what fits, and what does not yet.</p><a class="btn btn-sm" href="/demo?topic=other-industry">Describe your operation</a></li>
+      </ul>
+      <p class="xs muted note"><b>Designed</b> industries are modelled in the prototype’s workflows. <b>Proposed</b> industries reuse the same building blocks but have not been validated with operators yet.</p>
+    </div>
+  </section>
+</Base>
+<style>
+  .ind { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; }
+  .ind li { padding: 24px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-raised); display: flex; flex-direction: column; gap: 12px; }
+  .ind li[data-status="proposed"], .ind .other { background: transparent; border-style: dashed; }
+  .ind h2 a { text-decoration: none; } .ind h2 a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
+  .ind li > a.link, .ind li > .btn { margin-top: auto; align-self: flex-start; }
+  .between { justify-content: space-between; }
+  .note { margin-top: 20px; }
+  @media (max-width: 1000px) { .ind { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 640px) { .ind { grid-template-columns: 1fr; } }
+</style>

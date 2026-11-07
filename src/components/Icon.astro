@@ -1,0 +1,15 @@
+---
+// Lucide outline icons (ISC licence), inlined at build time. One family, 1.75 stroke.
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+interface Props { name: string; size?: number; label?: string; class?: string; }
+const { name, size = 20, label, class: cls } = Astro.props;
+const require = createRequire(import.meta.url);
+let svg = readFileSync(require.resolve(`lucide-static/icons/${name}.svg`), 'utf8');
+svg = svg.replace(/<!--.*?-->/s, '').replace(/\n\s*/g, ' ')
+  .replace(/width="24"/, `width="${size}"`).replace(/height="24"/, `height="${size}"`)
+  .replace(/stroke-width="2"/, 'stroke-width="1.75"')
+  .replace(/class="[^"]*"/, `class="icon ${cls ?? ''}"`)
+  .replace('<svg', label ? `<svg role="img" aria-label="${label}"` : '<svg aria-hidden="true" focusable="false"');
+---
+<Fragment set:html={svg} />

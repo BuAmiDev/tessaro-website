@@ -1,0 +1,129 @@
+---
+import Base from '../layouts/Base.astro';
+import PageIntro from '../components/PageIntro.astro';
+import Status from '../components/Status.astro';
+import Icon from '../components/Icon.astro';
+import { CAPABILITIES, GROUPS, ROLE_NAMES, capabilityById } from '../content/capabilities';
+import { STATUS, brand } from '../config/brand';
+import { scenarioById } from '../lib/scenario-engine';
+const counts = Object.fromEntries(Object.keys(STATUS).map((k) => [k, CAPABILITIES.filter((c) => c.status === k).length]));
+---
+<Base title="Feature explorer" description="Search every Tessaro capability by outcome or role. Each one shows who uses it, an example, the designed screens behind it and its release status." current="resources">
+  <PageIntro title="Feature explorer" lead="Every capability, organized by what it helps you do. Each shows who uses it, a concrete example, the designed screens behind it and its status.">
+    <dl class="sum">
+      {Object.entries(STATUS).map(([k, v]) => <div><dt><Status status={k as any} /></dt><dd class="num">{counts[k]}</dd></div>)}
+    </dl>
+  </PageIntro>
+
+  <section class="section tight" data-explorer>
+    <div class="wrap fx">
+      <form class="fx-filters" role="search" aria-label="Filter capabilities" onsubmit="return false">
+        <div class="field"><label for="q">Search</label><input class="input" type="search" id="q" name="q" placeholder="Try “approval”, “offline” or “WhatsApp”…" autocomplete="off" spellcheck="false" /></div>
+        <div class="field"><label for="role">Who uses it</label>
+          <select class="select" id="role" name="role"><option value="">Everyone</option>{Object.entries(ROLE_NAMES).map(([k, v]) => <option value={k}>{v}</option>)}</select></div>
+        <div class="field"><label for="status">Status</label>
+          <select class="select" id="status" name="status"><option value="">Any status</option>{Object.entries(STATUS).map(([k, v]) => <option value={k}>{v.label}</option>)}</select></div>
+        <fieldset class="field fx-groups"><legend class="label">Outcome</legend>
+          <label class="chk"><input type="radio" name="group" value="" checked /> All</label>
+          {Object.entries(GROUPS).map(([k, g]) => <label class="chk"><input type="radio" name="group" value={k} /> {g.name}</label>)}
+        </fieldset>
+        <p class="xs muted"><b>Status meanings.</b> {Object.values(STATUS).map((s) => <span class="sm-def"><b>{s.label}:</b> {s.note} </span>)}</p>
+      </form>
+
+      <div class="fx-results">
+        <p class="fx-count" aria-live="polite" data-count></p>
+        <ul class="fx-list" role="list">
+          {CAPABILITIES.map((c) => (
+            <li class="fc" id={c.id} data-group={c.group} data-status={c.status} data-roles={c.roles.join(' ')} data-text={`${c.name} ${c.outcome} ${c.example} ${GROUPS[c.group].name}`.toLowerCase()}>
+              <div class="fc-head">
+                <div>
+                  <p class="xs muted">{GROUPS[c.group].name}</p>
+                  <h2 class="fc-t">{c.name}</h2>
+                </div>
+                <Status status={c.status} />
+              </div>
+              <p class="fc-out">{c.outcome}</p>
+              <p class="fc-ex"><span class="fc-lab">Example</span>{c.example}</p>
+              <dl class="fc-meta">
+                <div><dt>Who uses it</dt><dd>{c.roles.map((r) => ROLE_NAMES[r]).join(', ')}</dd></div>
+                {c.evidence.length > 0 && <div><dt>Designed screens</dt><dd>{c.evidence.map((e, i) => <>{i > 0 && ', '}<a class="link" href={`${brand.productUrl}/#${e}`} target="_blank" rel="noopener">{e}</a></>)}</dd></div>}
+                {c.dependsOn && <div><dt>Depends on</dt><dd>{c.dependsOn.map((d, i) => <>{i > 0 && ', '}<a class="link" href={`#${d}`}>{capabilityById[d].name}</a></>)}</dd></div>}
+                {c.ai && <div><dt>Assistance</dt><dd>Suggests or drafts; a person confirms</dd></div>}
+              </dl>
+              <div class="fc-act">
+                {c.status !== 'proposed' ? (
+                  <button class="btn btn-sm" type="button" data-add={c.id} aria-pressed="false"><Icon name="plus" size={16} /><span>Add to my setup</span></button>
+                ) : <span class="xs muted">Proposed items can’t be added to a setup yet.</span>}
+                {c.scenarios[0] && <a class="btn btn-sm btn-quiet" href={`/simulator?scenario=${c.scenarios[0]}`}>See it in a scenario: {scenarioById[c.scenarios[0]].name}</a>}
+              </div>
+            </li>
+          ))}
+        </ul>
+        <div class="fx-empty" hidden data-empty>
+          <h2>No capability matches</h2>
+          <p class="muted">Try a broader word or clear the filters. If you need something we have not designed, tell us in a demo request.</p>
+          <div class="row"><button class="btn" type="button" data-clear>Clear filters</button><a class="btn btn-quiet" href="/demo">Describe what you need</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .sum { display: flex; flex-wrap: wrap; gap: 3px; margin: 0; background: var(--line); border: 3px solid var(--line); border-radius: var(--r-xs); }
+  .sum div { flex: 1 1 100px; background: var(--surface); border-radius: 5px; padding: 10px 12px; display: grid; gap: 6px; }
+  .sum dd { margin: 0; font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; }
+  .fx { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 32px; align-items: start; }
+  .fx-filters { display: grid; gap: 16px; position: sticky; top: 84px; }
+  .fx-groups { border: 0; padding: 0; margin: 0; display: grid; gap: 2px; }
+  .chk { display: flex; gap: 10px; align-items: center; min-height: 36px; font-size: var(--t-sm); cursor: pointer; padding: 0 8px; border-radius: 6px; }
+  .chk:has(input:checked) { background: var(--surface-selected); font-weight: 600; }
+  .chk input { accent-color: var(--emerald-600); }
+  .sm-def { display: block; margin-top: 4px; }
+  .fx-results { min-width: 0; }
+  .fx-count { font-size: var(--t-sm); color: var(--fg-2); margin-bottom: 12px; }
+  .fx-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 0; }
+  .fc { background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--r-md); padding: 22px; display: flex; flex-direction: column; gap: 12px; scroll-margin-top: 96px; }
+  .fc:target { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 20%, transparent); }
+  .fc[data-status="proposed"] { background: transparent; border-style: dashed; }
+  .fc-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+  .fc-t { font-size: 1.2rem; line-height: 1.25; margin-top: 2px; }
+  .fc-out { color: var(--fg); }
+  .fc-ex { font-size: var(--t-sm); color: var(--fg-2); background: var(--surface); padding: 10px 12px; border-radius: 6px; }
+  .fc-lab { display: block; font-size: var(--t-xs); font-weight: 600; color: var(--fg-3); margin-bottom: 2px; }
+  .fc-meta { display: grid; gap: 6px; margin: 0; font-size: var(--t-xs); }
+  .fc-meta div { display: grid; grid-template-columns: 110px 1fr; gap: 8px; }
+  .fc-meta dt { color: var(--fg-3); font-weight: 600; }
+  .fc-meta dd { margin: 0; color: var(--fg-2); }
+  .fc-act { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 4px; align-items: center; }
+  .fc-act .btn { white-space: normal; text-align: left; height: auto; padding-block: 8px; }
+  .fc-act .btn[aria-pressed="true"] { background: var(--surface-selected); border-color: var(--accent); color: var(--accent-text); }
+  .fx-empty { padding: 40px; border: 1px dashed var(--line-strong); border-radius: var(--r-md); display: grid; gap: 12px; }
+  @media (max-width: 1100px) { .fx-list { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 820px) { .fx { grid-template-columns: minmax(0, 1fr); } .fx-filters { position: static; } .fx-groups { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 6px; padding-bottom: 6px; } .chk { white-space: nowrap; border: 1px solid var(--line-strong); flex: none; } .fx-filters > p.xs { display: none; } }
+</style>
+
+<script>
+  import { load, toggleCapability } from '../lib/setup-store';
+  import { auth, track } from '../integrations/index';
+  const form = document.querySelector<HTMLFormElement>('.fx-filters')!;
+  const cards = [...document.querySelectorAll<HTMLLIElement>('.fc')];
+  const count = document.querySelector('[data-count]')!;
+  const empty = document.querySelector<HTMLElement>('[data-empty]')!;
+  const q0 = new URLSearchParams(location.search);
+  (form.elements.namedItem('q') as HTMLInputElement).value = q0.get('q') || '';
+  if (q0.get('role')) (form.elements.namedItem('role') as HTMLSelectElement).value = q0.get('role')!;
+  if (q0.get('group')) { const r = form.querySelector<HTMLInputElement>(`input[name="group"][value="${q0.get('group')}"]`); if (r) r.checked = true; }
+  function apply() {
+    const fd = new FormData(form); const q = String(fd.get('q') || '').trim().toLowerCase(); const role = String(fd.get('role') || ''); const st = String(fd.get('status') || ''); const g = String(fd.get('group') || '');
+    let n = 0;
+    cards.forEach((c) => { const ok = (!q || c.dataset.text!.includes(q)) && (!role || c.dataset.roles!.split(' ').includes(role)) && (!st || c.dataset.status === st) && (!g || c.dataset.group === g); c.hidden = !ok; if (ok) n++; });
+    count.textContent = `${n} of ${cards.length} capabilities`; empty.hidden = n > 0;
+    const p = new URLSearchParams(); if (q) p.set('q', q); if (role) p.set('role', role); if (g) p.set('group', g); history.replaceState(null, '', p.toString() ? `?${p}` : location.pathname);
+  }
+  form.addEventListener('input', apply); form.addEventListener('change', apply);
+  document.querySelector('[data-clear]')!.addEventListener('click', () => { form.reset(); apply(); });
+  const paint = () => { const have = new Set(load().capabilities); document.querySelectorAll<HTMLButtonElement>('[data-add]').forEach((b) => { const on = have.has(b.dataset.add!); b.setAttribute('aria-pressed', String(on)); b.querySelector('span')!.textContent = on ? 'In my setup' : 'Add to my setup'; }); };
+  document.addEventListener('click', (e) => { const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-add]'); if (!b) return; const on = toggleCapability(b.dataset.add!); auth.persistAccountCopy(); paint(); track(on ? 'capability_added' : 'capability_removed', { id: b.dataset.add }); });
+  apply(); paint(); window.addEventListener('setup:change', paint);
+</script>

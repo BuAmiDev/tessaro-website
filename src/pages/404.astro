@@ -1,0 +1,12 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Page not found" description="This page doesn’t exist." noindex>
+  <section class="section"><div class="wrap nf">
+    <p class="xs muted">404</p>
+    <h1>This tile is missing.</h1>
+    <p class="lead">The page may have moved. Here are the places most people are looking for.</p>
+    <div class="row"><a class="btn btn-primary" href="/">Home</a><a class="btn" href="/simulator">Interactive demo</a><a class="btn" href="/features">Feature explorer</a><a class="btn" href="/help">Help center</a></div>
+  </div></section>
+</Base>
+<style>.nf { display: grid; gap: 16px; justify-items: start; max-width: 640px; }</style>

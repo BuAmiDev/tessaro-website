@@ -1,0 +1,16 @@
+---
+import { MARK_TILES, WORDMARK } from './logo-data';
+import { brand } from '../config/brand';
+interface Props { tone?: 'light' | 'dark'; mark?: boolean; height?: number; }
+const { tone = 'light', mark = false, height = 26 } = Astro.props;
+const base = tone === 'dark' ? '#E8EDF0' : '#0A0E14';
+const acc = tone === 'dark' ? '#2BC48A' : '#0B8457';
+---
+{mark ? (
+  <svg viewBox="0 0 104 104" height={height} width={height} aria-hidden="true">{MARK_TILES.map((t) => <path d={t.d} fill={t.accent ? acc : base} />)}</svg>
+) : (
+  <svg viewBox="0 0 363.79 104" height={height} width={height * 3.498} role="img" aria-label={brand.name}>
+    {MARK_TILES.map((t) => <path d={t.d} fill={t.accent ? acc : base} />)}
+    <path transform={WORDMARK.transform} fill={base} d={WORDMARK.d} />
+  </svg>
+)}

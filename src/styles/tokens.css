@@ -1,0 +1,157 @@
+/* Tessaro design tokens.
+   Concept: "Every operational piece, intelligently connected."
+   Materials: graphite and forest (night shift, plant room), porcelain (daylight office),
+   brushed steel (equipment), one emerald signal colour. Sections alternate
+   dark and light on purpose; components read their colours from the section's
+   surface tokens, so a component works on either. */
+
+@font-face { font-family: 'Sora Variable'; font-style: normal; font-display: swap; font-weight: 100 800;
+  src: url('/fonts/sora-var.woff2') format('woff2-variations'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-display: swap; font-weight: 400;
+  src: url('/fonts/plex-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-display: swap; font-weight: 500;
+  src: url('/fonts/plex-500.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-display: swap; font-weight: 600;
+  src: url('/fonts/plex-600.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans Arabic'; font-style: normal; font-display: swap; font-weight: 400;
+  src: url('/fonts/plex-arabic-400.woff2') format('woff2'); }
+
+:root {
+  /* Raw palette */
+  --graphite-950: #0E1413;
+  --graphite-900: #141B19;
+  --graphite-800: #1C2522;
+  --graphite-700: #27322E;
+  --graphite-600: #3A4642;
+  --forest-900: #0B2E22;
+  --forest-800: #0F3A2B;
+  --porcelain-50: #F7F8F5;
+  --porcelain-100: #F1F2EE;
+  --porcelain-200: #E6E8E2;
+  --porcelain-300: #D5D9D2;
+  --steel-300: #C3C9C5;
+  --steel-500: #8D9692;
+  --ink-900: #16201C;
+  --ink-700: #3E4944;
+  --ink-600: #56625C;
+  --emerald-700: #086B46;
+  --emerald-600: #0B8457;   /* Tessaro Royal Emerald (logo) */
+  --emerald-400: #2BC48A;   /* Emerald Light (logo), on dark only */
+  --mint-100: #E4F6EC;      /* Mint Mist (logo) */
+
+  /* Semantic status (always paired with text and an icon) */
+  --ok: #0B7A50;       --ok-tint: #E2F3EA;
+  --wait: #9A5409;     --wait-tint: #FCF0DC;
+  --alert: #B42318;    --alert-tint: #FCE9E7;
+  --info: #2A62BC;     --info-tint: #E6EEFB;
+  --neutral: #4C5652;  --neutral-tint: #ECEDE9;
+
+  /* Typography */
+  --font-display: 'Sora Variable', 'Sora', 'Avenir Next', 'Segoe UI', sans-serif;
+  --font-body: 'IBM Plex Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-arabic: 'IBM Plex Sans Arabic', 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  /* Scale: minor third from 15px, display steps chosen by eye */
+  --t-xs: 0.8125rem;   /* 13 – captions, tags */
+  --t-sm: 0.9375rem;   /* 15 – UI, forms */
+  --t-md: 1.0625rem;   /* 17 – body */
+  --t-lg: 1.25rem;     /* 20 – lead */
+  --t-xl: clamp(1.5rem, 1.2rem + 1vw, 1.875rem);      /* 24–30 – h3 */
+  --t-2xl: clamp(2rem, 1.4rem + 2.2vw, 2.75rem);      /* 32–44 – h2 */
+  --t-3xl: clamp(2.5rem, 1.5rem + 4vw, 4.25rem);      /* 40–68 – page h1 */
+  --t-hero: clamp(2.75rem, 1.4rem + 5.6vw, 5.75rem);  /* 44–92 – hero */
+  --lh-tight: 1.04;
+  --lh-snug: 1.2;
+  --lh-body: 1.6;
+
+  /* Spacing (4px base) */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px;
+  --s-8: 32px; --s-10: 40px; --s-12: 48px; --s-16: 64px; --s-20: 80px; --s-24: 96px; --s-32: 128px;
+  --section-y: clamp(72px, 6vw + 40px, 136px);
+  --gutter: max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
+  --page-max: 1240px;
+  --measure: 64ch;
+
+  /* Radii. Tessaro tiles: crisp outside, soft inside (from the logo construction). */
+  --r-xs: 4px;   /* tags, tile seams */
+  --r-sm: 8px;   /* inputs, small buttons */
+  --r-md: 12px;  /* cards, panels */
+  --r-lg: 18px;  /* large panels, scene frames */
+  --r-pill: 999px;
+
+  /* Elevation: borders do the separating; shadows only for things that float */
+  --e-float: 0 1px 2px rgba(14, 20, 19, .06), 0 12px 32px -12px rgba(14, 20, 19, .28);
+  --e-overlay: 0 2px 6px rgba(14, 20, 19, .12), 0 28px 64px -20px rgba(14, 20, 19, .45);
+
+  /* Motion (Emil Kowalski curves) */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --d-press: 140ms;
+  --d-fast: 180ms;
+  --d-panel: 280ms;
+
+  /* Light surface hierarchy (default) */
+  --bg: var(--porcelain-100);
+  --surface: var(--porcelain-50);
+  --surface-raised: #FFFFFF;
+  --surface-interactive: #FFFFFF;
+  --surface-selected: var(--mint-100);
+  --overlay: #FFFFFF;
+  --line: #DCDFD8;
+  --line-strong: #BFC5BE;
+  --fg: var(--ink-900);
+  --fg-2: var(--ink-700);
+  --fg-3: var(--ink-600);
+  --accent: var(--emerald-600);
+  --accent-fg: #FFFFFF;
+  --accent-text: var(--emerald-700);
+  --focus: #1C64D8;
+  color-scheme: light;
+}
+
+/* Dark section surfaces: graphite and forest */
+[data-surface="dark"] {
+  --bg: var(--graphite-900);
+  --surface: var(--graphite-800);
+  --surface-raised: var(--graphite-700);
+  --surface-interactive: #2D3935;
+  --surface-selected: #123F2F;
+  --overlay: var(--graphite-800);
+  --line: #2E3A36;
+  --line-strong: #46534E;
+  --fg: #EEF1EE;
+  --fg-2: #BCC5C1;
+  --fg-3: #9EA9A4;
+  --accent: var(--emerald-400);
+  --accent-fg: #062418;
+  --accent-text: #5FD8A6;
+  --focus: #8AB4FF;
+  --ok: #4FD49A;     --ok-tint: rgba(79, 212, 154, .12);
+  --wait: #F2B54A;   --wait-tint: rgba(242, 181, 74, .12);
+  --alert: #FF8A7A;  --alert-tint: rgba(255, 138, 122, .12);
+  --info: #8AB4FF;   --info-tint: rgba(138, 180, 255, .12);
+  --neutral: #BCC5C1; --neutral-tint: rgba(188, 197, 193, .10);
+  color-scheme: dark;
+}
+[data-surface="forest"] {
+  --bg: var(--forest-800);
+  --surface: #134634;
+  --surface-raised: #17523D;
+  --surface-interactive: #1A5A43;
+  --surface-selected: #1E6A4E;
+  --overlay: var(--graphite-800);
+  --line: #23614A;
+  --line-strong: #2F7A5D;
+  --fg: #F1F6F2;
+  --fg-2: #C6DCCF;
+  --fg-3: #A6C6B4;
+  --accent: var(--emerald-400);
+  --accent-fg: #062418;
+  --accent-text: #7CE3B6;
+  --focus: #A9CBFF;
+  color-scheme: dark;
+}
+
+/* Inherited text colour must be re-resolved inside a surface. */
+[data-surface] { color: var(--fg); }

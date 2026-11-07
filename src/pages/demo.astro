@@ -1,0 +1,121 @@
+---
+import Base from '../layouts/Base.astro';
+import PageIntro from '../components/PageIntro.astro';
+import Icon from '../components/Icon.astro';
+import { INDUSTRIES } from '../content/industries';
+import { brand } from '../config/brand';
+const topics: [string, string][] = [['dispatch', 'Dispatch and response times'], ['contracts', 'Contracts and coverage'], ['approvals', 'Quotes and approvals'], ['residents', 'Resident and customer updates'], ['ppm', 'Planned maintenance'], ['reporting', 'KPIs and reporting'], ['pricing', 'Pricing and packages'], ['other-industry', 'An industry not listed']];
+---
+<Base title="Book a demo" description="A 45-minute walkthrough of Tessaro built around your own scenario, sites and approval rules." current="demo">
+  <PageIntro title="See Tessaro with your own work" lead="A 45-minute walkthrough built around a scenario you choose. Bring a real case: we will run it through the prototype and be clear about what exists today and what is still being built.">
+    <div class="carry" data-carry hidden></div>
+  </PageIntro>
+  <section class="section tight">
+    <div class="wrap dm">
+      <form class="dm-form" novalidate data-form>
+        <p class="notice notice-test small"><Icon name="flask-conical" size={18} /><span><b>Test mode.</b> Requests are stored in this browser until a CRM or form service is connected. Nothing is sent yet.</span></p>
+        <fieldset class="field"><legend class="label">What should we focus on? <span class="muted">(choose any)</span></legend>
+          <div class="chips">{topics.map(([k, v]) => <label class="chk"><input type="checkbox" name="topics" value={k} /> {v}</label>)}</div></fieldset>
+        <div class="grid2">
+          <div class="field"><label for="industry">Industry</label><select class="select" id="industry" name="industry"><option value="">Choose…</option>{INDUSTRIES.map((i) => <option value={i.id}>{i.name}</option>)}<option value="other">Other</option></select></div>
+          <div class="field"><label for="size">Technicians</label><select class="select" id="size" name="size"><option value="">Choose…</option><option>1–10</option><option>11–25</option><option>26–50</option><option>More than 50</option></select></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label for="name">Your name</label><input class="input" id="name" name="name" autocomplete="name" required /><p class="error" data-err="name" hidden></p></div>
+          <div class="field"><label for="email">Work email</label><input class="input" type="email" id="email" name="email" autocomplete="email" required spellcheck="false" /><p class="error" data-err="email" hidden></p></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label for="company">Company</label><input class="input" id="company" name="company" autocomplete="organization" required /><p class="error" data-err="company" hidden></p></div>
+          <div class="field"><label for="phone">Phone or WhatsApp <span class="muted">(optional)</span></label><input class="input" type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" /></div>
+        </div>
+        <div class="field"><label for="times">Preferred days and times</label><input class="input" id="times" name="times" placeholder="For example: Tuesday or Wednesday morning, Dubai time" /><p class="hint">We don’t have online booking yet. We reply within one working day to confirm a time.</p></div>
+        <div class="field"><label for="message">Anything we should prepare? <span class="muted">(optional)</span></label><textarea class="textarea" id="message" name="message" rows="3"></textarea></div>
+        <label class="choice"><input type="checkbox" name="consent" required /> <span>I agree that {brand.legalEntity} may contact me about this request. See the <a class="link" href="/legal/privacy">privacy notice</a>.</span></label>
+        <p class="error" data-err="consent" hidden></p>
+        <div class="row"><button class="btn btn-primary btn-lg" type="submit" data-submit>Request a demo</button><span class="small muted" data-busy hidden>Sending…</span></div>
+        <p class="error" data-err="form" role="alert" hidden></p>
+      </form>
+
+      <div class="dm-done" data-done hidden tabindex="-1">
+        <p class="okmark"><Icon name="circle-check" size={28} /></p>
+        <h2 class="h3">Request received</h2>
+        <p data-done-text></p>
+        <dl class="sumdl" data-done-sum></dl>
+        <details><summary class="small">What we received about your setup</summary><pre data-done-handoff></pre></details>
+        <div class="row"><a class="btn btn-primary" href="/simulator">Explore another scenario</a><a class="btn" href="/my-setup">Review my setup</a></div>
+      </div>
+
+      <div class="dm-side">
+        <h2 class="h4">In the demo</h2>
+        <ol class="small"><li>Your scenario, run step by step in the clickable prototype.</li><li>How contracts, approvals and updates would be configured for you.</li><li>What is designed, what is in pilot and what is still proposed.</li><li>Package, trial and onboarding options.</li></ol>
+        <p class="small muted">Prefer to talk now? <a class="link" href={`tel:${brand.phone.replace(/\s/g, '')}`}>{brand.phone}</a> or <a class="link" href={`mailto:${brand.salesEmail}`}>{brand.salesEmail}</a></p>
+      </div>
+    </div>
+  </section>
+</Base>
+<style>
+  .carry { padding: 14px 16px; border-radius: var(--r-sm); background: var(--surface); border: 1px solid var(--line); font-size: var(--t-sm); display: grid; gap: 4px; }
+  .dm { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 48px; align-items: start; }
+  .dm-form, .dm-done { display: grid; gap: 20px; min-width: 0; }
+  fieldset.field { border: 0; padding: 0; margin: 0; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chk { display: inline-flex; gap: 8px; align-items: center; min-height: 40px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 6px; font-size: var(--t-sm); cursor: pointer; background: var(--surface-raised); }
+  .chk:has(input:checked) { border-color: var(--accent); background: var(--surface-selected); font-weight: 600; }
+  .chk:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .chk input { accent-color: var(--emerald-600); }
+  .dm-side { position: sticky; top: 88px; display: grid; gap: 12px; padding: 20px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-raised); }
+  .dm-side ol { padding-left: 18px; display: grid; gap: 6px; margin: 0; }
+  .okmark { color: var(--ok); }
+  .sumdl { display: grid; grid-template-columns: 160px 1fr; gap: 6px 16px; margin: 0; font-size: var(--t-sm); }
+  .sumdl :global(dt) { color: var(--fg-2); } .sumdl :global(dd) { margin: 0; }
+  pre { font-size: 11px; background: var(--surface); padding: 10px; border-radius: 6px; white-space: pre-wrap; max-height: 240px; overflow: auto; margin-top: 8px; }
+  @media (max-width: 900px) { .dm { grid-template-columns: 1fr; } .dm-side { position: static; } }
+  @media (max-width: 560px) { .grid2, .sumdl { grid-template-columns: 1fr; } }
+</style>
+<script>
+  import { load, toHandoff } from '../lib/setup-store';
+  import { demo, auth, track } from '../integrations/index';
+  import { scenarioById } from '../lib/scenario-engine';
+  import { icon } from '../lib/icons';
+  const form = document.querySelector<HTMLFormElement>('[data-form]')!;
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+  const qs = new URLSearchParams(location.search); const s = load(); const acc = auth.current();
+  // Prefill from URL, saved setup and account. Nothing is asked twice.
+  const ind = qs.get('industry') || s.industry; if (ind) ($('#industry') as HTMLSelectElement).value = ind;
+  const topic = qs.get('topic'); if (topic) { const b = form.querySelector<HTMLInputElement>(`input[name="topics"][value="${topic}"]`); if (b) b.checked = true; }
+  if (acc) { ($('#email') as HTMLInputElement).value = acc.email; if (acc.name) ($('#name') as HTMLInputElement).value = acc.name; if (acc.company) ($('#company') as HTMLInputElement).value = acc.company; }
+  const sc = qs.get('scenario'); const scName = sc && scenarioById[sc]?.name;
+  const items = s.scenarios.length + s.capabilities.length;
+  if (scName || items) {
+    const c = $('[data-carry]'); c.hidden = false;
+    c.innerHTML = `<b>${icon('check', 16)} We’ll build the demo around ${scName ? esc(scName) : 'your saved setup'}</b><span class="muted">${s.scenarios.length} saved scenario${s.scenarios.length === 1 ? '' : 's'} · ${s.capabilities.length} capabilit${s.capabilities.length === 1 ? 'y' : 'ies'}${s.config ? ' · configuration draft' : ''}. <a class="link" href="/my-setup">Review</a></span>`;
+    const msg = $('#message') as HTMLTextAreaElement; if (scName && !msg.value) msg.value = `Please walk us through the “${scName}” scenario.`;
+  }
+  const err = (k: string, m: string) => { const e = form.querySelector<HTMLElement>(`[data-err="${k}"]`)!; e.hidden = !m; e.innerHTML = m ? `${icon('circle-alert', 14)} ${m}` : ''; const i = form.querySelector(`[name="${k}"]`); if (i) m ? i.setAttribute('aria-invalid', 'true') : i.removeAttribute('aria-invalid'); return !!m; };
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form); const v = (k: string) => String(fd.get(k) || '').trim();
+    const bad = [
+      err('name', v('name') ? '' : 'Enter your name.'),
+      err('email', /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v('email')) ? '' : 'Enter a work email like name@company.com.'),
+      err('company', v('company') ? '' : 'Enter your company.'),
+      err('consent', fd.get('consent') ? '' : 'Please agree so we can reply to you.'),
+    ].some(Boolean);
+    if (bad) { form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(); track('demo_form_invalid'); return; }
+    const btn = $<HTMLButtonElement>('[data-submit]'); btn.disabled = true; $('[data-busy]').hidden = false; err('form', '');
+    try {
+      const topics = fd.getAll('topics').map(String);
+      const r = await demo.submit({ topics, preferredTimes: v('times'), message: v('message'), contact: { name: v('name'), email: v('email'), company: v('company'), phone: v('phone') || undefined } });
+      form.hidden = true; const d = $('[data-done]'); d.hidden = false;
+      $('[data-done-text]').textContent = `Thanks, ${v('name').split(' ')[0]}. In live mode we would reply to ${v('email')} within one working day to confirm a time. Reference ${r.id}.`;
+      const pairs: [string, string][] = [['Focus', topics.length ? topics.join(', ') : 'General overview'], ['Preferred times', v('times') || 'Any time'], ['Scenarios', String(r.handoff.scenarios.length)], ['Capabilities', String(r.handoff.capabilities.length)]];
+      $('[data-done-sum]').innerHTML = pairs.map(([k, x]) => `<dt>${esc(k)}</dt><dd>${esc(x)}</dd>`).join('');
+      $('[data-done-handoff]').textContent = JSON.stringify(toHandoff(load()), null, 2);
+      d.focus(); scrollTo({ top: 0, behavior: 'smooth' });
+    } catch {
+      err('form', 'We couldn’t send your request. Your answers are still here; try again, or email us.'); btn.disabled = false;
+    } finally { $('[data-busy]').hidden = true; }
+  });
+</script>
