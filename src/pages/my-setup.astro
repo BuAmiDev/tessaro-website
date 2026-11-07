@@ -10,7 +10,7 @@ const scData = Object.fromEntries(SCENARIOS.map((s) => [s.id, s.name]));
 const indData = Object.fromEntries(INDUSTRIES.map((i) => [i.id, i.name]));
 ---
 <Base title="My setup" description="The capabilities, scenarios and configuration you have collected while exploring Tessaro." current="my-setup" noindex>
-  <PageIntro title="My setup" lead="Everything you have collected while exploring: capabilities, saved scenarios and your configuration draft. Take it into a demo or a trial and nobody has to ask you twice.">
+  <PageIntro kind="tool" title="My setup" lead="Everything you have collected while exploring: capabilities, saved scenarios and your configuration draft. Take it into a demo or a trial and nobody has to ask you twice.">
     <div class="where" data-where></div>
   </PageIntro>
 
@@ -30,13 +30,13 @@ const indData = Object.fromEntries(INDUSTRIES.map((i) => [i.id, i.name]));
         </section>
 
         <section class="card" aria-labelledby="h-sc" data-block>
-          <div class="card-h"><h2 id="h-sc" class="h4">Saved scenarios <span class="count" data-sc-count></span></h2><a class="btn btn-sm btn-quiet" href="/simulator"><Icon name="plus" size={16} /> Add a scenario</a></div>
+          <div class="card-h"><h2 id="h-sc" class="h4">Saved scenarios <span class="count" data-sc-count></span></h2><a class="btn btn-sm btn-quiet" href="/simulator">Add a scenario</a></div>
           <ul class="list" role="list" data-sc-list></ul>
           <p class="xs muted" data-sc-none hidden>No saved scenarios.</p>
         </section>
 
         <section class="card" aria-labelledby="h-cap" data-block>
-          <div class="card-h"><h2 id="h-cap" class="h4">Capabilities <span class="count" data-cap-count></span></h2><a class="btn btn-sm btn-quiet" href="/features"><Icon name="plus" size={16} /> Add capabilities</a></div>
+          <div class="card-h"><h2 id="h-cap" class="h4">Capabilities <span class="count" data-cap-count></span></h2><a class="btn btn-sm btn-quiet" href="/features">Add capabilities</a></div>
           <ul class="list" role="list" data-cap-list></ul>
           <p class="xs muted" data-cap-none hidden>No capabilities added.</p>
         </section>
@@ -55,9 +55,9 @@ const indData = Object.fromEntries(INDUSTRIES.map((i) => [i.id, i.name]));
       </div>
 
       <div class="ms-side" role="region" aria-label="Next steps">
-        <div class="card sticky">
+        <div class="side sticky">
           <h2 class="h4">Continue with this setup</h2>
-          <a class="btn btn-primary" href="/configurator">Continue to configurator <Icon name="arrow-right" size={16} /></a>
+          <a class="btn btn-primary" href="/configurator">Continue to configurator</a>
           <a class="btn" href="/demo?from=setup">Book a demo with this setup</a>
           <a class="btn" href="/trial">Start a trial with this setup</a>
           <hr />
@@ -75,27 +75,28 @@ const indData = Object.fromEntries(INDUSTRIES.map((i) => [i.id, i.name]));
 </Base>
 
 <style>
-  .where { display: grid; gap: 10px; padding: 16px; border-radius: var(--r-sm); background: var(--surface); border: 1px solid var(--line); font-size: var(--t-sm); }
+  .where { display: grid; gap: 10px; padding: 0 0 0 16px; border-left: 3px solid var(--green); font-size: var(--t-sm); justify-items: start; }
   .where b { color: var(--fg); }
   .ms { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 32px; align-items: start; }
-  .ms-main { display: grid; gap: 16px; }
-  .card { background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--r-md); padding: 20px; display: grid; gap: 14px; }
+  .ms-main { display: grid; gap: 0; border-bottom: 1px solid var(--line); }
+  .side { background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px; display: grid; gap: 12px; }
+  .card { padding: 28px 0; display: grid; gap: 16px; border-top: 1px solid var(--line); }
   .card-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
   .count { font-family: var(--font-body); font-weight: 600; color: var(--fg-2); font-size: var(--t-sm); margin-left: 4px; }
   .list { display: grid; gap: 8px; margin: 0; }
-  .list :global(li) { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--bg); }
+  .list :global(li) { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--white); }
   .list :global(.t) { font-weight: 600; }
   .list :global(.m) { font-size: var(--t-xs); color: var(--fg-2); }
   .list :global(.acts) { display: flex; gap: 4px; grid-row: 1 / span 2; grid-column: 2; }
   .list :global(.nt) { grid-column: 1 / -1; }
-  .ms-side .sticky { position: sticky; top: 88px; }
+  .ms-side .sticky { position: sticky; top: calc(var(--hdr-h) + 20px); }
   .ms-side .btn { justify-content: center; }
   hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; width: 100%; }
   .hand summary { cursor: pointer; font-size: var(--t-sm); font-weight: 600; }
   .hand pre { font-size: 11px; line-height: 1.5; max-height: 260px; overflow: auto; background: var(--surface); padding: 10px; border-radius: 6px; white-space: pre-wrap; word-break: break-word; margin-top: 8px; }
   .danger { color: var(--alert); }
   .ms-empty { padding: 32px; border: 1px dashed var(--line-strong); border-radius: var(--r-md); display: grid; gap: 12px; }
-  @media (max-width: 900px) { .ms { grid-template-columns: 1fr; } .ms-side .sticky { position: static; } }
+  @media (max-width: 900px) { .ms { grid-template-columns: minmax(0, 1fr); } .ms-side .sticky { position: static; } }
 </style>
 
 <script define:vars={{ capData, scData, indData }}>

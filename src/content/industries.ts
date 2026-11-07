@@ -37,7 +37,7 @@ export const INDUSTRIES: Industry[] = [
     id: 'facilities-maintenance', name: 'Facilities maintenance', short: 'Facilities maintenance', status: 'designed',
     who: 'FM companies and in-house engineering teams maintaining offices, hospitals, retail estates and campuses.',
     pains: ['Helpdesk calls arrive incomplete', 'Planned maintenance slips without anyone noticing', 'Repeat faults hide behind different descriptions', 'Compliance evidence is hard to assemble'],
-    scenarios: ['helpdesk-intake', 'tech-finding', 'access-blocked'],
+    scenarios: ['bms-alarm', 'helpdesk-intake', 'tech-finding', 'access-blocked'],
     capabilities: ['guided-intake', 'suggested-triage', 'fault-groups', 'ppm', 'compliance', 'dashboards', 'roles', 'audit'],
     operatingModel: 'FM company or in-house engineering',
     defaults: { sites: 24, team: 30, asset: 'Air handling unit', channel: 'email' },

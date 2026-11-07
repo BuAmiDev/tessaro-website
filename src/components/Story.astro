@@ -1,0 +1,334 @@
+---
+import { CHAPTERS, RECORD, STORY, ACTOR } from '../story/story-data';
+const first = CHAPTERS[0];
+---
+<section class="story" id="story" aria-labelledby="story-title" data-story data-mode="loading">
+  <div class="st-stage" data-stage>
+    <picture class="st-poster" data-poster>
+      <source media="(max-aspect-ratio: 5/6)" srcset="/story/c0-p.webp" />
+      <img src="/story/c0-l.webp" alt="" width="1600" height="900" fetchpriority="high" decoding="async" />
+    </picture>
+    <div class="st-stills" data-stills aria-hidden="true"></div>
+    <canvas class="st-canvas" data-canvas aria-hidden="true"></canvas>
+    <div class="st-fade" data-fade aria-hidden="true"></div>
+
+    <div class="st-open wrap" data-open>
+      <h1 id="story-title" class="st-title">One intelligence across your spaces, assets and service operations.</h1>
+      <p class="st-sub">Tessaro connects facilities, maintenance, field service and asset management, from the first sign of a fault to a verified record.</p>
+      <div class="st-cta">
+        <a class="btn btn-primary btn-lg" href="#story-start" data-explore>Explore the building</a>
+        <a class="btn btn-lg" href="/demo">Book a demo</a>
+      </div>
+    </div>
+
+    <div class="st-anno" data-annos aria-hidden="true">
+      <span class="an" data-an="room"></span><span class="an" data-an="valve"></span><span class="an" data-an="supply"></span>
+      <span class="an" data-an="wall"></span><span class="an" data-an="tech"></span>
+    </div>
+
+    <div class="st-cap wrap" data-cap>
+      <div class="cap-in">
+        <p class="cap-k"><span data-cap-n>01</span> · <span data-cap-time>{first.time}</span> <span class="cap-ill">Illustrative, compressed timeline</span></p>
+        <p class="cap-l" data-cap-label aria-live="polite">{first.label}</p>
+        <p class="cap-t" data-cap-text>{first.text}</p>
+        <p class="cap-a"><span data-cap-actor>{ACTOR[first.actor]}</span><span class="cap-src" data-cap-src>{first.source}</span></p>
+      </div>
+    </div>
+
+    <div class="st-rec" data-rec role="region" aria-label="Work record">
+      <p class="rec-h"><span class="id">{STORY.wo}</span><span class="rec-s" data-rec-state>Not yet created</span></p>
+      <p class="rec-asset"><b>{STORY.asset}</b> · {STORY.assetName}<br />{STORY.building} · {STORY.location}</p>
+      <ol role="list" class="rec-list">
+        {RECORD.map((r) => <li data-rec-row={r.id} data-at={r.at}><span class="rec-l">{r.label}</span><span class="rec-v">{r.value}</span></li>)}
+      </ol>
+      <dl class="rec-read" data-read>
+        <div><dt>Supply air</dt><dd data-read-supply>14.0 °C</dd></div>
+        <div><dt>Valve cmd · pos</dt><dd data-read-valve>100% · 99%</dd></div>
+        <div><dt>Room 4.07</dt><dd data-read-room>23.1 °C</dd></div>
+      </dl>
+    </div>
+
+    <nav class="st-nav" aria-label="Story chapters" data-nav>
+      <ol role="list">
+        {CHAPTERS.map((c, i) => <li><button type="button" data-ch={i}><span class="n">{String(i + 1).padStart(2, '0')}</span><span class="t">{c.nav}</span></button></li>)}
+      </ol>
+      <div class="st-ctl">
+        <button type="button" data-prev class="ctl" aria-label="Previous chapter">‹</button>
+        <button type="button" data-next class="ctl" aria-label="Next chapter">›</button>
+        <button type="button" data-replay class="ctl-t">Replay</button>
+        <a href="#story-overview" data-overview class="ctl-t">Overview</a>
+        <a href="#after-story" class="ctl-t">Skip story</a>
+      </div>
+      <div class="st-prog" aria-hidden="true"><i data-prog></i></div>
+    </nav>
+  </div>
+  <span id="story-start" class="st-start" aria-hidden="true"></span>
+</section>
+
+<section class="st-over section tight" id="story-overview" aria-labelledby="ov-title">
+  <div class="wrap">
+    <div class="ov-head">
+      <h2 id="ov-title" class="h3">The story at a glance</h2>
+      <p class="muted">One illustrative fault at Harbour Point, a fictional building. Readings, names and times are sample data on a compressed timeline. The steps follow designed Tessaro screens; the connection to a building management system is proposed, not yet built.</p>
+    </div>
+    <ol role="list" class="ov-list">
+      {CHAPTERS.map((c, i) => (
+        <li>
+          <picture><source media="(max-width: 700px)" srcset={`/story/c${i}-p.webp`} /><img src={`/story/c${i}-l.webp`} alt="" width="1600" height="900" loading="lazy" decoding="async" /></picture>
+          <div><p class="ov-k">{String(i + 1).padStart(2, '0')} · {c.time} · {ACTOR[c.actor]}</p><h3 class="ov-l">{c.label}</h3><p>{c.text}</p></div>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+<span id="after-story"></span>
+
+<style>
+  .story { position: relative; height: 340vh; background: #EEF0EB; }
+  .story[data-mode="stills"] { height: 240vh; }
+  .story[data-mode="static"] { height: auto; }
+  .st-stage { position: sticky; top: var(--hdr-h); height: calc(100vh - var(--hdr-h)); height: calc(100svh - var(--hdr-h)); overflow: hidden; }
+  .story[data-mode="static"] .st-stage { position: relative; height: min(100svh, 860px); }
+  .st-poster img, .st-canvas, .st-stills, .st-stills :global(img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .st-canvas { opacity: 0; transition: opacity 600ms var(--ease-out); }
+  .story.live .st-canvas { opacity: 1; }
+  .st-stills :global(img) { opacity: 0; transition: opacity 500ms var(--ease-out); }
+  .st-stills :global(img.on) { opacity: 1; }
+  .st-fade { position: absolute; inset: 0; background: var(--chalk); opacity: 0; pointer-events: none; }
+  .st-start { position: absolute; top: 60vh; }
+
+  .st-open { position: absolute; left: 0; right: 0; top: clamp(28px, 6vh, 72px); display: grid; gap: 22px; justify-items: start; transition: opacity 400ms var(--ease-out), transform 400ms var(--ease-out); }
+  .st-title { font-size: clamp(2.6rem, 1rem + 5.4vw, 6.4rem); line-height: .98; letter-spacing: -0.048em; font-weight: 540; max-width: 13ch; color: var(--ink); }
+  .st-sub { font-size: var(--t-lg); line-height: 1.45; color: var(--ink-2); max-width: 44ch; }
+  .st-cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
+  .story.past-open .st-open { opacity: 0; transform: translateY(-24px); pointer-events: none; }
+
+  .st-cap { position: absolute; left: 0; right: 0; bottom: 112px; pointer-events: none; opacity: 0; transition: opacity 300ms ease; }
+  .story.past-open .st-cap { opacity: 1; }
+  .cap-in { max-width: 520px; background: rgba(247, 247, 244, .94); padding: 22px 24px; border-radius: var(--r-md); box-shadow: var(--e-float); pointer-events: auto; }
+  .cap-k { font-size: var(--t-sm); color: var(--ink-3); font-variant-numeric: tabular-nums; display: flex; flex-wrap: wrap; gap: 4px 6px; }
+  .cap-ill { font-style: italic; }
+  .cap-l { font-family: var(--font-display); font-size: clamp(1.6rem, 1.1rem + 1.6vw, 2.4rem); letter-spacing: -0.035em; line-height: 1.05; margin: 8px 0 10px; font-weight: 560; color: var(--ink); }
+  .cap-t { color: var(--ink-2); font-size: 1.0625rem; line-height: 1.55; }
+  .cap-a { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: var(--t-sm); font-weight: 600; color: var(--green); }
+  .cap-src { color: var(--ink-3); font-weight: 500; }
+
+  .st-rec { position: absolute; right: max(20px, calc((100vw - var(--page-max)) / 2)); top: 104px; width: 320px; background: rgba(255, 255, 255, .96); border-radius: var(--r-md); box-shadow: var(--e-float); padding: 18px 18px 14px; font-size: var(--t-sm); opacity: 0; transform: translateY(8px); transition: opacity 300ms ease, transform 400ms var(--ease-out); }
+  .story.rec-on .st-rec { opacity: 1; transform: none; }
+  .rec-h { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .rec-h .id { font-weight: 650; }
+  .rec-s { color: var(--ink-3); font-size: var(--t-xs); }
+  .rec-asset { color: var(--ink-2); margin: 8px 0 12px; line-height: 1.45; }
+  .rec-asset b { color: var(--ink); }
+  .rec-list { margin: 0; display: grid; gap: 0; border-top: 1px solid var(--line-c); }
+  .rec-list li { display: grid; grid-template-columns: 16px 1fr; gap: 0 10px; padding: 7px 0; border-bottom: 1px solid var(--line-c); color: var(--ink-3); transition: color 250ms ease; }
+  .rec-list li::before { content: ""; grid-row: span 2; width: 10px; height: 10px; margin-top: 5px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-c2); transition: background-color 250ms ease, box-shadow 250ms ease, transform 300ms var(--ease-out); }
+  .rec-list li.done { color: var(--ink); }
+  .rec-list li.done::before { background: var(--green); box-shadow: none; }
+  .rec-list li.now::before { transform: scale(1.35); }
+  .rec-l { font-weight: 600; }
+  .rec-v { font-size: var(--t-xs); color: var(--ink-2); line-height: 1.4; display: none; }
+  .rec-list li.done .rec-v { display: block; }
+  .rec-read { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0 0; }
+  .rec-read div { display: grid; gap: 2px; }
+  .rec-read dt { font-size: 11px; color: var(--ink-3); }
+  .rec-read dd { margin: 0; font-weight: 650; font-variant-numeric: tabular-nums; font-size: 13.5px; }
+  .rec-read[data-tone="alert"] dd { color: var(--alert); }
+  .rec-read[data-tone="ok"] dd { color: var(--ok); }
+
+  .st-anno { position: absolute; inset: 0; pointer-events: none; }
+  .an { position: absolute; left: 0; top: 0; display: none; transform: translate(-50%, calc(-100% - 14px)); background: var(--ink); color: #fff; font-size: 13px; font-weight: 600; padding: 7px 10px; border-radius: 6px; white-space: nowrap; line-height: 1.3; box-shadow: 0 8px 20px -10px rgba(0,0,0,.5); }
+  .an::after { content: ""; position: absolute; left: 50%; bottom: -14px; width: 1px; height: 14px; background: var(--ink); }
+  .an.on { display: block; }
+  .an.alert { background: #8F2A20; } .an.alert::after { background: #8F2A20; }
+  .an.ok { background: var(--green); } .an.ok::after { background: var(--green); }
+
+  .st-nav { position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px 24px; padding: 14px max(20px, calc((100vw - var(--page-max)) / 2)) 18px; background: linear-gradient(to top, rgba(247,247,244,.98) 55%, rgba(247,247,244,0)); }
+  .st-nav ol { display: flex; gap: 2px; margin: 0; overflow-x: auto; scrollbar-width: none; }
+  .st-nav button[data-ch] { display: inline-flex; gap: 8px; align-items: baseline; padding: 10px 12px; border: 0; background: none; color: var(--ink-3); font-size: var(--t-sm); font-weight: 560; cursor: pointer; border-radius: var(--r-sm); white-space: nowrap; transition: color var(--d-fast) ease; }
+  .st-nav button[data-ch] .n { font-size: 11px; font-variant-numeric: tabular-nums; }
+  .st-nav button[data-ch]:hover { color: var(--ink); }
+  .st-nav button[aria-current="step"] { color: var(--ink); }
+  .st-nav button[aria-current="step"] .t { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 1.5px; }
+  .st-ctl { display: flex; gap: 4px 14px; align-items: center; }
+  .ctl { width: 40px; height: 40px; border-radius: var(--r-sm); border: 1px solid var(--line-c2); background: var(--white); font-size: 20px; line-height: 1; cursor: pointer; color: var(--ink); }
+  .ctl:hover { border-color: var(--ink); }
+  .ctl-t { background: none; border: 0; padding: 8px 2px; font-size: var(--t-sm); font-weight: 560; color: var(--ink-2); cursor: pointer; text-decoration: underline; text-decoration-color: rgba(32,37,34,.3); text-underline-offset: 4px; }
+  .ctl-t:hover { color: var(--ink); text-decoration-color: currentColor; }
+  .st-prog { grid-column: 1 / -1; height: 2px; background: var(--line-c); }
+  .st-prog i { display: block; height: 100%; width: 0; background: var(--ink); }
+  .story:not([data-mode="static"]) [data-prev], .story:not([data-mode="static"]) [data-next] { display: none; }
+
+  /* overview */
+  .st-over { background: var(--chalk); }
+  .ov-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 24px 64px; align-items: end; margin-bottom: 48px; }
+  .ov-head p { max-width: 64ch; font-size: var(--t-sm); }
+  .ov-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 40px 24px; margin: 0; }
+  .ov-list li { display: grid; gap: 14px; align-content: start; }
+  .ov-list img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--r-sm); background: #E6E8E2; }
+  .ov-k { font-size: var(--t-xs); color: var(--ink-3); }
+  .ov-l { font-size: 1.25rem; margin: 4px 0 6px; }
+  .ov-list p:not(.ov-k) { font-size: var(--t-sm); color: var(--ink-2); line-height: 1.55; }
+
+  @media (max-width: 1100px) { .ov-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 900px) {
+    .st-rec { left: 20px; right: auto; top: 88px; width: min(300px, calc(100vw - 40px)); padding: 12px 14px; }
+    .rec-asset, .rec-read { display: none; }
+    .rec-list li:not(.now) { display: none; }
+    .rec-list li.now .rec-v { display: block; }
+    .st-cap { bottom: 120px; }
+    .cap-in { padding: 16px 18px; }
+    .cap-t { font-size: 1rem; }
+    .st-nav button[data-ch] .t { display: none; }
+    .st-nav button[aria-current="step"] .t { display: inline; }
+    .st-nav { grid-template-columns: 1fr; }
+    .ov-head { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 760px) {
+    .st-open { top: 0; padding-top: 28px; padding-bottom: 48px; background: linear-gradient(to bottom, rgba(238,240,235,.97) 70%, rgba(238,240,235,0)); }
+    .st-sub { font-size: 1.0625rem; }
+  }
+  @media (max-width: 560px) { .ov-list { grid-template-columns: 1fr; } .st-title { max-width: 11ch; font-size: clamp(2.3rem, 9.5vw, 3rem); } .cap-src { display: none; } }
+</style>
+
+<script>
+  import { CHAPTERS, RECORD, ACTOR, chapterAt, readingsAt } from '../story/story-data';
+  const root = document.querySelector<HTMLElement>('[data-story]')!;
+  const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]')!;
+  const fade = root.querySelector<HTMLElement>('[data-fade]')!;
+  const stills = root.querySelector<HTMLElement>('[data-stills]')!;
+  const q = new URLSearchParams(location.search);
+  const stillParam = q.get('story-still');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const narrow = matchMedia('(max-width: 760px)').matches;
+  const lowPower = ((navigator as any).hardwareConcurrency || 8) <= 4 || (navigator as any).connection?.saveData === true;
+  const webgl = (() => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch { return false; } })();
+  const forced = q.get('story-mode');
+  let mode: 'live' | 'stills' | 'static' = forced as any || (stillParam ? 'live' : reduce ? 'static' : (!webgl || narrow || lowPower) ? 'stills' : 'live');
+  if (mode === 'live' && !webgl) mode = 'stills';
+  root.dataset.mode = mode;
+
+  const $ = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
+  const navBtns = [...root.querySelectorAll<HTMLButtonElement>('[data-ch]')];
+  const recRows = [...root.querySelectorAll<HTMLElement>('[data-rec-row]')];
+  const annos = Object.fromEntries([...root.querySelectorAll<HTMLElement>('[data-an]')].map((e) => [e.dataset.an!, e]));
+  let scene: import('../story/scene').StoryScene | null = null;
+  let p = 0, staticP = CHAPTERS[0].still, lastCh = -1, assemble = stillParam ? 1 : 0, raf = 0;
+
+  const hdrH = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdr-h')) || 0;
+  // ----- progress -----
+  function progress() {
+    if (stillParam) return parseFloat(stillParam);
+    if (mode === 'static') return staticP;
+    const r = root.getBoundingClientRect(); const top0 = r.top - hdrH(); const span = root.offsetHeight - (innerHeight - hdrH());
+    return Math.min(1, Math.max(0, -top0 / Math.max(1, span)));
+  }
+  function scrollToP(target: number, smooth = !reduce) {
+    if (mode === 'static') { staticP = target; frame(); return; }
+    const top = root.getBoundingClientRect().top + scrollY - hdrH(); const span = root.offsetHeight - (innerHeight - hdrH());
+    scrollTo({ top: top + target * span + 2, behavior: smooth ? 'smooth' : 'auto' });
+  }
+
+  // ----- overlay state, all derived from p -----
+  function paint(p: number) {
+    const ci = chapterAt(p); const c = CHAPTERS[ci];
+    root.classList.toggle('past-open', mode === 'static' ? staticP > CHAPTERS[0].end - .001 || ci > 0 : p > .045);
+    root.classList.toggle('rec-on', p > .26);
+    if (ci !== lastCh) {
+      lastCh = ci;
+      $('[data-cap-n]').textContent = String(ci + 1).padStart(2, '0');
+      $('[data-cap-time]').textContent = c.time;
+      $('[data-cap-label]').textContent = c.label;
+      $('[data-cap-text]').textContent = c.text;
+      $('[data-cap-actor]').textContent = ACTOR[c.actor];
+      $('[data-cap-src]').textContent = c.source || '';
+      navBtns.forEach((b, i) => { if (i === ci) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); });
+      if (mode !== 'live') showStill(ci);
+    }
+    let last = -1; recRows.forEach((r, i) => { const done = p >= Number(r.dataset.at); r.classList.toggle('done', done); if (done) last = i; });
+    recRows.forEach((r, i) => r.classList.toggle('now', i === Math.max(0, last)));
+    $('[data-rec-state]').textContent = last < 0 ? 'Not yet created' : last >= RECORD.length - 1 ? 'Closed' : last >= 4 ? 'Awaiting verification' : last >= 2 ? 'Assigned' : 'Open';
+    const rd = readingsAt(p); const box = $('[data-read]'); box.dataset.tone = rd.tone;
+    $('[data-read-supply]').textContent = rd.supply; $('[data-read-valve]').textContent = rd.valve; $('[data-read-room]').textContent = rd.room;
+    $<HTMLElement>('[data-prog]').style.width = `${p * 100}%`;
+  }
+  const ANNO: { id: string; from: number; to: number; text: (p: number) => string; tone?: (p: number) => string }[] = [
+    { id: 'room', from: .13, to: .25, text: () => 'Room 4.07 · 26.9 °C, setpoint 23 °C', tone: () => 'alert' },
+    { id: 'valve', from: .31, to: .53, text: () => 'Valve actuator · 12% of 100% command', tone: () => 'alert' },
+    { id: 'supply', from: .33, to: .53, text: () => 'Supply-air sensor · 21.6 °C, design 14 °C' },
+    { id: 'wall', from: .545, to: .665, text: (p) => p < .58 ? 'Same event · WO-2611-0418' : 'Assigned · update sent' },
+    { id: 'tech', from: .685, to: .75, text: () => 'Rami S. · service entrance, 15:12' },
+    { id: 'valve', from: .84, to: .895, text: () => 'New actuator · follows command, 98%', tone: () => 'ok' },
+    { id: 'supply', from: .845, to: .895, text: () => 'Supply air 14.1 °C', tone: () => 'ok' },
+  ];
+  function placeAnnos(anchors: { id: string; x: number; y: number; visible: boolean }[], p: number) {
+    const at = Object.fromEntries(anchors.map((a) => [a.id, a]));
+    const active = new Map<string, (typeof ANNO)[number]>(); ANNO.forEach((a) => { if (p >= a.from && p < a.to) active.set(a.id, a); });
+    for (const [id, el] of Object.entries(annos)) {
+      const a = active.get(id); const pt = at[id];
+      const blocked = pt && innerWidth > 900 && pt.x > root.clientWidth - 380 && pt.y < 620;
+      if (!a || !pt || !pt.visible || blocked) { el.classList.remove('on'); continue; }
+      el.textContent = a.text(p); el.className = 'an on ' + (a.tone?.(p) || '');
+      el.style.transform = `translate(${pt.x}px, ${pt.y}px) translate(-50%, calc(-100% - 14px))`;
+    }
+  }
+  function cutFade(p: number) { const d = Math.min(...[.535, .67, .755].map((c) => Math.abs(p - c))); return Math.max(0, 1 - d / .012); }
+
+  function frame() {
+    raf = 0; p = mode === 'static' ? staticP : progress();
+    paint(p);
+    if (scene) {
+      fade.style.opacity = String(mode === 'static' ? 0 : cutFade(p));
+      const anchors = scene.render(p, assemble);
+      placeAnnos(anchors, p);
+    }
+  }
+  const request = () => { if (!raf) raf = requestAnimationFrame(frame); };
+
+  // ----- stills mode (phones, low power, no WebGL, reduced motion) -----
+  const portrait = () => innerWidth / innerHeight < .83;
+  let stillsMade = false;
+  function showStill(ci: number) {
+    if (!stillsMade) {
+      stillsMade = true;
+      stills.innerHTML = CHAPTERS.map((_, i) => `<img alt="" decoding="async" ${i > 1 ? 'loading="lazy"' : ''} src="/story/c${i}-${portrait() ? 'p' : 'l'}.webp" />`).join('');
+    }
+    [...stills.children].forEach((img, i) => img.classList.toggle('on', i === ci));
+  }
+
+  // ----- controls -----
+  navBtns.forEach((b, i) => b.addEventListener('click', () => scrollToP(mode === 'static' ? CHAPTERS[i].still : CHAPTERS[i].at + (i === 0 ? 0 : .012))));
+  const step = (d: number) => { const ci = chapterAt(mode === 'static' ? staticP : p); const n = Math.min(CHAPTERS.length - 1, Math.max(0, ci + d)); scrollToP(mode === 'static' ? CHAPTERS[n].still : CHAPTERS[n].at + .012); };
+  $('[data-prev]').addEventListener('click', () => step(-1));
+  $('[data-next]').addEventListener('click', () => step(1));
+  $('[data-replay]').addEventListener('click', () => { scrollToP(mode === 'static' ? CHAPTERS[0].still : 0); });
+  $('[data-explore]').addEventListener('click', (e) => { e.preventDefault(); scrollToP(mode === 'static' ? CHAPTERS[1].still : CHAPTERS[1].at + .02); });
+  root.addEventListener('keydown', (e) => { if (mode === 'static' && (e.key === 'ArrowRight' || e.key === 'ArrowLeft') && (e.target as HTMLElement).closest('[data-nav]')) { e.preventDefault(); step(e.key === 'ArrowRight' ? 1 : -1); } });
+
+  // ----- boot -----
+  async function bootLive() {
+    const { createStoryScene } = await import('../story/scene');
+    scene = createStoryScene(canvas, (narrow || lowPower) ? 'low' : 'high');
+    new ResizeObserver(() => { scene!.resize(); request(); }).observe(canvas);
+    if (stillParam) {
+      assemble = 1; root.classList.add('live'); document.fonts?.ready.then(() => { p = parseFloat(stillParam); scene!.render(p, 1); scene!.render(p, 1); document.documentElement.dataset.storyReady = '1'; });
+      return;
+    }
+    root.classList.add('live');
+    // Opening assembly: one short settle, then the architecture stays put.
+    const t0 = performance.now(); const dur = 1500;
+    const tick = (t: number) => { assemble = Math.min(1, (t - t0) / dur); frame(); if (assemble < 1) requestAnimationFrame(tick); };
+    if (progress() > .02) { assemble = 1; frame(); } else requestAnimationFrame(tick);
+  }
+  addEventListener('scroll', request, { passive: true });
+  addEventListener('resize', request);
+  if (mode === 'live') {
+    if (stillParam) { document.documentElement.classList.add('story-still'); bootLive(); }
+    else if ('requestIdleCallback' in window) (window as any).requestIdleCallback(bootLive, { timeout: 1200 }); else setTimeout(bootLive, 300);
+  } else { showStill(0); }
+  frame();
+</script>
+<style is:global>
+  html.story-still .hdr, html.story-still .st-open, html.story-still .st-cap, html.story-still .st-rec, html.story-still .st-nav, html.story-still .st-anno { visibility: hidden !important; }
+  html.story-still .st-poster { display: none; }
+</style>

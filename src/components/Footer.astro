@@ -1,62 +1,64 @@
 ---
 import Logo from './Logo.astro';
-import Icon from './Icon.astro';
 import { brand } from '../config/brand';
 const year = 2026;
-const cols = [
-  { t: 'Platform', l: [['Overview', '/platform'], ['Service intake', '/platform/intake'], ['Dispatch and scheduling', '/platform/coordination'], ['Technician app', '/platform/field'], ['Contracts and service levels', '/platform/contracts'], ['Configuration', '/platform/configuration']] },
-  { t: 'Industries', l: [['HVAC and refrigeration', '/industries/hvac-refrigeration'], ['Property management', '/industries/property-management'], ['Facilities maintenance', '/industries/facilities-maintenance'], ['All industries', '/industries']] },
-  { t: 'Evaluate', l: [['Interactive demo', '/simulator'], ['Feature explorer', '/features'], ['Configurator', '/configurator'], ['My setup', '/my-setup'], ['Pricing', '/pricing']] },
-  { t: 'Help', l: [['Help center', '/help'], ['Contact support', '/support'], ['Book a demo', '/demo'], ['Start a trial', '/trial']] },
-  { t: 'Company', l: [['About', '/company'], ['Privacy', '/legal/privacy'], ['Terms', '/legal/terms'], ['Product prototype', brand.productUrl]] },
+const groups = [
+  { t: 'Platform', l: [['How it fits together', '/platform'], ['Facilities', '/platform/facilities'], ['Maintenance', '/platform/maintenance'], ['Field service', '/platform/field-service'], ['Asset management', '/platform/assets'], ['Contracts and service levels', '/platform/contracts'], ['Configuration', '/platform/configuration']] },
+  { t: 'Solutions', l: [['HVAC and refrigeration', '/industries/hvac-refrigeration'], ['Property management', '/industries/property-management'], ['Facilities maintenance', '/industries/facilities-maintenance'], ['All industries', '/industries']] },
+  { t: 'Evaluate', l: [['Scenarios', '/simulator'], ['Feature explorer', '/features'], ['Configurator', '/configurator'], ['Pricing', '/pricing'], ['My setup', '/my-setup']] },
+  { t: 'Help and company', l: [['Help center', '/help'], ['Support', '/support'], ['About', '/company'], ['Privacy', '/legal/privacy'], ['Terms', '/legal/terms']] },
 ];
 ---
-<footer class="ftr" data-surface="dark">
+<footer class="ftr">
   <div class="wrap">
-    <div class="ftr-top">
-      <div class="ftr-brand">
-        <Logo tone="dark" height={28} />
-        <p>Every operational piece, intelligently connected. Service work, teams, assets and decisions in one place.</p>
-        <div class="ftr-contact">
-          <a href={`mailto:${brand.supportEmail}`}><Icon name="mail" size={16} /> {brand.supportEmail}</a>
-          <span><Icon name="phone" size={16} /> <span class="num" translate="no">{brand.phone}</span></span>
-          <span><Icon name="map-pin" size={16} /> {brand.region}</span>
-        </div>
+    <div class="ftr-close">
+      <p class="ftr-line">One intelligence across your spaces, assets and service operations.</p>
+      <div class="ftr-act">
+        <a class="btn btn-primary" href="/demo">Book a demo</a>
+        <a class="btn" href="/trial">Start a trial</a>
       </div>
-      <nav class="ftr-keys" aria-label="Footer">
-        {cols.map((c) => (
-          <div class="ftr-col">
-            <p class="ftr-t">{c.t}</p>
-            <ul role="list">{c.l.map(([label, href]) => <li><a href={href}>{label}</a></li>)}</ul>
+    </div>
+    <div class="ftr-main">
+      <div class="ftr-brand">
+        <a href="/" aria-label="Tessaro home"><Logo height={40} /></a>
+        <address>
+          <a href={`mailto:${brand.salesEmail}`}>{brand.salesEmail}</a>
+          <a href={`mailto:${brand.supportEmail}`}>{brand.supportEmail}</a>
+          <a href={`tel:${brand.phone.replace(/\s/g, '')}`} class="num" translate="no">{brand.phone}</a>
+        </address>
+      </div>
+      <nav class="ftr-nav" aria-label="Footer">
+        {groups.map((g) => (
+          <div>
+            <h2 class="ftr-t">{g.t}</h2>
+            <ul role="list">{g.l.map(([label, href]) => <li><a href={href}>{label}</a></li>)}</ul>
           </div>
         ))}
       </nav>
     </div>
     <div class="ftr-bottom">
-      <p class="ftr-state"><span class="dot" aria-hidden="true"></span>Tessaro 2.0 is designed and being prepared for its first pilot release. Statuses on this site say what exists today.</p>
-      <p>© {year} {brand.legalEntity}. {brand.name} is a working product name.</p>
+      <p>{brand.name} 2.0 is designed end to end and preparing its first pilot release. <a href="/features#availability">What exists today</a></p>
+      <p>© {year} {brand.legalEntity} · <a href={brand.productUrl} target="_blank" rel="noopener">Product prototype</a></p>
     </div>
   </div>
 </footer>
-
 <style>
-  .ftr { background: var(--graphite-950); color: var(--fg); padding: 72px 0 calc(28px + env(safe-area-inset-bottom, 0px)); --bg: var(--graphite-950); }
-  .ftr-top { display: grid; grid-template-columns: minmax(240px, 1fr) 2.4fr; gap: 48px; padding-bottom: 48px; border-bottom: 1px solid var(--line); }
-  .ftr-brand { display: grid; gap: 18px; align-content: start; }
-  .ftr-brand p { color: var(--fg-2); max-width: 34ch; font-size: var(--t-sm); }
-  .ftr-contact { display: grid; gap: 8px; font-size: var(--t-sm); color: var(--fg-2); }
-  .ftr-contact a, .ftr-contact > span { display: inline-flex; gap: 8px; align-items: center; text-decoration: none; }
-  .ftr-contact a:hover { color: var(--fg); }
-  /* Link groups sit on a tile panel, the footer's nod to the mosaic and to physical control panels */
-  .ftr-keys { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3px; background: var(--line); border: 3px solid var(--line); border-radius: var(--r-xs); }
-  .ftr-col { background: var(--graphite-900); border-radius: 6px; padding: 18px 16px 20px; }
-  .ftr-t { font-size: var(--t-xs); font-weight: 600; color: var(--fg-3); margin-bottom: 10px; }
-  .ftr-col ul { display: grid; gap: 2px; margin: 0; }
-  .ftr-col a { display: block; padding: 5px 0; font-size: var(--t-sm); color: var(--fg-2); text-decoration: none; }
-  .ftr-col a:hover { color: var(--fg); text-decoration: underline; }
-  .ftr-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; padding-top: 24px; font-size: var(--t-xs); color: var(--fg-3); }
-  .ftr-state { display: flex; gap: 10px; align-items: center; max-width: 70ch; }
-  .dot { width: 8px; height: 8px; border-radius: 2px; background: var(--wait); flex: 0 0 auto; }
-  @media (max-width: 980px) { .ftr-top { grid-template-columns: 1fr; } .ftr-keys { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-  @media (max-width: 560px) { .ftr-keys { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .ftr { background: var(--white); color: var(--ink); border-top: 1px solid var(--line-c); padding-top: clamp(72px, 8vw, 128px); }
+  .ftr-close { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px 64px; flex-wrap: wrap; padding-bottom: clamp(56px, 6vw, 96px); }
+  .ftr-line { font-family: var(--font-display); font-weight: 520; font-size: clamp(2rem, 1.2rem + 3vw, 3.75rem); line-height: 1.04; letter-spacing: -0.04em; max-width: 16ch; text-wrap: balance; }
+  .ftr-act { display: flex; gap: 12px; flex-wrap: wrap; }
+  .ftr-main { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(0, 2.4fr); gap: 48px; padding-block: 48px; border-top: 1px solid var(--line-c); }
+  .ftr-brand { display: grid; gap: 28px; align-content: start; }
+  .ftr-brand > a { display: inline-flex; border-radius: 4px; }
+  address { font-style: normal; display: grid; gap: 6px; font-size: var(--t-sm); }
+  address a { color: var(--ink-2); text-decoration: none; justify-self: start; }
+  address a:hover { color: var(--ink); text-decoration: underline; }
+  .ftr-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; }
+  .ftr-t { font-family: var(--font-body); font-size: var(--t-sm); font-weight: 600; color: var(--ink-3); letter-spacing: 0; margin-bottom: 14px; }
+  .ftr-nav ul { margin: 0; display: grid; gap: 4px; }
+  .ftr-nav a { display: inline-block; padding: 5px 0; text-decoration: none; color: var(--ink); font-size: 1rem; }
+  .ftr-nav a:hover { color: var(--green); text-decoration: underline; }
+  .ftr-bottom { display: flex; justify-content: space-between; gap: 12px 32px; flex-wrap: wrap; padding-block: 24px 32px; border-top: 1px solid var(--line-c); font-size: var(--t-sm); color: var(--ink-2); }
+  .ftr-bottom a { color: var(--ink); }
+  @media (max-width: 900px) { .ftr-main { grid-template-columns: 1fr; } .ftr-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 24px; } }
 </style>

@@ -7,7 +7,7 @@ import { HELP } from '../content/site';
 const topics: [string, string][] = [['question', 'A question before buying'], ['trial', 'Trial or payment'], ['onboarding', 'Setting up my workspace'], ['account', 'Signing in or my account'], ['other', 'Something else']];
 ---
 <Base title="Contact support" description="Reach a person on the Tessaro team by message, email or phone." current="support">
-  <PageIntro title="Talk to a person" lead="Tell us what you need. A member of our team replies within one working day, Sunday to Thursday, Dubai time.">
+  <PageIntro kind="tool" title="Talk to a person" lead="Tell us what you need. A member of our team replies within one working day, Sunday to Thursday, Dubai time.">
     <ul class="ways" role="list">
       <li><Icon name="mail" size={18} /><span><b>Email</b><a class="link" href={`mailto:${brand.supportEmail}`}>{brand.supportEmail}</a></span></li>
       <li><Icon name="phone" size={18} /><span><b>Phone or WhatsApp</b><a class="link" href={`tel:${brand.phone.replace(/\s/g, '')}`}>{brand.phone}</a></span></li>

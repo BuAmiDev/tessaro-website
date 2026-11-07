@@ -1,24 +1,48 @@
-# Design
+# Design (v2 redesign)
 
-## Concept: "Every operational piece, intelligently connected"
-The Tessaro mark is a mosaic of tiles. The site uses the same idea: requests, technicians, assets, contracts and decisions are tiles on one plate, joined by a 3-unit grout line (`.tilegrid`). Emerald marks the one tile that needs attention now. Outer corners are crisp, inner corners soft (from the logo).
+## What changed and why
+The first version leaned on a templated look: mint buttons, dark-green banners, equal white cards, repeated status badges, a decorative mosaic and a boxed footer. v2 replaces the shared system, not just its colours.
+
+| Was | Now |
+|---|---|
+| Small logo in a crowded, translucent header | Logo +20% (29 px desktop, 27 px mobile). Opaque chalk header. Five nav groups; Support moved into Resources. One solid action (Book a demo), one outlined (Start a trial). |
+| Miniature tile diorama in a rounded frame | A full-scale building at 1:1 metres: exterior, Level 4, Room 4.07, the ceiling void, the operations office, the service yard, then the portfolio. |
+| Dark-green page banners | `PageIntro` in two sizes: `editorial` for reading pages, `tool` for task pages. Light, typographic, with different compositions per page. |
+| Mint primary and dark boxed secondary buttons | Solid ink primary, outlined secondary, underlined text tertiary. 6 px radius, 48 px height. On dark surfaces the primary becomes chalk. |
+| Equal white cards everywhere | Open rows with top rules for prose. Panels only for controls, saved objects and comparisons. |
+| Status badges on every block | Plain-text availability only in detail rows, plus one availability table (`/features#availability`). |
+| Mosaic illustration | Removed. A section drawing of one building shows how the four domains share one record. |
+| IBM Plex Sans | Instrument Sans variable (OFL) for all text and controls. Sora is kept as the display face. Plex Sans Arabic stays only for Arabic script, which Instrument Sans lacks. |
+| Boxed footer columns | An open footer: a closing statement, a 40 px logo, four plain link groups. |
 
 ## Tokens (`src/styles/tokens.css`)
-- Palette: Graphite (900 #0E1413), Forest, Porcelain, Steel, Ink; Emerald 600 #0B8457 (light surfaces), Emerald 400 #2BC48A (dark), Mint #E4F6EC for selected states.
-- Semantic: ok, wait, alert, info, neutral, each with a tint. Always paired with text and an icon.
-- Surfaces: `data-surface="dark" | "forest"` re-maps every token, including text colour.
-- Type: Sora variable for display (600, tight tracking), IBM Plex Sans 400/500/600 for text, Plex Sans Arabic for Arabic. Scale `--t-xs` to `--t-hero`. Minimum functional text 11px.
-- Radii `--r-xs` to `--r-lg`; elevation `--e-float`, `--e-overlay`; motion `--ease-out`, `--ease-in-out`, `--ease-drawer`, durations `--d-press` 120 ms, `--d-fast`, `--d-panel` 280 ms.
-- Live specimen: `/design-system` (not indexed).
+- **Palette:** chalk #F7F7F4, white, ink #202522 (with 7.6:1 and 5.2:1 tints), line #D9DDD7, green #245B46 (7.9:1 on chalk), green tint #E8EFEB, night #121614, brass #B8863B. Semantic ok, wait, alert and info always appear with text.
+- **Dark:** `data-surface="dark"` only. Used in the specimen; the story itself stays on light architecture.
+- **Type:** text 17–18 px body; display steps from `--t-xl` up to `--t-hero`; secondary text never below 13 px.
+- **Spacing:** 4 px base; sections 88–168 px.
+- **Radii:** 4 / 6 / 10 / 16.
+- **Depth:** `--e-1`, `--e-float`, `--e-overlay`.
+- **Motion:** ease-out, ease-in-out, drawer curves; 120 / 180 / 300 ms.
+- **Specimen:** `/design-system` (not indexed).
 
-## Status system
-Available / Pilot release / Designed / Proposed (`src/config/brand.ts`). Proposed items use dashed borders and cannot be added to a setup.
+## The architectural story (`src/story/`)
+- **Data** (`story-data.ts`): one fault at Harbour Point, a fictional building. FCU-L4-07 in Room 4.07, work order WO-2611-0418, technician Rami S., dispatcher Lina K. Eight chapters, each with an actor (automatic / suggested and confirmed / person / technician), a source, a compressed clock and a still position. The record builds row by row, and readings change from normal to alert to verified.
+- **Scene** (`scene.ts`): Three.js, everything in metres.
+  - Building: 6 floors, 3.6 m slabs, curtain wall with instanced mullions, rooftop air-handling units, service entrance.
+  - Room 4.07: suspended ceiling with an openable 3×3-tile cutaway. The fan coil unit is drawn in component view (blower, motor, copper coil, chilled-water valve, and an actuator that is swapped after repair).
+  - Office: a wall screen and a desk screen drawn from the same work record.
+  - People and site: people at human scale (about 1.75 m), a van and the technician's route, neighbouring portfolio buildings.
+  - Camera: Catmull-Rom shots separated by three match cuts (0.535, 0.67, 0.755), each hidden by a short chalk fade.
+  - Determinism: every visible state is a pure function of scroll progress, so going backward is consistent.
+- **Component** (`Story.astro`):
+  - **Live mode** (capable desktops): sticky 340vh section with chapter navigation, Replay, Overview and Skip story. Annotations are projected from 3D anchors each frame.
+  - **Stills mode** (phones, low power, data saver, no WebGL): composed portrait or landscape stills rendered from the same scene, with cross-fades. Overlays still work.
+  - **Static mode** (reduced motion): no pinned scroll; the chapter buttons and Previous/Next switch views directly.
+  - **Story at a glance:** an HTML list of all eight chapters, which also serves as the text alternative.
+- **Opening assembly:** the floors settle once over 1.5 s. The headline and navigation are usable immediately.
 
-## Hero storyboard (14.2 s)
-1. Freezer FZ-07 stops cooling (amber pin). 2. Request understood (robot wakes, suggestion). 3. Coverage checked (contract tile). 4. Technician matched (dispatcher confirms). 5. Approval required (customer decides). 6. Customer updated (drafted message). 7. Technician on site. 8. Completion recorded (evidence card, plate settles).
-- First frame: poster image (`/hero/poster.webp`, mobile `/hero/poster-mobile.webp`), rendered from the scene itself with `?hero-still=7.3`.
-- Phones, ≤4-core devices and data-saver: poster plus "Play animation". Reduced motion: final state, full step list, Play on request.
-- Controls: Play/Pause, Replay. Pauses off-screen and in background tabs. Falls back to the poster if WebGL is unavailable.
+## Homepage order
+Story, then the four domains with a shared drawing, then from one room to a portfolio (operating models), then scenarios (simulator preview), then shaping the setup (three choices with a live preview), then how the intelligence works (signal / context / rule / action / evidence layers), then what you can rely on, then two ways to start, then questions, then the footer.
 
-## Components
-Header with mega menus (keyboard: Esc, focus-out), mobile sheet; footer tile panel; PageIntro; Status; ProductShot (screen ID, "Designed screen", link to prototype); CapCard; SignInForm; notices (`.notice`, `.notice-test`); form fields with inline errors and `aria-invalid`.
+## Regenerating stills
+Run `npm run build`, then `python3 ../tools/story_stills.py dist <out> 0.03,0.215,0.38,0.47,0.6,0.795,0.865,1`, then convert to `public/story/c{i}-{l|p}.webp`. `/story-lab` is the internal page used for rendering (not indexed, not in the sitemap).

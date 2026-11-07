@@ -3,11 +3,11 @@ import Logo from './Logo.astro';
 import Icon from './Icon.astro';
 import { NAV } from '../content/site';
 interface Props { tone?: 'light' | 'dark'; current?: string; }
-const { tone = 'light', current = '' } = Astro.props;
+const { current = '' } = Astro.props;
 ---
-<header class="hdr" data-surface={tone === 'dark' ? 'dark' : undefined} data-hdr>
+<header class="hdr" data-hdr>
   <div class="hdr-in wrap">
-    <a href="/" class="hdr-logo" aria-label="Tessaro home"><Logo tone={tone} height={24} /></a>
+    <a href="/" class="hdr-logo" aria-label="Tessaro home"><Logo height={29} /></a>
     <nav aria-label="Main" class="hdr-nav">
       <ul role="list">
         {NAV.map((item) => (
@@ -15,17 +15,17 @@ const { tone = 'light', current = '' } = Astro.props;
             {'groups' in item ? (
               <>
                 <button class="hdr-link" aria-expanded="false" aria-controls={`mm-${item.id}`} data-mm-btn aria-current={current === item.id ? 'page' : undefined}>
-                  {item.label}<Icon name="chevron-down" size={15} class="chev" />
+                  {item.label}<Icon name="chevron-down" size={14} class="chev" />
                 </button>
                 <div class="mm" id={`mm-${item.id}`} hidden data-mm>
-                  <div class="mm-in">
+                  <div class="mm-in wrap">
                     <div class="mm-groups">
                       {item.groups.map((g) => (
                         <div class="mm-group">
                           <p class="mm-title">{g.title}</p>
                           <ul role="list">
                             {g.links.map((l) => (
-                              <li><a href={l.href} class="mm-link" {...('external' in l && l.external ? { target: '_blank', rel: 'noopener' } : {})}>
+                              <li><a href={l.href} class="mm-link" data-preview={l.desc} {...('external' in l && l.external ? { target: '_blank', rel: 'noopener' } : {})}>
                                 <span class="mm-l">{l.label}{'external' in l && l.external && <Icon name="arrow-up-right" size={14} />}</span>
                                 <span class="mm-d">{l.desc}</span>
                               </a></li>
@@ -35,12 +35,33 @@ const { tone = 'light', current = '' } = Astro.props;
                       ))}
                     </div>
                     {'featured' in item && item.featured && (
-                      <a class="mm-feature" href={item.featured.href} data-surface="forest">
-                        <span class="mm-tiles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-                        <span class="mm-f-k">Scenario</span>
+                      <a class="mm-feature" href={item.featured.href}>
+                        {item.id === 'platform' ? (
+                          <svg class="mm-fig" viewBox="0 0 240 150" aria-hidden="true">
+                            <g fill="none" stroke="currentColor" stroke-width="1">
+                              <path d="M120 75 L40 28 M120 75 L200 28 M120 75 L40 122 M120 75 L200 122" opacity=".35" />
+                              <rect x="96" y="58" width="48" height="34" rx="5" fill="var(--white)" />
+                            </g>
+                            <g font-size="10" font-family="var(--font-body)" fill="currentColor">
+                              <text x="120" y="79" text-anchor="middle" font-weight="600">Record</text>
+                              <text x="18" y="24">Facilities</text><text x="222" y="24" text-anchor="end">Maintenance</text>
+                              <text x="18" y="134">Field service</text><text x="222" y="134" text-anchor="end">Assets</text>
+                            </g>
+                            <g fill="var(--green)"><circle cx="40" cy="28" r="3" /><circle cx="200" cy="28" r="3" /><circle cx="40" cy="122" r="3" /><circle cx="200" cy="122" r="3" /></g>
+                          </svg>
+                        ) : (
+                          <svg class="mm-fig" viewBox="0 0 240 150" aria-hidden="true">
+                            <g font-size="10" font-family="var(--font-body)" fill="currentColor">
+                              <rect x="10" y="20" width="96" height="26" rx="5" fill="var(--white)" stroke="currentColor" stroke-opacity=".3" /><text x="20" y="37">Buildings</text>
+                              <rect x="10" y="56" width="96" height="26" rx="5" fill="var(--green-tint)" stroke="var(--green)" /><text x="20" y="73" font-weight="600">Equipment</text>
+                              <rect x="10" y="92" width="96" height="26" rx="5" fill="var(--white)" stroke="currentColor" stroke-opacity=".3" /><text x="20" y="109">Both</text>
+                              <path d="M112 69 H140" stroke="currentColor" stroke-opacity=".4" />
+                              <text x="146" y="50" opacity=".7">Technicians</text><text x="146" y="66" opacity=".7">Contracts</text><text x="146" y="82" font-weight="600">Planned work</text><text x="146" y="98" opacity=".7">Approvals</text>
+                            </g>
+                          </svg>
+                        )}
                         <span class="mm-f-t">{item.featured.title}</span>
-                        <span class="mm-f-d">{item.featured.text}</span>
-                        <span class="mm-f-go">Open in the simulator <Icon name="arrow-right" size={15} /></span>
+                        <span class="mm-f-d" data-preview-out>{item.featured.text}</span>
                       </a>
                     )}
                   </div>
@@ -55,18 +76,18 @@ const { tone = 'light', current = '' } = Astro.props;
     </nav>
     <div class="hdr-util">
       <a class="hdr-setup" href="/my-setup" data-setup-link aria-label="My setup">
-        <Icon name="layers" size={18} /><span class="hdr-setup-t">My setup</span><span class="count" data-setup-count hidden></span>
+        <Icon name="bookmark" size={19} /><span class="count" data-setup-count hidden></span>
       </a>
-      <a class="hdr-signin" href="/sign-in" data-signin-link>Sign in</a>
-      <a class="btn btn-sm hdr-demo" href="/demo">Book a demo</a>
-      <a class="btn btn-sm btn-primary" href="/trial">Start a trial</a>
+      <a class="hdr-text" href="/sign-in" data-signin-link>Sign in</a>
+      <a class="btn btn-sm hdr-trial" href="/trial">Start a trial</a>
+      <a class="btn btn-sm btn-primary hdr-demo" href="/demo">Book a demo</a>
       <button class="hdr-menu" aria-expanded="false" aria-controls="mobile-nav" data-mobile-btn aria-label="Open menu">
-        <Icon name="menu" size={22} class="i-open" /><Icon name="x" size={22} class="i-close" />
+        <span class="bars" aria-hidden="true"><i></i><i></i></span>
       </button>
     </div>
   </div>
   <div class="mnav" id="mobile-nav" hidden data-mobile>
-    <nav aria-label="Mobile" class="mnav-in">
+    <nav aria-label="Mobile" class="mnav-in wrap">
       {NAV.map((item) => 'groups' in item ? (
         <details class="mnav-g">
           <summary>{item.label}<Icon name="chevron-down" size={18} /></summary>
@@ -77,91 +98,107 @@ const { tone = 'light', current = '' } = Astro.props;
       ) : (
         <a class="mnav-a" href={item.href}>{item.label}</a>
       ))}
+      <a class="mnav-a" href="/support">Support</a>
       <div class="mnav-util">
-        <a class="mnav-a" href="/my-setup"><Icon name="layers" size={18} /> My setup <span class="count" data-setup-count hidden></span></a>
-        <a class="mnav-a" href="/sign-in" data-signin-link><Icon name="log-in" size={18} /> Sign in</a>
-        <a class="mnav-a" href="/support"><Icon name="life-buoy" size={18} /> Support</a>
+        <a href="/my-setup">My setup <span class="count" data-setup-count hidden></span></a>
+        <a href="/sign-in" data-signin-link>Sign in</a>
       </div>
     </nav>
-    <div class="mnav-cta">
-      <a class="btn" href="/demo">Book a demo</a>
-      <a class="btn btn-primary" href="/trial">Start a trial</a>
+    <div class="mnav-cta wrap">
+      <a class="btn" href="/trial">Start a trial</a>
+      <a class="btn btn-primary" href="/demo">Book a demo</a>
     </div>
   </div>
 </header>
 
 <style>
-  .hdr { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: color-mix(in oklab, var(--bg) 92%, transparent); backdrop-filter: saturate(140%) blur(12px); -webkit-backdrop-filter: saturate(140%) blur(12px); border-bottom: 1px solid var(--line); color: var(--fg); }
-  .hdr-in { display: flex; align-items: center; gap: 20px; height: 68px; }
-  .hdr-logo { display: inline-flex; padding: 6px 4px; margin-left: -4px; border-radius: 6px; flex: 0 0 auto; }
+  .hdr { position: sticky; top: 0; z-index: 50; background: var(--chalk); color: var(--ink); border-bottom: 1px solid transparent; transition: border-color var(--d-fast) ease; }
+  .hdr.scrolled { border-bottom-color: var(--line-c); }
+  .hdr-in { display: flex; align-items: center; gap: 28px; height: 80px; }
+  .hdr-logo { display: inline-flex; padding: 4px; margin-left: -4px; border-radius: 4px; flex: 0 0 auto; }
   .hdr-nav { flex: 1; min-width: 0; }
-  .hdr-nav > ul { display: flex; gap: 2px; justify-content: center; margin: 0; }
-  .hdr-link { display: inline-flex; align-items: center; gap: 4px; height: 40px; padding: 0 12px; border: 0; background: none; border-radius: 6px; font-size: var(--t-sm); font-weight: 500; color: var(--fg-2); text-decoration: none; cursor: pointer; transition: color var(--d-fast) ease, background-color var(--d-fast) ease; white-space: nowrap; }
-  .hdr-link:hover, .hdr-link[aria-expanded="true"] { color: var(--fg); background: var(--surface); }
-  .hdr-link[aria-current="page"] { color: var(--fg); box-shadow: inset 0 -2px 0 var(--accent); border-radius: 6px 6px 0 0; }
-  .hdr-link :global(.chev) { transition: transform var(--d-fast) var(--ease-out); }
+  .hdr-nav > ul { display: flex; gap: 6px; margin: 0; padding-left: 12px; }
+  .hdr-link { position: relative; display: inline-flex; align-items: center; gap: 5px; height: 44px; padding: 0 12px; border: 0; background: none; font-size: 1rem; font-weight: 520; color: var(--ink-2); text-decoration: none; cursor: pointer; transition: color var(--d-fast) ease; white-space: nowrap; }
+  .hdr-link::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 6px; height: 1.5px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform var(--d-panel) var(--ease-out); }
+  .hdr-link:hover, .hdr-link[aria-expanded="true"], .hdr-link[aria-current="page"] { color: var(--ink); }
+  .hdr-link:hover::after, .hdr-link[aria-expanded="true"]::after, .hdr-link[aria-current="page"]::after { transform: scaleX(1); }
+  .hdr-link :global(.chev) { transition: transform var(--d-fast) var(--ease-out); opacity: .7; }
   .hdr-link[aria-expanded="true"] :global(.chev) { transform: rotate(180deg); }
-  .hdr-util { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
-  .hdr-signin, .hdr-setup { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 10px; border-radius: 6px; font-size: var(--t-sm); font-weight: 500; color: var(--fg-2); text-decoration: none; }
-  .hdr-signin:hover, .hdr-setup:hover { color: var(--fg); background: var(--surface); }
-  .count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--accent); color: var(--accent-fg); font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums; }
-  .hdr-menu { display: none; width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); align-items: center; justify-content: center; cursor: pointer; color: var(--fg); }
-  .hdr-menu :global(.i-close) { display: none; }
-  .hdr-menu[aria-expanded="true"] :global(.i-open) { display: none; }
-  .hdr-menu[aria-expanded="true"] :global(.i-close) { display: block; }
+  .hdr-util { display: flex; align-items: center; gap: 14px; flex: 0 0 auto; }
+  .hdr-text { font-size: 1rem; font-weight: 520; color: var(--ink-2); text-decoration: none; padding: 10px 4px; }
+  .hdr-text:hover { color: var(--ink); text-decoration: underline; }
+  .hdr-setup { position: relative; display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: var(--r-sm); color: var(--ink-2); }
+  .hdr-setup:hover { color: var(--ink); background: rgba(32,37,34,.05); }
+  .hdr-setup .count { position: absolute; top: 4px; right: 2px; }
+  .count { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--green); color: #fff; font-size: 11px; font-weight: 650; display: inline-flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums; }
+  .hdr-menu { display: none; width: 44px; height: 44px; border: 0; background: none; align-items: center; justify-content: center; cursor: pointer; color: var(--ink); border-radius: var(--r-sm); }
+  .bars { display: grid; gap: 6px; width: 22px; }
+  .bars i { display: block; height: 1.5px; background: currentColor; transition: transform var(--d-panel) var(--ease-out); }
+  .hdr-menu[aria-expanded="true"] .bars i:first-child { transform: translateY(3.75px) rotate(45deg); }
+  .hdr-menu[aria-expanded="true"] .bars i:last-child { transform: translateY(-3.75px) rotate(-45deg); }
 
-  /* Mega menu */
-  .mm { position: absolute; left: 0; right: 0; top: 100%; padding: 0 var(--gutter-r) 0 var(--gutter); }
-  .mm-in { max-width: var(--page-max); margin: 8px auto 0; background: var(--overlay); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--e-overlay); padding: 28px; display: grid; grid-template-columns: 1fr 300px; gap: 28px; transform-origin: top center; animation: mm-in var(--d-fast) var(--ease-out); }
-  @keyframes mm-in { from { opacity: 0; transform: translateY(-4px) scale(.99); } }
-  .mm-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; }
-  .mm-title { font-size: var(--t-xs); font-weight: 600; color: var(--fg-3); margin-bottom: 8px; padding-left: 12px; }
-  .mm-group ul { margin: 0; display: grid; gap: 2px; }
-  .mm-link { display: grid; gap: 2px; padding: 10px 12px; border-radius: var(--r-sm); text-decoration: none; transition: background-color var(--d-fast) ease; }
-  .mm-link:hover { background: var(--surface); }
-  .mm-l { font-weight: 600; font-size: var(--t-sm); color: var(--fg); display: inline-flex; gap: 4px; align-items: center; }
-  .mm-d { font-size: var(--t-xs); color: var(--fg-2); line-height: 1.45; }
-  .mm-feature { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 6px; padding: 22px; border-radius: var(--r-md); background: var(--bg); color: var(--fg); text-decoration: none; min-height: 220px; }
-  .mm-tiles { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 22px 22px; gap: 3px; width: 110px; margin-bottom: auto; }
-  .mm-tiles i { background: var(--line-strong); border-radius: 3px; }
-  .mm-tiles i:nth-child(1) { grid-row: span 2; background: var(--accent); }
-  .mm-f-k { font-size: var(--t-xs); color: var(--fg-3); font-weight: 600; margin-top: 16px; }
-  .mm-f-t { font-family: var(--font-display); font-weight: 600; font-size: 1.125rem; line-height: 1.25; }
-  .mm-f-d { font-size: var(--t-xs); color: var(--fg-2); }
-  .mm-f-go { display: inline-flex; gap: 6px; align-items: center; font-size: var(--t-sm); font-weight: 600; color: var(--accent-text); margin-top: 6px; }
+  /* Mega menu: a sheet that grows from the header edge */
+  .mm { position: absolute; left: 0; right: 0; top: 100%; background: var(--white); border-top: 1px solid var(--line-c); border-bottom: 1px solid var(--line-c); box-shadow: 0 30px 60px -40px rgba(32,37,34,.35); animation: mm-in var(--d-panel) var(--ease-out); transform-origin: top; }
+  @keyframes mm-in { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+  .mm-in { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 56px; padding-block: 36px 44px; }
+  .mm-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 40px; }
+  .mm-title { font-size: var(--t-sm); font-weight: 600; color: var(--ink-3); margin-bottom: 10px; }
+  .mm-group ul { margin: 0; display: grid; }
+  .mm-link { display: grid; gap: 3px; padding: 12px 0; text-decoration: none; border-top: 1px solid var(--line-c); }
+  .mm-link:hover .mm-l, .mm-link:focus-visible .mm-l { color: var(--green); }
+  .mm-l { font-weight: 600; font-size: 1.0625rem; color: var(--ink); display: inline-flex; gap: 6px; align-items: center; transition: color var(--d-fast) ease; }
+  .mm-d { font-size: var(--t-sm); color: var(--ink-2); line-height: 1.45; }
+  .mm-feature { display: flex; flex-direction: column; gap: 8px; padding: 24px; border-radius: var(--r-md); background: var(--chalk); color: var(--ink); text-decoration: none; transition: background-color var(--d-fast) ease; }
+  .mm-feature:hover { background: #F0F1EC; }
+  .mm-fig { width: 100%; height: auto; color: var(--ink); margin-bottom: 8px; }
+  .mm-f-t { font-family: var(--font-display); font-weight: 560; font-size: 1.25rem; letter-spacing: -0.02em; line-height: 1.2; }
+  .mm-f-d { font-size: var(--t-sm); color: var(--ink-2); min-height: 2.9em; transition: opacity var(--d-fast) ease; }
 
   /* Mobile */
-  .mnav { position: fixed; inset: 68px 0 0 0; top: calc(68px + env(safe-area-inset-top, 0px)); background: var(--bg); overflow: auto; overscroll-behavior: contain; display: flex; flex-direction: column; padding: 8px var(--gutter-r) calc(16px + env(safe-area-inset-bottom, 0px)) var(--gutter); }
+  .mnav { position: fixed; inset: 80px 0 0 0; background: var(--chalk); overflow: auto; overscroll-behavior: contain; display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom, 0px); animation: mm-in var(--d-panel) var(--ease-out); }
   .mnav[hidden] { display: none; }
-  .mnav-in { flex: 1; display: grid; align-content: start; }
-  .mnav-g, .mnav-a { border-bottom: 1px solid var(--line); }
-  .mnav-g summary, .mnav-a { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 56px; font-weight: 600; font-size: var(--t-md); text-decoration: none; cursor: pointer; list-style: none; }
+  .mnav-in { flex: 1; display: grid; align-content: start; padding-top: 8px; }
+  .mnav-g, .mnav-a { border-bottom: 1px solid var(--line-c); }
+  .mnav-g summary, .mnav-a { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 64px; font-family: var(--font-display); font-weight: 520; font-size: 1.5rem; letter-spacing: -0.02em; text-decoration: none; cursor: pointer; list-style: none; }
   .mnav-g summary::-webkit-details-marker { display: none; }
+  .mnav-g summary :global(svg) { transition: transform var(--d-fast) var(--ease-out); }
   .mnav-g[open] summary :global(svg) { transform: rotate(180deg); }
-  .mnav-g ul { margin: 0 0 12px; display: grid; }
-  .mnav-g a { display: grid; padding: 10px 0 10px 12px; text-decoration: none; border-left: 2px solid var(--line); }
-  .mnav-g a small { color: var(--fg-2); font-size: var(--t-xs); }
-  .mnav-util .mnav-a { justify-content: flex-start; font-weight: 500; }
-  .mnav-cta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 16px; position: sticky; bottom: 0; background: var(--bg); }
+  .mnav-g ul { margin: 0 0 16px; display: grid; }
+  .mnav-g a { display: grid; padding: 10px 0; text-decoration: none; }
+  .mnav-g a span { font-weight: 600; }
+  .mnav-g a small { color: var(--ink-2); font-size: var(--t-sm); }
+  .mnav-util { display: flex; gap: 24px; padding: 20px 0; }
+  .mnav-util a { font-weight: 560; text-decoration: none; display: inline-flex; gap: 8px; align-items: center; }
+  .mnav-cta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-block: 16px; position: sticky; bottom: 0; background: var(--chalk); border-top: 1px solid var(--line-c); }
 
-  @media (max-width: 1180px) { .hdr-setup-t { display: none; } }
+  @media (max-width: 1240px) { .hdr-text { display: none; } .hdr-in { gap: 20px; } .hdr-nav > ul { padding-left: 0; gap: 0; } }
   @media (max-width: 1080px) {
-    .hdr-nav, .hdr-signin, .hdr-setup, .hdr-demo { display: none; }
+    .hdr-nav, .hdr-setup, .hdr-trial { display: none; }
     .hdr-util { margin-left: auto; }
     .hdr-menu { display: inline-flex; }
+    .hdr-in { height: 72px; }
+    .mnav { inset: 72px 0 0 0; }
+    .hdr-logo :global(svg) { height: 27px; width: auto; }
   }
-  @media (max-width: 420px) { .hdr-util > .btn-primary { display: none; } }
+  @media (max-width: 420px) { .hdr-demo { display: none; } }
 </style>
 
 <script>
   import { load, countItems } from '../lib/setup-store';
   import { auth } from '../integrations/index';
-  const hdr = document.querySelector('[data-hdr]')!;
+  const hdr = document.querySelector<HTMLElement>('[data-hdr]')!;
   const btns = [...hdr.querySelectorAll<HTMLButtonElement>('[data-mm-btn]')];
   const closeAll = (except?: HTMLButtonElement) => btns.forEach((b) => { if (b !== except) { b.setAttribute('aria-expanded', 'false'); (document.getElementById(b.getAttribute('aria-controls')!) as HTMLElement).hidden = true; } });
   btns.forEach((b) => {
     const panel = document.getElementById(b.getAttribute('aria-controls')!) as HTMLElement;
     b.addEventListener('click', () => { const open = b.getAttribute('aria-expanded') === 'true'; closeAll(b); b.setAttribute('aria-expanded', String(!open)); panel.hidden = open; });
+    // Hover preview: the featured panel echoes the link under the pointer.
+    const out = panel.querySelector<HTMLElement>('[data-preview-out]'); const orig = out?.textContent || '';
+    panel.querySelectorAll<HTMLElement>('[data-preview]').forEach((l) => {
+      const show = () => { if (out) out.textContent = l.dataset.preview!; };
+      l.addEventListener('pointerenter', show); l.addEventListener('focus', show);
+    });
+    panel.addEventListener('pointerleave', () => { if (out) out.textContent = orig; });
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { const open = btns.find((b) => b.getAttribute('aria-expanded') === 'true'); if (open) { closeAll(); open.focus(); } } });
   document.addEventListener('click', (e) => { if (!hdr.contains(e.target as Node)) closeAll(); });
@@ -170,8 +207,9 @@ const { tone = 'light', current = '' } = Astro.props;
   const setMobile = (open: boolean) => { mb.setAttribute('aria-expanded', String(open)); mb.setAttribute('aria-label', open ? 'Close menu' : 'Open menu'); mp.hidden = !open; document.documentElement.style.overflow = open ? 'hidden' : ''; };
   mb.addEventListener('click', () => setMobile(mb.getAttribute('aria-expanded') !== 'true'));
   window.matchMedia('(min-width: 1081px)').addEventListener('change', (m) => { if (m.matches) setMobile(false); });
+  const onScroll = () => hdr.classList.toggle('scrolled', scrollY > 4);
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
   const paint = () => { const n = countItems(load()); hdr.querySelectorAll<HTMLElement>('[data-setup-count]').forEach((c) => { c.hidden = !n; c.textContent = String(n); }); };
   paint(); window.addEventListener('setup:change', paint); window.addEventListener('storage', paint);
-  const acc = auth.current();
-  if (acc) hdr.querySelectorAll<HTMLAnchorElement>('[data-signin-link]').forEach((a) => { a.lastChild!.textContent = ' Account'; a.href = '/my-setup'; });
+  if (auth.current()) hdr.querySelectorAll<HTMLAnchorElement>('[data-signin-link]').forEach((a) => { a.textContent = 'Account'; a.href = '/my-setup'; });
 </script>

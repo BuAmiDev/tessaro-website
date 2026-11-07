@@ -1,53 +1,83 @@
 ---
 import Base from '../../layouts/Base.astro';
 import PageIntro from '../../components/PageIntro.astro';
-import ProductShot from '../../components/ProductShot.astro';
 import CapCard from '../../components/CapCard.astro';
-import Icon from '../../components/Icon.astro';
+import DomainVisual from '../../components/DomainVisual.astro';
 import { PLATFORM } from '../../content/platform';
-import { CAPABILITIES } from '../../content/capabilities';
+import { DOMAINS } from '../../content/domains';
+import { CAPABILITIES, capabilityById } from '../../content/capabilities';
 import { scenarioById } from '../../lib/scenario-engine';
-export function getStaticPaths() { return PLATFORM.map((p) => ({ params: { slug: p.slug }, props: { p } })); }
-const { p } = Astro.props;
-const caps = CAPABILITIES.filter((c) => p.groups.includes(c.group));
-const i = PLATFORM.findIndex((x) => x.slug === p.slug);
-const next = PLATFORM[(i + 1) % PLATFORM.length];
-const sc = scenarioById[p.scenario];
+import { brand } from '../../config/brand';
+export function getStaticPaths() {
+  return [
+    ...DOMAINS.map((d) => ({ params: { slug: d.id }, props: { kind: 'domain' as const, id: d.id } })),
+    ...PLATFORM.map((p) => ({ params: { slug: p.slug }, props: { kind: 'area' as const, id: p.slug } })),
+  ];
+}
+const { kind, id } = Astro.props;
+const d = kind === 'domain' ? DOMAINS.find((x) => x.id === id)! : null;
+const a = kind === 'area' ? PLATFORM.find((x) => x.slug === id)! : null;
+const title = d ? d.name : a!.title;
+const lead = d ? d.body : a!.lead;
+const caps = d ? d.covers.map((c) => capabilityById[c]).filter(Boolean) : CAPABILITIES.filter((c) => a!.groups.includes(c.group));
+const scenario = d ? (caps.find((c) => c.scenarios.length)?.scenarios[0] ?? 'bms-alarm') : a!.scenario;
+const others = d ? DOMAINS.filter((x) => x.id !== d.id) : [];
+const links: Record<string, string> = {
+  facilities: 'Requests from a room attach to the asset that serves it, so maintenance and field teams start with the right unit.',
+  maintenance: 'Planned visits are generated from the asset register and dispatched like any other job.',
+  'field-service': 'Every visit writes back readings, photos and parts to the asset’s history.',
+  assets: 'Condition and cost come from the work actually done, not from a separate spreadsheet.',
+};
 ---
-<Base title={p.title} description={p.lead} current="platform">
-  <PageIntro title={p.title} lead={p.lead} crumbs={[['Platform', '/platform']]}>
-    <div class="row"><a class="btn btn-primary" href={`/simulator?scenario=${p.scenario}`}>Try it: {sc.name} <Icon name="arrow-right" size={16} /></a></div>
-  </PageIntro>
-  <section class="section">
-    <div class="wrap pd">
-      <ProductShot id={p.shot.id} w={p.shot.w} h={p.shot.h} alt={p.shot.alt} lazy={false} />
-      <div class="pd-side">
-        <h2 class="h3">How the parts connect</h2>
-        <p class="muted">{caps.length} capabilities in this area share one record with the rest of the platform. A request created here keeps its contract, asset, approvals and evidence wherever it goes next.</p>
-        <p class="xs muted">The screen is from the clickable prototype with sample data. It is not a live customer workspace.</p>
-      </div>
+<Base title={d ? `${d.name} (${d.acronym})` : title} description={lead} current="platform">
+  <PageIntro title={title} lead={lead} crumbs={[['Platform', '/platform']]} eyebrow={d ? `${d.acronym} · ${d.short}` : 'Shared capability'}>
+    <div class="ia">
+      <a class="btn btn-primary" href={`/simulator?scenario=${scenario}`}>Try it in a scenario</a>
+      <p class="small muted">Scenario: {scenarioById[scenario]?.name}</p>
     </div>
-  </section>
+  </PageIntro>
+
+  {d && (
+    <section class="section flush-top">
+      <div class="wrap dd">
+        <div class="dd-vis"><DomainVisual active={d.id} /></div>
+        <div class="dd-copy">
+          <p class="dd-q">{d.question}</p>
+          <p class="muted">{links[d.id]}</p>
+          <h2 class="h4">Connected to</h2>
+          <ul role="list" class="dd-o">{others.map((o) => <li><a href={`/platform/${o.id}`}>{o.name}</a><span>{links[o.id]}</span></li>)}</ul>
+        </div>
+      </div>
+    </section>
+  )}
+
   <section class="section tight">
     <div class="wrap">
-      <div class="section-head"><h2>Capabilities</h2></div>
-      <ul class="cgrid" role="list">{caps.map((c) => <CapCard c={c} />)}</ul>
+      <div class="caps-h"><h2 class="h3">What it covers</h2><p class="small muted">Availability is shown on each item. “Designed” means specified and clickable in the <a class="link" href={brand.productUrl} target="_blank" rel="noopener">prototype</a>, not yet in production.</p></div>
+      <ul role="list" class="caps">{caps.map((c) => <CapCard c={c} />)}</ul>
     </div>
   </section>
-  <section class="section tight">
-    <div class="wrap nextrow">
-      <a class="btn" href="/platform"><Icon name="arrow-left" size={16} /> All areas</a>
-      <a class="btn btn-quiet" href={`/platform/${next.slug}`}>Next: {next.title} <Icon name="arrow-right" size={16} /></a>
+
+  <section class="section tight next">
+    <div class="wrap row between">
+      <a class="link" href="/platform">How the platform fits together</a>
+      <a class="link" href="/features">Search every capability</a>
     </div>
   </section>
 </Base>
 <style>
-  .pd { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 40px; align-items: center; }
-  .pd-side { display: grid; gap: 14px; }
-  .cgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; }
-  .nextrow .btn { white-space: normal; }
-  .nextrow { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  @media (max-width: 1000px) { .cgrid { grid-template-columns: 1fr 1fr; } .pd { grid-template-columns: 1fr; } }
-  @media (max-width: 640px) { .cgrid { grid-template-columns: 1fr; } }
+  .ia { display: grid; gap: 10px; justify-items: start; }
+  .dd { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 64px; align-items: center; }
+  .dd-vis { background: var(--white); border-radius: var(--r-lg); padding: clamp(16px, 2.4vw, 36px); }
+  .dd-copy { display: grid; gap: 16px; }
+  .dd-q { font-family: var(--font-display); font-size: var(--t-xl); letter-spacing: -0.025em; line-height: 1.15; }
+  .dd-o { margin: 0; border-top: 1px solid var(--line); }
+  .dd-o li { display: grid; gap: 4px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .dd-o a { font-weight: 600; text-decoration: none; } .dd-o a:hover { color: var(--green); text-decoration: underline; }
+  .dd-o span { font-size: var(--t-sm); color: var(--fg-2); }
+  .caps-h { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 16px 40px; align-items: end; margin-bottom: 24px; }
+  .caps { margin: 0; border-bottom: 1px solid var(--line); }
+  .between { justify-content: space-between; }
+  @media (max-width: 1000px) { .dd, .caps-h { grid-template-columns: 1fr; } }
 </style>
 <script>import { wireAddButtons } from '../../scripts/add-buttons'; wireAddButtons();</script>

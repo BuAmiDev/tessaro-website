@@ -70,12 +70,12 @@ const STEPS = ['Account', 'Company', 'Plan', 'Payment', 'Workspace', 'Welcome'];
   .tr { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; max-width: 880px; }
   .tr-head { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .tr-head h1 { overflow-wrap: anywhere; }
-  .tr-steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; margin: 0; background: var(--line); border: 3px solid var(--line); border-radius: var(--r-xs); }
-  .tr-steps li { background: var(--surface-raised); border-radius: 5px; padding: 8px 10px; display: flex; gap: 8px; align-items: center; font-size: var(--t-xs); color: var(--fg-2); }
-  .tr-steps .n { width: 22px; height: 22px; border-radius: 5px; display: grid; place-items: center; background: var(--surface); font-weight: 600; flex: none; }
-  .tr-steps li.done { color: var(--fg); } .tr-steps li.done .n { background: var(--ok-tint); color: var(--ok); }
-  .tr-steps li.now { background: var(--surface-selected); color: var(--fg); font-weight: 600; } .tr-steps li.now .n { background: var(--accent); color: #fff; }
-  .tr-body > section { display: grid; gap: 16px; padding: 28px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-raised); }
+  .tr-steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; margin: 0; border-top: 2px solid var(--line); }
+  .tr-steps li { padding: 12px 8px 0 0; display: flex; gap: 8px; align-items: center; font-size: var(--t-sm); color: var(--fg-3); margin-top: -2px; border-top: 2px solid transparent; }
+  .tr-steps .n { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); font-weight: 600; flex: none; font-size: 12px; }
+  .tr-steps li.done { color: var(--fg-2); border-top-color: var(--green); } .tr-steps li.done .n { background: var(--green); color: #fff; }
+  .tr-steps li.now { color: var(--fg); font-weight: 600; border-top-color: var(--ink); } .tr-steps li.now .n { background: var(--ink); color: #fff; }
+  .tr-body > section { display: grid; gap: 18px; padding: 32px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--white); }
   .stack { display: grid; gap: 16px; justify-items: start; } .stack > .field, .stack > fieldset, .stack > div { width: 100%; }
   .ws { display: flex; gap: 8px; align-items: center; } .ws .input { max-width: 260px; }
   .plans { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; }

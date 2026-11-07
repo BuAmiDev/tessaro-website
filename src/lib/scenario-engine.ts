@@ -72,6 +72,9 @@ export const SCENARIOS: ScenarioDef[] = [
   { id: 'access-blocked', name: 'Planned visit meets an access restriction', oneLine: 'A quarterly maintenance visit clashes with a store stock-take.',
     issue: 'Quarterly condenser cleaning at a store closed for stock-take', cost: 0,
     defaultInputs: { urgency: 'P3', coverage: 'amc', threshold: 1000, availability: 'available' }, responseHours: { P1: 2, P2: 4, P3: 120 } },
+  { id: 'bms-alarm', name: 'Building alarm becomes work', oneLine: 'A fan coil unit alarm in an office building opens a work order with the asset already identified.',
+    issue: 'FCU-L4-07 supply air at 21.6 °C against 14 °C design', cost: 640,
+    defaultInputs: { urgency: 'P2', coverage: 'amc', threshold: 1000, availability: 'available', channel: 'email' }, responseHours: { P1: 2, P2: 4, P3: 24 } },
   { id: 'tech-finding', name: 'Technician finding needs follow-up', oneLine: 'During planned maintenance a technician finds a corroded drain line.',
     issue: 'Corroded condensate drain line found during PPM', cost: 680,
     defaultInputs: { urgency: 'P3', coverage: 'amc', threshold: 500, availability: 'busy' }, responseHours: { P1: 2, P2: 4, P3: 72 } },
@@ -128,10 +131,11 @@ export function run(inp: Inputs): Outcome {
     'freezer-p1': 'The cold-room supervisor scans the QR label on FZ-07 and reports “not cooling”, with a display photo.',
     'owner-expense': 'A technician’s survey of the rooftop chiller recommends replacing the compressor.',
     'access-blocked': 'The quarterly plan generates a condenser-cleaning visit for Thursday.',
+    'bms-alarm': 'The building management system reports the supply-air alarm; a rule matches it to FCU-L4-07 in Room 4.07 and opens a request.',
     'tech-finding': 'During the planned visit, the technician photographs a corroded drain line and raises a finding.',
   };
-  add({ id: 'event', at: 0, actor: inp.scenario === 'access-blocked' ? 'system' : 'customer', kind: 'record', tile: 0,
-    title: inp.scenario === 'access-blocked' ? 'Planned visit generated' : 'Request received', detail: intakeBy[def.id] ?? def.oneLine });
+  add({ id: 'event', at: 0, actor: inp.scenario === 'access-blocked' || inp.scenario === 'bms-alarm' ? 'system' : 'customer', kind: 'record', tile: 0,
+    title: inp.scenario === 'access-blocked' ? 'Planned visit generated' : inp.scenario === 'bms-alarm' ? 'Alarm received' : 'Request received', detail: intakeBy[def.id] ?? def.oneLine });
 
   if (def.id !== 'access-blocked' && def.id !== 'owner-expense') {
     add({ id: 'triage', at: 1, actor: 'assist', kind: 'proposal', tile: 1,
@@ -165,7 +169,7 @@ export function run(inp: Inputs): Outcome {
     add({ id: 'escalate', at: 15, actor: 'person', kind: 'human', needs: 'choose', tile: 4, title: 'Duty manager chooses a recovery',
       detail: 'Options offered: send to an approved subcontractor, call in an off-shift technician, or agree a later time with the customer.' });
     add({ id: 'sub', at: 22, actor: 'person', kind: 'auto', tile: 5, title: 'Subcontractor accepts',
-      detail: 'Gulf Cool accepts in their portal. Evidence and invoice will return to the same work order.' });
+      detail: 'The partner contractor accepts in their portal. Evidence and invoice will return to the same work order.' });
     state = 'exception-recovered';
   } else {
     add({ id: 'assign', at: 3, actor: 'assist', kind: 'proposal', tile: 4, title: 'Technician matched',

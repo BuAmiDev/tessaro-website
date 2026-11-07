@@ -29,7 +29,7 @@ async def main():
         s = json.loads(await pg.evaluate("localStorage.getItem('tessaro.setup')"))
         ok('simulator saves scenario on device', len(s['scenarios']) == 1 and s['storage'] == 'device', s['scenarios'][0]['inputs']['scenario'] if s['scenarios'] else '')
         await pg.goto(B + '/features?q=approval'); await pg.wait_for_timeout(500)
-        cnt = await pg.text_content('[data-count]'); ok('feature search filters', cnt and not cnt.startswith('40 of'), cnt)
+        cnt = await pg.text_content('[data-count]'); ok('feature search filters', cnt and not cnt.startswith(cnt.split(' of ')[1].split(' ')[0] + ' of'), cnt)
         btn = pg.locator('.fc:not([hidden]) [data-add]').first; await btn.click(); await pg.wait_for_timeout(200)
         ok('add to setup toggles', await btn.get_attribute('aria-pressed') == 'true')
         # 2 My setup lists items and handoff has no personal data
@@ -48,6 +48,8 @@ async def main():
         h = await pg.evaluate("JSON.stringify(JSON.parse(localStorage.getItem('tessaro.setup')))")
         # 4 Configurator: blocker stops, warnings allowed, resume
         await pg.goto(B + '/configurator'); await pg.wait_for_timeout(500)
+        ok('configurator opens on three starting choices', await pg.is_visible('[data-start]') and not await pg.is_visible('#industry'))
+        await pg.click('[data-start-detail]'); await pg.wait_for_timeout(400)
         ok('configurator prefilled industry from setup', await pg.input_value('#industry') == 'property-management')
         await pg.fill('#countries', ''); await pg.click('[data-next]'); await pg.wait_for_timeout(300)
         ok('blocker prevents continuing', await pg.is_visible('[data-err="countries"]'))
@@ -58,6 +60,7 @@ async def main():
         ok('critical > normal is a blocker', await pg.is_visible('[data-err="p1Hours"]'))
         await pg.fill('#p1Hours', '4'); await pg.click('[data-next]'); await pg.wait_for_timeout(400)
         await pg.click('[data-next]'); await pg.wait_for_timeout(400)
+        await pg.check('input[name="channels"][value="whatsapp"]'); await pg.wait_for_timeout(200)
         await pg.click('[data-next]'); await pg.wait_for_timeout(300)
         ok('WhatsApp consent blocker', await pg.is_visible('[data-err="whatsappConsent"]'))
         await pg.check('input[name="whatsappConsent"]'); await pg.click('[data-next]'); await pg.wait_for_timeout(500)

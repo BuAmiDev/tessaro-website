@@ -11,7 +11,7 @@ export default defineConfig({
   integrations: [
     sitemap({
       // Private, per-visitor and transactional pages stay out of the sitemap.
-      filter: (page) => !/\/(my-setup|onboarding|sign-in|trial|configurator|design-system|checkout)/.test(page),
+      filter: (page) => !/\/(my-setup|onboarding|sign-in|trial|configurator|design-system|checkout|story-lab)/.test(page),
     }),
   ],
 });

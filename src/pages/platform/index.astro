@@ -1,48 +1,75 @@
 ---
 import Base from '../../layouts/Base.astro';
 import PageIntro from '../../components/PageIntro.astro';
-import Status from '../../components/Status.astro';
-import Icon from '../../components/Icon.astro';
+import DomainVisual from '../../components/DomainVisual.astro';
+import { DOMAINS, SHARED } from '../../content/domains';
 import { PLATFORM } from '../../content/platform';
 import { CAPABILITIES } from '../../content/capabilities';
 const surfaces = [
-  { t: 'Office web app', d: 'Dispatch, contracts, assets, approvals, reports and configuration.', n: '112 designed screens' },
-  { t: 'Technician app', d: 'Jobs, safety checks, checklists, evidence and sign-off, offline-ready.', n: '30 designed screens' },
-  { t: 'Resident app', d: 'Report, track, let technicians in and sign off, in English or Arabic.', n: '42 designed screens' },
-  { t: 'Customer and owner portals', d: 'Requests, approvals, contracts, evidence and reports.', n: '23 designed screens' },
-  { t: 'WhatsApp flows', d: 'Consent, guided intake, milestones and approvals in chat.', n: '9 designed flows' },
-  { t: 'Control Center', d: 'For BWC: onboarding, provisioning, licensing and support grants.', n: '40 designed screens' },
+  ['Office web app', 'Dispatch, contracts, assets, approvals, reports and configuration.', '112'],
+  ['Technician app', 'Jobs, safety checks, checklists, evidence and sign-off, offline-ready.', '30'],
+  ['Resident app', 'Report, track, let technicians in and sign off, in English or Arabic.', '42'],
+  ['Customer, owner and contractor portals', 'Requests, approvals, contracts, evidence and reports.', '23'],
+  ['WhatsApp flows', 'Consent, guided intake, milestones and approvals in chat.', '9'],
+  ['Control Center', 'Onboarding, provisioning, licensing and support grants, run by our team.', '40'],
 ];
+const counts = { designed: CAPABILITIES.filter((c) => c.status === 'designed').length, pilot: CAPABILITIES.filter((c) => c.status === 'pilot').length, proposed: CAPABILITIES.filter((c) => c.status === 'proposed').length };
 ---
-<Base title="Platform" description="One Tessaro platform for service intake, dispatch, technicians, assets, contracts, approvals and reporting, with apps and portals for residents, customers and owners." current="platform">
-  <PageIntro title="One platform for the whole service operation" lead="Tessaro unifies the work of facilities management, maintenance management and field service in one data model, used through different apps for each person involved.">
-    <div class="row"><Status status="designed" /><span class="small muted">256 screens designed and clickable in the prototype; first pilot release in preparation.</span></div>
-  </PageIntro>
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head"><h2>What it covers</h2><p>Ten areas, each with its capabilities, designed screens and a scenario to try.</p></div>
-      <ul class="areas tilegrid" role="list">
-        {PLATFORM.map((p) => { const caps = CAPABILITIES.filter((c) => p.groups.includes(c.group)); return (
-          <li><a href={`/platform/${p.slug}`}><h3>{p.title}</h3><p>{p.lead}</p><span class="xs muted">{caps.length} capabilities</span></a></li>
-        ); })}
-      </ul>
+<Base title="Platform" description="How Tessaro connects facilities, maintenance, field service and asset management on one record of assets, work, contracts, people and evidence." current="platform">
+  <PageIntro title="One record, four ways of working." lead="Facilities, maintenance, field service and asset management are usually four systems. In Tessaro they share the same asset, the same work order and the same evidence, so nothing is typed twice." eyebrow="Platform" />
+  <section class="section flush-top">
+    <div class="wrap pv">
+      <div class="pv-vis"><DomainVisual active="all" /></div>
+      <ol class="pv-list" role="list">
+        {DOMAINS.map((d) => (
+          <li><a href={`/platform/${d.id}`}><span class="pv-n">{d.name}</span><span class="pv-a">{d.acronym}</span><span class="pv-l">{d.line}</span></a></li>
+        ))}
+      </ol>
     </div>
   </section>
-  <section class="section" data-surface="dark">
+  <section class="section tight">
     <div class="wrap">
-      <div class="section-head"><h2>Where people work</h2><p>Six surfaces on one record. Counts are designed screens in the prototype.</p></div>
-      <ul class="surf" role="list">{surfaces.map((s) => <li><h3>{s.t}</h3><p class="muted small">{s.d}</p><span class="chip">{s.n}</span></li>)}</ul>
-      <div class="row" style="margin-top:28px"><a class="btn btn-primary" href="https://tessaro-prototype.vercel.app" target="_blank" rel="noopener">Open the clickable prototype <Icon name="arrow-up-right" size={16} /></a><a class="btn" href="/features">Browse every capability</a></div>
+      <h2 class="h3 sh">Shared by all four</h2>
+      {SHARED.map((s, i) => {
+        const area = ['', 'contracts', 'commercial', 'trust', 'stakeholders', 'field'][i];
+        return <div class="orow"><h3 class="h4">{s.name}</h3><p class="muted">{s.text} {area && <a class="link" href={`/platform/${area}`}>More</a>}</p></div>;
+      })}
+    </div>
+  </section>
+  <section class="section tight surf-s">
+    <div class="wrap surf">
+      <div><h2 class="h3">Where people work</h2><p class="muted">Six surfaces on the same record. Numbers are designed screens in the clickable prototype.</p><p><a class="btn" href="https://tessaro-prototype.vercel.app" target="_blank" rel="noopener">Open the prototype</a></p></div>
+      <dl class="surf-l">{surfaces.map(([t, d, n]) => <div><dt>{t}</dt><dd>{d}</dd><dd class="surf-n">{n} screens</dd></div>)}</dl>
+    </div>
+  </section>
+  <section class="section tight">
+    <div class="wrap areas">
+      <h2 class="h3">Capabilities by area</h2>
+      <ul role="list" class="areas-l">{PLATFORM.map((p) => <li><a href={`/platform/${p.slug}`}>{p.title}</a></li>)}</ul>
+      <p class="small muted">{counts.designed} capabilities are designed, {counts.pilot} are in the first pilot release, {counts.proposed} are proposed. Nothing is in production yet. <a class="link" href="/features#availability">Availability by capability</a></p>
     </div>
   </section>
 </Base>
 <style>
-  .areas { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
-  .areas a { display: grid; gap: 8px; padding: 24px; text-decoration: none; height: 100%; }
-  .areas a:hover h3 { text-decoration: underline; text-decoration-color: var(--accent); }
-  .areas h3 { font-size: 1.25rem; } .areas p { color: var(--fg-2); font-size: var(--t-sm); }
-  .surf { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; }
-  .surf li { padding: 24px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); display: grid; gap: 10px; align-content: start; justify-items: start; }
-  .surf h3 { font-size: 1.15rem; }
-  @media (max-width: 860px) { .areas, .surf { grid-template-columns: 1fr; } }
+  .pv { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 64px; align-items: center; }
+  .pv-vis { background: var(--white); border-radius: var(--r-lg); padding: clamp(16px, 2.4vw, 36px); }
+  .pv-list { margin: 0; border-top: 1px solid var(--line); }
+  .pv-list a { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 22px 0; border-bottom: 1px solid var(--line); text-decoration: none; }
+  .pv-n { font-family: var(--font-display); font-size: 1.75rem; letter-spacing: -0.03em; line-height: 1.1; }
+  .pv-a { font-size: var(--t-sm); font-weight: 600; color: var(--fg-3); letter-spacing: .04em; align-self: center; }
+  .pv-l { grid-column: 1 / -1; color: var(--fg-2); font-size: var(--t-sm); }
+  .pv-list a:hover .pv-n { color: var(--green); }
+  .sh { margin-bottom: 24px; }
+  .surf-s { background: var(--white); }
+  .surf { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 48px; }
+  .surf > div { display: grid; gap: 16px; align-content: start; }
+  .surf-l { display: grid; grid-template-columns: 1fr 1fr; gap: 0 40px; margin: 0; }
+  .surf-l div { padding: 18px 0; border-top: 1px solid var(--line); display: grid; gap: 4px; }
+  .surf-l dt { font-weight: 600; } .surf-l dd { margin: 0; color: var(--fg-2); font-size: var(--t-sm); }
+  .surf-n { color: var(--fg-3) !important; }
+  .areas { display: grid; gap: 24px; }
+  .areas-l { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0; font-size: 1.125rem; }
+  .areas-l a { text-decoration: none; border-bottom: 1px solid var(--line-strong); padding-bottom: 2px; }
+  .areas-l a:hover { border-color: var(--ink); }
+  @media (max-width: 1000px) { .pv, .surf { grid-template-columns: 1fr; } .surf-l { grid-template-columns: 1fr; } }
 </style>

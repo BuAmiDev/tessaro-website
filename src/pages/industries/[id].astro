@@ -1,9 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import PageIntro from '../../components/PageIntro.astro';
-import Status from '../../components/Status.astro';
 import CapCard from '../../components/CapCard.astro';
-import Icon from '../../components/Icon.astro';
 import { INDUSTRIES } from '../../content/industries';
 import { capabilityById } from '../../content/capabilities';
 import { scenarioById } from '../../lib/scenario-engine';
@@ -12,45 +10,52 @@ const { ind } = Astro.props;
 const caps = ind.capabilities.map((id) => capabilityById[id]).filter(Boolean);
 ---
 <Base title={ind.name} description={ind.who} current="industries">
-  <PageIntro title={ind.name} lead={ind.who} crumbs={[['Industries', '/industries']]}>
-    <div class="aside"><Status status={ind.status} />
-      {ind.status === 'proposed' && <p class="small muted">This industry reuses designed building blocks but has not been validated with operators yet. Expect gaps.</p>}
-      <dl class="defs"><div><dt>Typical setup</dt><dd>{ind.defaults.sites} sites · {ind.defaults.team} people</dd></div><div><dt>Operating model</dt><dd>{ind.operatingModel}</dd></div></dl>
+  <PageIntro title={ind.name} lead={ind.who} crumbs={[['Solutions', '/industries']]} eyebrow={ind.operatingModel}>
+    <div class="aside">
+      {ind.status === 'proposed' && <p class="small prop">This operation reuses designed building blocks but hasn’t been validated with operators yet. Expect gaps, and tell us about them.</p>}
+      <p class="small muted">Typical starting point: {ind.defaults.sites} sites, {ind.defaults.team} people.</p>
+      <a class="btn btn-primary" href={`/configurator?industry=${ind.id}`}>Start from this template</a>
     </div>
   </PageIntro>
-  <section class="section">
+  <section class="section flush-top">
     <div class="wrap two">
-      <div><h2 class="h3">What usually goes wrong</h2>
-        <ul class="pains" role="list">{ind.pains.map((p) => <li><Icon name="circle-alert" size={18} /> {p}</li>)}</ul></div>
-      <div><h2 class="h3">Run it with your numbers</h2>
-        <ul class="scs" role="list">{ind.scenarios.map((s) => <li><a href={`/simulator?industry=${ind.id}&scenario=${s}`}><b>{scenarioById[s].name}</b><span class="small muted">{scenarioById[s].oneLine}</span><Icon name="arrow-right" size={16} /></a></li>)}</ul>
-        <p class="xs muted">Scenarios use sample data and compressed timelines.</p></div>
+      <div>
+        <h2 class="h3">What usually goes wrong</h2>
+        <ol role="list" class="pains">{ind.pains.map((p, i) => <li><span>{String(i + 1).padStart(2, '0')}</span>{p}</li>)}</ol>
+      </div>
+      <div>
+        <h2 class="h3">Run it with your numbers</h2>
+        <ul role="list" class="scs">{ind.scenarios.map((s) => <li><a href={`/simulator?industry=${ind.id}&scenario=${s}`}><b>{scenarioById[s].name}</b><span>{scenarioById[s].oneLine}</span></a></li>)}</ul>
+        <p class="small muted">Scenarios use sample data and compressed timelines.</p>
+      </div>
     </div>
   </section>
   <section class="section tight">
-    <div class="wrap"><div class="section-head"><h2>The parts that matter most</h2></div>
-      <ul class="cgrid" role="list">{caps.map((c) => <CapCard c={c} />)}</ul></div>
+    <div class="wrap"><h2 class="h3 ch">The parts that matter most</h2><ul role="list" class="caps">{caps.map((c) => <CapCard c={c} />)}</ul></div>
   </section>
-  <section class="section" data-surface="forest">
+  <section class="section tight end">
     <div class="wrap row between">
-      <h2 class="h3">See it with your contracts and sites</h2>
-      <div class="row"><a class="btn btn-primary" href={`/demo?industry=${ind.id}`}>Book a demo</a><a class="btn" href={`/configurator?industry=${ind.id}`}>Configure a setup</a></div>
+      <p class="h3">See it with your contracts and sites.</p>
+      <div class="row"><a class="btn btn-primary" href={`/demo?industry=${ind.id}`}>Book a demo</a><a class="btn" href={`/trial`}>Start a trial</a></div>
     </div>
   </section>
 </Base>
 <style>
-  .aside { display: grid; gap: 12px; justify-items: start; }
-  .defs { display: grid; gap: 6px; margin: 0; font-size: var(--t-sm); } .defs div { display: flex; gap: 8px; } .defs dt { color: var(--fg-3); } .defs dd { margin: 0; }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
-  .two > div { display: grid; gap: 16px; align-content: start; }
-  .pains { display: grid; gap: 10px; margin: 0; } .pains li { display: flex; gap: 10px; align-items: flex-start; } .pains :global(svg) { color: var(--wait); flex: none; margin-top: 3px; }
-  .scs { display: grid; gap: 8px; margin: 0; }
-  .scs a { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-sm); text-decoration: none; background: var(--surface-raised); }
-  .scs a:hover { border-color: var(--accent); }
-  .scs a :global(svg) { grid-row: 1 / span 2; grid-column: 2; align-self: center; color: var(--accent); }
-  .cgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 0; }
+  .aside { display: grid; gap: 14px; justify-items: start; }
+  .prop { color: var(--wait); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; }
+  .two > div { display: grid; gap: 20px; align-content: start; }
+  .pains { margin: 0; border-top: 1px solid var(--line); }
+  .pains li { display: grid; grid-template-columns: 40px 1fr; padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 1.125rem; }
+  .pains span { color: var(--fg-3); font-size: var(--t-sm); padding-top: 4px; }
+  .scs { margin: 0; border-top: 1px solid var(--line); }
+  .scs a { display: grid; gap: 4px; padding: 16px 0; border-bottom: 1px solid var(--line); text-decoration: none; }
+  .scs a:hover b { color: var(--green); text-decoration: underline; }
+  .scs span { color: var(--fg-2); font-size: var(--t-sm); }
+  .ch { margin-bottom: 16px; }
+  .caps { margin: 0; border-bottom: 1px solid var(--line); }
+  .end { background: var(--white); }
   .between { justify-content: space-between; }
-  @media (max-width: 1100px) { .cgrid { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 760px) { .two, .cgrid { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .two { grid-template-columns: 1fr; gap: 48px; } }
 </style>
 <script>import { wireAddButtons } from '../../scripts/add-buttons'; wireAddButtons();</script>

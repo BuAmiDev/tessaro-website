@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageIntro from '../components/PageIntro.astro';
+import { MANAGE, MODEL, FOCUS } from '../lib/quick-setup';
 import Icon from '../components/Icon.astro';
 import { INDUSTRIES } from '../content/industries';
 import { CONFIG_STEPS } from '../lib/config-rules';
@@ -9,11 +10,39 @@ const assetTypes = ['Chillers', 'Freezers and cold rooms', 'Split and package AC
 const roles: [string, string][] = [['manager', 'Service or maintenance manager'], ['dispatcher', 'Dispatcher'], ['technician', 'Technicians'], ['admin', 'Administrator'], ['finance', 'Finance approver'], ['customer', 'Customer facilities team (portal)'], ['owner', 'Property owners (portal)'], ['resident', 'Residents or tenants (app)']];
 ---
 <Base title="Configurator" description="Describe your sites, team, contracts, approvals and channels. Tessaro checks the draft, previews how a job would flow and suggests a plan." current="configurator" noindex>
-  <PageIntro title="Configure your setup" lead="Seven short steps. Your draft saves as you go, so you can leave and come back. At the end we check it, show how a job would flow and suggest a plan.">
-    <p class="notice small"><Icon name="info" size={18} /><span>This is a planning draft, not a live workspace. During setup the product applies its own checks before anything is published.</span></p>
+  <PageIntro kind="tool" title="Shape your setup" lead="Start with three choices and see what they imply. Go deeper only where you want to; your draft saves as you go.">
+    <p class="small muted">A planning draft, not a live workspace. The product checks it again before anything is published.</p>
   </PageIntro>
 
-  <section class="section tight">
+  <section class="cf-start" data-start aria-labelledby="st-t">
+    <div class="wrap st-grid">
+      <form class="st-form" data-start-form onsubmit="return false">
+        <h2 id="st-t" class="sr-only">Starting choices</h2>
+        <fieldset><legend>What do you manage?</legend>
+          {Object.entries(MANAGE).map(([k, v], i) => <label class="opt"><input type="radio" name="manage" value={k} checked={i === 0} /><span><b>{v.label}</b><small>{v.note}</small></span></label>)}
+        </fieldset>
+        <fieldset><legend>How is your operation organised?</legend>
+          {Object.entries(MODEL).map(([k, v], i) => <label class="opt"><input type="radio" name="model" value={k} checked={i === 1} /><span><b>{v.label}</b><small>{v.note}</small></span></label>)}
+        </fieldset>
+        <fieldset><legend>What do you want to improve first?</legend>
+          {Object.entries(FOCUS).map(([k, v], i) => <label class="opt"><input type="radio" name="focus" value={k} checked={i === 0} /><span><b>{v.label}</b><small>{v.note}</small></span></label>)}
+        </fieldset>
+      </form>
+      <div class="st-prev" aria-live="polite">
+        <p class="st-k">Starting setup</p>
+        <p class="st-t" data-st-template></p>
+        <dl class="st-dl" data-st-dl></dl>
+        <div class="st-act">
+          <button class="btn btn-primary" type="button" data-start-review>Review this setup</button>
+          <button class="btn" type="button" data-start-detail>Adjust details step by step</button>
+        </div>
+        <p class="small muted">Saved {''}<span data-st-where>on this device</span> as you choose.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section tight" data-detail hidden>
+    <div class="wrap"><button class="btn-quiet btn btn-sm back-start" type="button" data-to-start>Change starting choices</button></div>
     <div class="wrap cf">
       <nav class="cf-steps" aria-label="Configurator steps">
         <ol role="list">
@@ -105,6 +134,9 @@ const roles: [string, string][] = [['manager', 'Service or maintenance manager']
           <section class="rv-block"><h3 class="h4">How a chargeable job would flow</h3><ol class="flow" data-flow></ol><p class="xs muted">Illustrative, based on your answers.</p></section>
           <section class="rv-block"><h3 class="h4">Suggested plan</h3><div data-plan></div><p class="xs muted">Draft prices{pricing.confirmed ? '' : ', not yet confirmed'}. {pricing.vatNote}</p></section>
           <section class="rv-block"><h3 class="h4">Summary</h3><dl class="sumdl" data-sum></dl></section>
+          <section class="rv-block"><h3 class="h4">Configured with you during setup</h3>
+            <ul class="later small"><li><b>Skills, shifts and territories</b> for assignment suggestions</li><li><b>Maintenance plans</b> generated from your asset register</li><li><b>Forms and checklists</b> for inspections and sign-off</li><li><b>Notifications and escalation</b> per role and channel</li><li><b>Data preparation</b>: site, asset and contract import templates</li><li><b>Integrations</b> with ERP, CRM or a building management system (proposed; not yet available)</li></ul>
+          </section>
           <label class="choice"><input type="checkbox" name="assisted" /> <span><b>I’d like assisted onboarding</b><br /><span class="xs muted">A specialist sets up your template, imports your data and configures the first workflows (Guided setup).</span></span></label>
           <div class="row rv-acts">
             <a class="btn btn-primary" href="/trial?from=configurator" data-to-trial>Start a trial with this setup</a>
@@ -114,9 +146,9 @@ const roles: [string, string][] = [['manager', 'Service or maintenance manager']
         </fieldset>
 
         <div class="cf-nav">
-          <button class="btn" type="button" data-prev><Icon name="arrow-left" size={16} /> Back</button>
+          <button class="btn" type="button" data-prev>Back</button>
           <span class="xs muted" data-stepnote></span>
-          <button class="btn btn-primary" type="button" data-next>Continue <Icon name="arrow-right" size={16} /></button>
+          <button class="btn btn-primary" type="button" data-next>Continue</button>
         </div>
       </form>
     </div>
@@ -125,6 +157,30 @@ const roles: [string, string][] = [['manager', 'Service or maintenance manager']
 </Base>
 
 <style>
+  .cf-start { padding: 8px 0 96px; }
+  .st-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 56px; align-items: start; }
+  .st-form { display: grid; gap: 36px; }
+  .st-form fieldset { border: 0; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+  .st-form legend { font-family: var(--font-display); font-size: 1.35rem; letter-spacing: -0.02em; margin-bottom: 14px; padding: 0; }
+  .opt { position: relative; display: block; cursor: pointer; }
+  .opt input { position: absolute; opacity: 0; }
+  .opt > span { display: grid; gap: 4px; height: 100%; padding: 16px 16px 18px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--white); transition: border-color var(--d-fast) ease, transform var(--d-press) var(--ease-out); }
+  .opt:hover > span { border-color: var(--fg-3); }
+  .opt:active > span { transform: scale(.985); }
+  .opt input:checked + span { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+  .opt input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .opt b { font-weight: 600; } .opt small { color: var(--fg-2); font-size: var(--t-sm); line-height: 1.4; }
+  .st-prev { position: sticky; top: calc(var(--hdr-h) + 24px); padding: 28px; display: grid; gap: 16px; background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); }
+  .st-k { font-size: var(--t-sm); color: var(--fg-3); font-weight: 600; }
+  .st-t { font-family: var(--font-display); font-size: 1.75rem; letter-spacing: -0.03em; line-height: 1.1; margin-top: -8px; }
+  .st-dl { display: grid; margin: 0; border-top: 1px solid var(--line); }
+  .st-dl :global(div) { display: grid; grid-template-columns: 120px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: var(--t-sm); }
+  .st-dl :global(dt) { color: var(--fg-3); } .st-dl :global(dd) { margin: 0; }
+  .st-act { display: flex; flex-wrap: wrap; gap: 10px; }
+  .back-start { margin-bottom: 24px; }
+  .later { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--fg-2); }
+  .later b { color: var(--fg); font-weight: 600; }
+  @media (max-width: 1000px) { .st-grid { grid-template-columns: 1fr; } .st-prev { position: relative; top: 0; } }
   .cf { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 40px; align-items: start; }
   .cf-steps { position: sticky; top: 88px; display: grid; gap: 12px; }
   .cf-steps ol { display: grid; gap: 2px; margin: 0; }
@@ -147,7 +203,7 @@ const roles: [string, string][] = [['manager', 'Service or maintenance manager']
   .chk { display: inline-flex; gap: 8px; align-items: center; min-height: 40px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 6px; font-size: var(--t-sm); cursor: pointer; background: var(--surface-raised); }
   .chk:has(input:checked) { border-color: var(--accent); background: var(--surface-selected); font-weight: 600; }
   .chk:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
-  .chk input { accent-color: var(--emerald-600); width: 16px; height: 16px; }
+  .chk input { accent-color: var(--green); width: 16px; height: 16px; }
   .cf-nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 20px; border-top: 1px solid var(--line); }
   .rv-checks { display: grid; gap: 8px; }
   .rv-checks :global(.ck) { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start; padding: 12px 14px; border-radius: var(--r-sm); font-size: var(--t-sm); }
@@ -180,6 +236,7 @@ const roles: [string, string][] = [['manager', 'Service or maintenance manager']
   import { pricing, formatMoney } from '../content/pricing';
   import { INDUSTRIES } from '../content/industries';
   import { icon } from '../lib/icons';
+  import { derive, type Choices } from '../lib/quick-setup';
 
   const form = document.querySelector<HTMLFormElement>('[data-form]')!;
   const steps = [...form.querySelectorAll<HTMLFieldSetElement>(':scope > fieldset[data-step]')];
@@ -296,6 +353,30 @@ const roles: [string, string][] = [['manager', 'Service or maintenance manager']
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tessaro-setup-draft.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     track('configurator_exported', {});
   });
+  // ----- starting choices (progressive disclosure) -----
+  const startEl = $('[data-start]'), detailEl = $('[data-detail]');
+  const sForm = $<HTMLFormElement>('[data-start-form]');
+  const saved = (setup.config?.values as any)?.start as Choices | undefined;
+  const qChoice = ['manage', 'model', 'focus'].every((k) => qs.get(k)) ? { manage: qs.get('manage'), model: qs.get('model'), focus: qs.get('focus') } as Choices : undefined;
+  const init = qChoice || saved;
+  if (init) (['manage', 'model', 'focus'] as const).forEach((k) => { const r = sForm.querySelector<HTMLInputElement>(`input[name="${k}"][value="${init[k]}"]`); if (r) r.checked = true; });
+  const choices = (): Choices => { const fd = new FormData(sForm); return { manage: fd.get('manage') as any, model: fd.get('model') as any, focus: fd.get('focus') as any }; };
+  function paintStart() {
+    const c = choices(); const d = derive(c);
+    $('[data-st-template]').textContent = `${d.template} template`;
+    $('[data-st-dl]').innerHTML = ([['People', d.people], ['Work', d.work], ['Assets', d.assets], ['Communication', d.communication], ['Oversight', d.oversight]] as [string, string[]][]).map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v.join(' · '))}</dd></div>`).join('');
+    $('[data-st-where]').textContent = auth.current() ? 'to your account' : 'on this device';
+  }
+  let touched = !!qChoice; const keepIndustry = qIndustry || setup.industry;
+  function applyStart() { const c = choices(); const d = derive(c); const patch: any = { ...d.patch }; if (!touched && keepIndustry) patch.industry = keepIndustry; values = { ...values, ...patch, start: c } as any; write(); persist(); }
+  sForm.addEventListener('change', () => { touched = true; paintStart(); applyStart(); track('configurator_start_changed', {}); });
+  const showDetail = (to: number) => { startEl.hidden = true; detailEl.hidden = false; go(to, false); };
+  $('[data-start-review]').addEventListener('click', () => { applyStart(); showDetail(CONFIG_STEPS.length - 1); });
+  $('[data-start-detail]').addEventListener('click', () => { applyStart(); showDetail(0); });
+  $('[data-to-start]').addEventListener('click', () => { detailEl.hidden = true; startEl.hidden = false; startEl.scrollIntoView({ block: 'start' }); });
+  paintStart();
   write(); paintNav();
-  if (setup.config) { $('[data-saved]').textContent = 'Resumed your saved draft'; say('Resumed your saved draft.'); }
+  if (qChoice) applyStart();
+  if (setup.config && !qChoice && setup.config.step > 0) { startEl.hidden = true; detailEl.hidden = false; $('[data-saved]').textContent = 'Resumed your saved draft'; say('Resumed your saved draft.'); }
+  else if (setup.config) { $('[data-saved]').textContent = 'Draft saved'; }
 </script>

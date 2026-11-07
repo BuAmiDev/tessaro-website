@@ -11,8 +11,8 @@ const faqs = [
 ];
 ---
 <Base title="Pricing" description="Annual Tessaro packages by number of technicians, in AED. Unlimited requesters, residents and customers on every package." current="pricing">
-  <PageIntro title="Priced by technician, not by everyone else" lead="Each package includes a number of technicians. Residents, customers, owners and requesters are always unlimited.">
-    {!pricing.confirmed && <p class="notice notice-test small"><Icon name="info" size={18} /><span><b>Draft prices.</b> These packages come from the current pricing decision and may change before the first release. {pricing.vatNote}</span></p>}
+  <PageIntro title="Priced by technician. Everyone else is free." lead="Each package includes a number of technicians. Residents, customers, owners, requesters and office users are always unlimited." eyebrow="Pricing">
+    {!pricing.confirmed && <p class="draft small"><b>Draft prices.</b> From the current pricing decision; they may change before the first release. {pricing.vatNote}</p>}
   </PageIntro>
 
   <section class="section tight">
@@ -25,13 +25,13 @@ const faqs = [
       <ul class="plans" role="list">
         {pricing.plans.map((p) => (
           <li class:list={['plan', { featured: p.featured }]} data-plan={p.id} data-techs={p.techs}>
-            {p.featured && <span class="chip chip-info">Most common</span>}
             <h2 class="h3">{p.name}</h2>
+            {p.featured && <span class="feat">Most common</span>}
             <p class="price"><span class="num">{formatMoney(p.price)}</span><span class="per">per year</span></p>
             <p class="small"><b>Up to {p.techs} technicians</b></p>
             <p class="small muted">{p.for}</p>
             <a class:list={['btn', { 'btn-primary': p.featured }]} href={`/trial?plan=${p.id}`}>Start a trial</a>
-            <span class="fit xs" data-fit hidden><Icon name="check" size={14} /> Fits your team</span>
+            <span class="fit small" data-fit hidden>Fits your team</span>
           </li>
         ))}
       </ul>
@@ -60,39 +60,44 @@ const faqs = [
       <div>{faqs.map(([q, a]) => <details><summary>{q}</summary><p class="muted">{a}</p></details>)}</div>
     </div>
   </section>
-  <section class="section" data-surface="forest">
+  <section class="section tight end">
     <div class="wrap row between"><h2 class="h3">Not sure which package?</h2><div class="row"><a class="btn btn-primary" href="/configurator">Get a suggestion</a><a class="btn" href="/demo?topic=pricing">Talk to us</a></div></div>
   </section>
 </Base>
 <style>
-  .calc { display: grid; grid-template-columns: auto minmax(160px, 420px) auto; gap: 20px; align-items: center; margin-bottom: 24px; }
-  .calc input { accent-color: var(--emerald-600); width: 100%; height: 32px; }
+  .draft { padding-left: 14px; border-left: 3px solid var(--wait); color: var(--fg-2); max-width: 44ch; }
+  .draft b { color: var(--fg); }
+  .calc { display: grid; grid-template-columns: auto minmax(160px, 420px) auto; gap: 20px; align-items: center; margin-bottom: 40px; }
+  .calc input { width: 100%; height: 32px; }
   .calc-out { font-size: var(--t-sm); font-weight: 600; }
-  .plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; margin: 0; background: var(--line); border: 3px solid var(--line); border-radius: var(--r-xs); }
-  .plan { background: var(--surface-raised); border-radius: 5px; padding: 24px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; position: relative; transition: background-color 200ms ease; }
-  .plan.featured { background: var(--bg); }
-  .plan.fits { background: var(--surface-selected); }
-  .plan .btn { margin-top: auto; width: 100%; justify-content: center; }
+  .plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin: 0; border-top: 1px solid var(--line); }
+  .plan { padding: 28px 24px 32px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; border-right: 1px solid var(--line); border-top: 3px solid transparent; margin-top: -2px; transition: border-color var(--d-panel) var(--ease-out), background-color var(--d-panel) ease; }
+  .plan:first-child { padding-left: 0; }
+  .plan:last-child { border-right: 0; }
+  .plan.fits { border-top-color: var(--ink); }
+  .plan { position: relative; }
+  .feat { position: absolute; top: 8px; font-size: var(--t-sm); color: var(--green); font-weight: 600; }
+  .plan .btn { margin-top: auto; }
   .price { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-  .price .num { font-family: var(--font-display); font-size: 1.9rem; font-weight: 600; letter-spacing: -0.02em; }
+  .price .num { font-family: var(--font-display); font-size: 2.2rem; font-weight: 520; letter-spacing: -0.035em; }
   .per { font-size: var(--t-sm); color: var(--fg-2); }
-  .plan > .chip { position: absolute; top: 24px; right: 20px; }
-  .fit { display: inline-flex; gap: 6px; align-items: center; color: var(--ok); font-weight: 600; }
-  .extra { margin-top: 14px; }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
-  .two > div { display: grid; gap: 14px; align-content: start; }
-  .inc, .terms, .svc { display: grid; gap: 10px; margin: 0; }
-  .inc li { display: flex; gap: 10px; } .inc :global(svg) { color: var(--ok); flex: none; margin-top: 3px; }
-  .svc li { padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-sm); display: grid; gap: 4px; }
-  .terms { padding-left: 18px; list-style: disc; }
-  .trial-h { margin-top: 10px; }
+  .fit { font-weight: 600; }
+  .extra { margin-top: 20px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; }
+  .two > div { display: grid; gap: 16px; align-content: start; }
+  .inc, .terms, .svc { display: grid; margin: 0; }
+  .inc li { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); } .inc :global(svg) { color: var(--green); flex: none; margin-top: 4px; }
+  .svc li { padding: 14px 0; border-top: 1px solid var(--line); display: grid; gap: 4px; }
+  .terms { padding-left: 18px; list-style: disc; gap: 6px; }
+  .trial-h { margin-top: 12px; }
   .between { justify-content: space-between; }
-  .faq { display: grid; grid-template-columns: 1fr 2fr; gap: 32px; }
-  .faq details { border-top: 1px solid var(--line); padding: 16px 0; } .faq details:last-child { border-bottom: 1px solid var(--line); }
+  .faq { display: grid; grid-template-columns: 1fr 2fr; gap: 48px; }
+  .faq details { border-top: 1px solid var(--line); padding: 18px 0; } .faq details:last-child { border-bottom: 1px solid var(--line); }
   .faq summary { cursor: pointer; font-weight: 600; } .faq details p { margin-top: 8px; }
-  @media (max-width: 1000px) { .plans { grid-template-columns: 1fr 1fr; } }
+  .end { background: var(--white); }
+  @media (max-width: 1000px) { .plans { grid-template-columns: 1fr 1fr; } .plan:nth-child(2) { border-right: 0; } .plan:nth-child(3) { padding-left: 0; } }
   @media (max-width: 760px) { .two, .faq { grid-template-columns: 1fr; } .calc { grid-template-columns: 1fr; gap: 8px; } }
-  @media (max-width: 520px) { .plans { grid-template-columns: 1fr; } }
+  @media (max-width: 520px) { .plans { grid-template-columns: 1fr; } .plan { padding-left: 0; border-right: 0; border-bottom: 1px solid var(--line); } }
 </style>
 <script>
   import { pricing, formatMoney } from '../content/pricing';

@@ -7,7 +7,7 @@ import { brand } from '../config/brand';
 const topics: [string, string][] = [['dispatch', 'Dispatch and response times'], ['contracts', 'Contracts and coverage'], ['approvals', 'Quotes and approvals'], ['residents', 'Resident and customer updates'], ['ppm', 'Planned maintenance'], ['reporting', 'KPIs and reporting'], ['pricing', 'Pricing and packages'], ['other-industry', 'An industry not listed']];
 ---
 <Base title="Book a demo" description="A 45-minute walkthrough of Tessaro built around your own scenario, sites and approval rules." current="demo">
-  <PageIntro title="See Tessaro with your own work" lead="A 45-minute walkthrough built around a scenario you choose. Bring a real case: we will run it through the prototype and be clear about what exists today and what is still being built.">
+  <PageIntro kind="tool" title="See Tessaro with your own work" lead="A 45-minute walkthrough built around a scenario you choose. Bring a real case: we will run it through the prototype and be clear about what exists today and what is still being built.">
     <div class="carry" data-carry hidden></div>
   </PageIntro>
   <section class="section tight">
@@ -63,7 +63,7 @@ const topics: [string, string][] = [['dispatch', 'Dispatch and response times'],
   .chk { display: inline-flex; gap: 8px; align-items: center; min-height: 40px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 6px; font-size: var(--t-sm); cursor: pointer; background: var(--surface-raised); }
   .chk:has(input:checked) { border-color: var(--accent); background: var(--surface-selected); font-weight: 600; }
   .chk:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
-  .chk input { accent-color: var(--emerald-600); }
+  .chk input { accent-color: var(--green); }
   .dm-side { position: sticky; top: 88px; display: grid; gap: 12px; padding: 20px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-raised); }
   .dm-side ol { padding-left: 18px; display: grid; gap: 6px; margin: 0; }
   .okmark { color: var(--ok); }

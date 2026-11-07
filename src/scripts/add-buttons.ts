@@ -6,7 +6,7 @@ export function wireAddButtons() {
     const have = new Set(load().capabilities);
     document.querySelectorAll<HTMLButtonElement>('[data-add]').forEach((b) => {
       const on = have.has(b.dataset.add!); b.setAttribute('aria-pressed', String(on));
-      const s = b.querySelector('span'); if (s) s.textContent = on ? 'In my setup' : 'Add to my setup';
+      const s = b.querySelector('span'); if (s) s.textContent = on ? 'Saved' : 'Save to my setup';
     });
   };
   document.addEventListener('click', (e) => {

@@ -6,7 +6,7 @@ import { HELP } from '../content/site';
 const cats = [...new Set(HELP.map((h) => h.cat))];
 ---
 <Base title="Help center" description="Guides for getting started, importing data, roles, approvals, WhatsApp, the technician app, billing and troubleshooting." current="help">
-  <PageIntro title="Help center" lead="Guides for setting up and running Tessaro. Can’t find it? A person on our team will answer.">
+  <PageIntro kind="tool" title="Help center" lead="Guides for setting up and running Tessaro. Can’t find it? A person on our team will answer.">
     <form class="hs" role="search" onsubmit="return false"><label for="hq" class="sr-only">Search help</label>
       <div class="hs-in"><Icon name="search" size={18} /><input class="input" type="search" id="hq" placeholder="Search, for example “import assets” or “payment”" autocomplete="off" /></div></form>
   </PageIntro>

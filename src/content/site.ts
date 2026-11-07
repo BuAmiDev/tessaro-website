@@ -4,57 +4,52 @@ export const NAV = [
   {
     id: 'platform', label: 'Platform', href: '/platform',
     groups: [
-      { title: 'Run the work', links: [
-        { label: 'Service intake', href: '/platform/intake', desc: 'Calls, QR scans and chats become complete requests' },
-        { label: 'Dispatch and scheduling', href: '/platform/coordination', desc: 'The right technician, inside the response window' },
-        { label: 'Technician app', href: '/platform/field', desc: 'Jobs, checklists and evidence, online or offline' },
+      { title: 'Four connected domains', links: [
+        { label: 'Facilities', href: '/platform/facilities', desc: 'Buildings, spaces and the people who use them · CAFM' },
+        { label: 'Maintenance', href: '/platform/maintenance', desc: 'Planned work, inspections, parts and history · CMMS' },
+        { label: 'Field service', href: '/platform/field-service', desc: 'Dispatch, technicians, evidence and sign-off · FSM' },
+        { label: 'Asset management', href: '/platform/assets', desc: 'Condition, warranty, cost and lifecycle · EAM' },
       ] },
-      { title: 'Keep commitments', links: [
-        { label: 'Contracts and service levels', href: '/platform/contracts', desc: 'Coverage, clocks and KPIs from the contract' },
+      { title: 'Shared by all four', links: [
+        { label: 'Contracts and service levels', href: '/platform/contracts', desc: 'Coverage and response clocks' },
         { label: 'Quotations and approvals', href: '/platform/commercial', desc: 'Spend goes to the person who pays' },
-        { label: 'Assets and maintenance', href: '/platform/assets', desc: 'Every unit, its history and its next visit' },
-      ] },
-      { title: 'Shape and control', links: [
-        { label: 'Residents, customers, owners', href: '/platform/stakeholders', desc: 'Apps, portals and WhatsApp updates' },
         { label: 'Configuration', href: '/platform/configuration', desc: 'Forms, rules and approvals without code' },
-        { label: 'Control and traceability', href: '/platform/trust', desc: 'Permissions, audit and approved support access' },
+        { label: 'Control and audit', href: '/platform/trust', desc: 'Permissions, audit, approved support access' },
       ] },
     ],
-    featured: { title: 'See one job from start to finish', text: 'Follow a freezer failure from the first report to sign-off.', href: '/simulator?scenario=freezer-p1' },
+    featured: { title: 'How the platform fits together', text: 'One record across spaces, assets and service work.', href: '/platform' },
   },
   {
-    id: 'industries', label: 'Industries', href: '/industries',
+    id: 'industries', label: 'Solutions', href: '/industries',
     groups: [
-      { title: 'Designed with operators', links: [
+      { title: 'By industry', links: [
         { label: 'HVAC and refrigeration service', href: '/industries/hvac-refrigeration', desc: 'Contracts, emergencies and planned visits' },
         { label: 'Property management', href: '/industries/property-management', desc: 'Residents, owners and several providers' },
-        { label: 'Facilities maintenance', href: '/industries/facilities-maintenance', desc: 'Helpdesk, PPM and compliance' },
-      ] },
-      { title: 'Proposed', links: [
-        { label: 'Retail facilities', href: '/industries/retail-facilities', desc: 'Repairs around trading hours' },
-        { label: 'Cold-chain operations', href: '/industries/cold-chain', desc: 'Temperature failures before stock is lost' },
+        { label: 'Facilities maintenance', href: '/industries/facilities-maintenance', desc: 'Helpdesk, planned work and compliance' },
+        { label: 'Retail facilities', href: '/industries/retail-facilities', desc: 'Repairs around trading hours · proposed' },
+        { label: 'Cold-chain operations', href: '/industries/cold-chain', desc: 'Temperature failures before stock is lost · proposed' },
       ] },
     ],
-    featured: { title: 'Resident reports an AC fault', text: 'From a WhatsApp message to a signed-off repair.', href: '/simulator?scenario=resident-ac&industry=property-management' },
+    featured: { title: 'Shape it around your operation', text: 'Pick what you manage and see the setup it implies.', href: '/configurator' },
   },
-  { id: 'simulator', label: 'Interactive demo', href: '/simulator' },
+  { id: 'simulator', label: 'Scenarios', href: '/simulator' },
   { id: 'pricing', label: 'Pricing', href: '/pricing' },
   {
     id: 'resources', label: 'Resources', href: '/features',
     groups: [
       { title: 'Explore', links: [
-        { label: 'Feature explorer', href: '/features', desc: 'Every capability, who uses it and its status' },
-        { label: 'Scenario simulator', href: '/simulator', desc: 'Change the inputs, see the outcome' },
-        { label: 'Configurator', href: '/configurator', desc: 'Draft your setup step by step' },
+        { label: 'Feature explorer', href: '/features', desc: 'Every capability, who uses it, what exists today' },
+        { label: 'Configurator', href: '/configurator', desc: 'Start from three choices, refine later' },
+        { label: 'My setup', href: '/my-setup', desc: 'What you have saved so far' },
       ] },
-      { title: 'Plan', links: [
-        { label: 'My setup', href: '/my-setup', desc: 'Everything you have saved' },
+      { title: 'Learn', links: [
         { label: 'Help center', href: '/help', desc: 'Setup guides and answers' },
-        { label: 'Product prototype', href: 'https://tessaro-prototype.vercel.app', desc: 'Click through 256 designed screens', external: true },
+        { label: 'Support', href: '/support', desc: 'Reach a person on the team' },
+        { label: 'About Tessaro', href: '/company', desc: 'Who builds it and how' },
+        { label: 'Product prototype', href: 'https://tessaro-prototype.vercel.app', desc: '256 designed, clickable screens', external: true },
       ] },
     ],
   },
-  { id: 'support', label: 'Support', href: '/support' },
 ] as const;
 
 export const FAQS = [

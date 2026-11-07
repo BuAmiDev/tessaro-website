@@ -18,7 +18,7 @@ const principles = [
         <p>{brand.name} 2.0 is designed end to end: 256 screens across the office web app, technician and resident apps, portals, WhatsApp flows and the Control Center, all clickable in the prototype. The first pilot release is being prepared.</p>
         <p class="muted">Nothing in {brand.name} 2.0 is running in production yet. That is why every claim on this site carries a status.</p>
         <dl class="st">{Object.values(STATUS).map((s) => <div><dt>{s.label}</dt><dd>{s.note}</dd></div>)}</dl>
-        <a class="btn" href={brand.productUrl} target="_blank" rel="noopener">Open the prototype <Icon name="arrow-up-right" size={16} /></a>
+        <a class="btn" href={brand.productUrl} target="_blank" rel="noopener">Open the prototype</a>
       </div>
       <div class="stack"><h2 class="h3">How we build</h2>
         <ul class="pr" role="list">{principles.map(([t, d]) => <li><b>{t}</b><span class="muted small">{d}</span></li>)}</ul>
@@ -40,8 +40,8 @@ const principles = [
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; }
   .stack { display: grid; gap: 16px; align-content: start; justify-items: start; }
   .st { display: grid; gap: 8px; margin: 0; font-size: var(--t-sm); } .st div { display: grid; grid-template-columns: 110px 1fr; gap: 12px; } .st dt { font-weight: 600; } .st dd { margin: 0; color: var(--fg-2); }
-  .pr { display: grid; gap: 3px; margin: 0; background: var(--line); border: 3px solid var(--line); border-radius: var(--r-xs); width: 100%; }
-  .pr li { background: var(--surface-raised); border-radius: 5px; padding: 16px 18px; display: grid; gap: 4px; }
+  .pr { display: grid; margin: 0; width: 100%; border-top: 1px solid var(--line); }
+  .pr li { padding: 18px 0; display: grid; gap: 4px; border-bottom: 1px solid var(--line); }
   .contact { display: grid; gap: 16px; } .contact ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; } .contact li { display: grid; gap: 4px; }
   @media (max-width: 860px) { .two, .contact ul { grid-template-columns: 1fr; } }
 </style>

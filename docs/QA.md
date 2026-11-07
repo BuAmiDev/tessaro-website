@@ -1,31 +1,54 @@
-# QA record (7 November 2026)
+# QA record: v2 redesign (7 November 2026)
 
-Measured on the static build in this workspace (local server without compression). Targets and measurements are reported separately.
+Measured on the static build in this workspace (local server, no compression). Targets and measurements are reported separately.
 
-## Automated tests
-- Unit tests (`npm test`): 10/10 pass. Scenario engine order and approvals, saved setup migration and handoff, configurator blockers/warnings and plan pricing.
-- Journeys (`tests/e2e/journeys.py`): 34/34 pass. Simulator save → feature add → My setup → sign-in carries draft into account → configurator blockers, warnings, resume → demo prefill, consent, confirmation, handoff without personal data → trial with decline, recovery, success, provisioning failure and retry, welcome → onboarding persistence → help search and escalation → support → sign-out.
+## Automated
+- **Unit tests** (`npm test`): 10/10 pass.
+- **Journeys** (`tests/e2e/journeys.py`): 35/35 pass. Coverage:
+  - simulator save
+  - feature search and save
+  - My setup
+  - sign-in carrying the device draft into the account
+  - configurator: three starting choices, then details, with blockers, warnings, WhatsApp consent, plan for 45 technicians and resume
+  - demo: prefill, consent, confirmation, and a handoff with no personal data
+  - trial: decline, recovery, success, provisioning failure and retry, then welcome
+  - onboarding persistence
+  - help search and escalation
+  - support
+  - sign-out
+- **Layout:** no horizontal overflow on any of 38 pages at 320, 390, 768 or 1440 px.
+- **Accessibility (axe-core 4.10, WCAG 2.0/2.1/2.2 A and AA + best practice):** the last full run on all pages at 1440 and 390 px flagged two things. Both are fixed:
+  - small drawing labels with low contrast;
+  - a nested complementary landmark.
 
-## Layout
-No horizontal overflow on any of 34 pages at 320, 390, 768 and 1440 px (`tests/e2e/overflow.py`). Screenshots reviewed at 390, 768 and 1440.
+  Lighthouse accessibility was 100 on the simulator, configurator and features pages; the homepage scored 97 for one drawing label, which is now fixed. That fix has not been re-scanned yet.
 
-## Accessibility (target WCAG 2.2 AA)
-- axe-core 4.10 (WCAG 2.0/2.1/2.2 A and AA + best practice): 0 violations on all 34 pages at 1440 and 390 px, initial state. Dynamic states (errors, confirmations) were exercised by the journey tests but not separately scanned.
-- Lighthouse accessibility: 100 on home, simulator, features, pricing.
-- Manual: visible focus, skip link, keyboard mega menus and role tabs, status never by colour alone, reduced-motion path. Screen-reader testing with VoiceOver/NVDA not yet done.
-
-## Performance (targets: LCP ≤ 2.5 s, CLS ≤ 0.1, INP ≤ 200 ms)
-Lighthouse 12.8, local server, no compression:
-
-| Page | Form factor | Perf | LCP | CLS | TBT | Weight |
+## Performance (Lighthouse 12.8; targets LCP ≤ 2.5 s, CLS ≤ 0.1)
+| Page | Mobile perf | Mobile LCP | Desktop perf | Desktop LCP | CLS | Weight |
 |---|---|---|---|---|---|---|
-| Home | Mobile | 94 | 2.7 s | 0 | 0 ms | 303 KiB |
-| Home | Desktop | 100 | 0.7 s | 0.004 | 0 ms | 310 KiB |
-| Simulator | Mobile | 97 | 2.4 s | 0.002 | 0 ms | 251 KiB |
-| Features | Mobile | 97 | 2.3 s | 0 | 0 ms | 274 KiB |
-| Pricing | Mobile | 99 | 2.0 s | 0 | 0 ms | 175 KiB |
+| Home | 93 | 2.9 s | 100 | 0.8 s | ≤ 0.013 | 415–511 KiB |
+| Simulator | 98 | 2.2 s | 100 | 0.5 s | ≤ 0.046 | 213 KiB |
+| Configurator | 98 | 2.1 s | 100 | 0.5 s | ≤ 0.049 | 202 KiB |
+| Features | 97 | 2.3 s | 100 | 0.5 s | ≤ 0.009 | 252 KiB |
 
-Home mobile LCP is 0.2 s over target in this uncompressed lab run; Vercel serves compressed files, so re-measure on the deployed URL. Before the change that keeps phones on the poster, home mobile TBT was 9.3 s with the 3D scene running in software rendering. The 3D scene's cost on real desktop GPUs was not measured here (the lab machine has 4 cores, so it also gets the poster). INP was not measured (needs field data).
+- **Home on mobile:** LCP is 0.4 s over target in this uncompressed lab run. Re-measure on the deployed URL.
+- **3D scene cost:** the lab machine has 4 cores, so Lighthouse measured the stills path, not the live 3D scene. The real-time scene's cost on desktop GPUs was not measured.
+- **INP:** needs field data.
+- **SEO:** configurator scores 63 because it is deliberately not indexed.
 
-## Design check
-Impeccable detector on the built HTML: tiny-text findings fixed (mosaic tiles and simulator board now ≥ 11px or hidden when the tile is too narrow). Remaining "cramped padding" findings are full-width sections whose padding comes from the inner `.wrap`; reviewed and left as is.
+## Visual review
+- **Story:** stills at 1600 × 980 and 760 × 1352 reviewed for every chapter. Fixed during review:
+  - camera framing that lost the subject;
+  - the technician's head intersecting the ceiling;
+  - the cutaway hiding the valve;
+  - a TV blocking the inspection view;
+  - portrait exteriors being cropped;
+  - annotations hidden behind the record panel.
+- **Pages at 1440 px:** platform, Facilities, simulator, configurator, pricing, features and an industry page.
+- **Pages at 390 px:** story, configurator, simulator and platform.
+- **Not individually reviewed after the sweep:** demo, trial, sign-in, onboarding, help, support, company, legal, 404. They use the shared components and pass the journey, overflow and axe checks.
+
+## Known limits
+- The scene is a clean architectural model, not photoreal.
+- People are neutral mannequins.
+- Screen-reader testing with VoiceOver/NVDA has not been done.
