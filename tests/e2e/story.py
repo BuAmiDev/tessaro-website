@@ -35,19 +35,19 @@ async def main():
         await pg.keyboard.press('Enter'); await pg.wait_for_timeout(600)
         ok('choosing another floor keeps the exterior', await pg.evaluate(PROG) < .05 and await pg.get_attribute('[data-pick=L2]', 'aria-pressed') == 'true')
         ok('offers to follow Level 4', await pg.locator('[data-follow]').count() == 1)
-        await pg.click('[data-pick=L4]'); await pg.wait_for_timeout(2600)
+        await pg.click('[data-pick=L4]'); await pg.wait_for_function("(()=>{const r=document.querySelector('[data-story]');const h=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdr-h'));const span=r.offsetHeight-(innerHeight-h);return Math.max(0,Math.min(1,-(r.getBoundingClientRect().top-h)/span))})() > .2", timeout=90000); await pg.wait_for_timeout(1500)
         pr = await pg.evaluate(PROG)
         ok('choosing Level 4 travels into the bay', .17 < pr < .26, f'p={pr:.3f}')
         # chapter navigation travels along the path: sample progress during the move
         samples = []
         await pg.click('[data-ch="4"]')
-        for _ in range(12): await pg.wait_for_timeout(150); samples.append(round(await pg.evaluate(PROG), 3))
-        await pg.wait_for_timeout(1500)
+        for _ in range(20): await pg.wait_for_timeout(700); samples.append(round(await pg.evaluate(PROG), 3))
+        await pg.wait_for_function("document.querySelector('[data-ch=\"4\"]').getAttribute('aria-current') === 'step'", timeout=90000); await pg.wait_for_timeout(400)
         inc = all(b >= a - .002 for a, b in zip(samples, samples[1:])); mids = len({x for x in samples if .26 < x < .52})
         ok('chapter jump passes through intermediate positions', inc and mids >= 3, str(samples))
         ok('chapter button arrives at Office', await pg.get_attribute('[data-ch="4"]', 'aria-current') == 'step')
         # interruption: a wheel during travel stops it where it is
-        await pg.click('[data-ch="7"]'); await pg.wait_for_timeout(500); await pg.mouse.wheel(0, 1); a = await pg.evaluate(PROG); await pg.wait_for_timeout(900); b = await pg.evaluate(PROG)
+        await pg.click('[data-ch="7"]'); await pg.wait_for_timeout(1200); await pg.mouse.wheel(0, 1); a = await pg.evaluate(PROG); await pg.wait_for_timeout(900); b = await pg.evaluate(PROG)
         ok('wheel interrupts travel at the current position', abs(b - a) < .02 and a < .9, f'{a:.3f} → {b:.3f}')
         # app reveals follow the record; requester completion never before evidence
         bad = []
@@ -61,15 +61,17 @@ async def main():
         ok('completion shown only after evidence and verification', not bad, str(bad))
         await pg.evaluate(GO, .62); await pg.wait_for_timeout(700)
         ok('office shows the requester update', 'story-res-booked' in (await pg.get_attribute('[data-app-img]', 'src') or ''))
-        await pg.click('[data-app-open]'); await pg.wait_for_timeout(300)
+        await pg.click('[data-app-open]', force=True); await pg.wait_for_timeout(300)
         ok('screen enlarges in a dialog', await pg.evaluate("document.querySelector('[data-zoom]').open"))
         await pg.keyboard.press('Escape'); await pg.wait_for_timeout(200)
-        await pg.evaluate(GO, .725); await pg.wait_for_timeout(900)
-        ok('technician job detail at arrival', 'story-tech-job' in (await pg.get_attribute('[data-app-img]', 'src') or ''))
+        await pg.evaluate(GO, .725)
+        try: await pg.wait_for_function("(document.querySelector('[data-app-img]').getAttribute('src')||'').includes('story-tech-job')", timeout=30000); tj = True
+        except Exception: tj = False
+        ok('technician job detail at arrival', tj, await pg.get_attribute('[data-app-img]', 'src'))
         labels = await pg.evaluate("[...document.querySelectorAll('.an.on')].map(e=>e.textContent)")
         ok('annotation attached at arrival', any('Rami' in l for l in labels), str(labels))
         # replay and skip
-        await pg.click('[data-replay]'); await pg.wait_for_timeout(4800)
+        await pg.click('[data-replay]'); await pg.wait_for_function("(()=>{const r=document.querySelector('[data-story]');const h=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdr-h'));const span=r.offsetHeight-(innerHeight-h);return Math.max(0,Math.min(1,-(r.getBoundingClientRect().top-h)/span))})() < .02", timeout=180000)
         ok('replay returns to the start', await pg.evaluate(PROG) < .02)
         await pg.click('a[href="#after-story"]'); await pg.wait_for_timeout(1200)
         ok('skip story moves past the story', await pg.evaluate("document.querySelector('#after-story').getBoundingClientRect().top < innerHeight"))
@@ -99,7 +101,7 @@ async def main():
         await pg.tap('[data-ax-role=portal]'); await pg.wait_for_timeout(300)
         ok('role button switches to the portal', await pg.evaluate("getComputedStyle(document.querySelector('#home-apps-portal')).display") != 'none')
         await pg.goto(B + '/?story-quality=low'); await pg.wait_for_function('document.documentElement.dataset.storyReady === "1"', timeout=120000)
-        await pg.tap('[data-pick=L4]'); await pg.wait_for_timeout(2800)
+        await pg.tap('[data-pick=L4]'); await pg.wait_for_function("(()=>{const r=document.querySelector('[data-story]');const h=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdr-h'));const span=r.offsetHeight-(innerHeight-h);return Math.max(0,Math.min(1,-(r.getBoundingClientRect().top-h)/span))})() > .1", timeout=90000)
         ok('touch floor pick travels on mobile', await pg.evaluate(PROG) > .1)
         await ctx.close()
         # explicitly separate fallback when WebGL is unavailable

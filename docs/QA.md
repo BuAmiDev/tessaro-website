@@ -1,3 +1,32 @@
+# QA record: v5 continuous real-time 3D (8 November 2026)
+
+Scope: the persistent Three.js story, the glass hero app views and the slim showcase frame. The lab has no GPU: WebGL runs on SwiftShader (CPU), which makes every frame slow and inflates the blocking-time figures.
+
+- **Story** (`tests/e2e/story.py`, rewritten for live 3D): 27/27 pass. Coverage:
+  - live mode starts and the canvas replaces the poster;
+  - six floor outlines projected from the 3D floors;
+  - floor picker by focus, click and touch;
+  - chapter travel is sampled during the move: 20 samples, strictly increasing, with intermediate values;
+  - a wheel interrupts travel where it is;
+  - completion is never shown before the evidence;
+  - glass app reveals and the enlarge dialog;
+  - Replay and Skip story;
+  - static mode for reduced motion;
+  - the stills fallback without WebGL;
+  - mobile role switching.
+- **Travel on slow devices:** the first lab run showed a chapter click arriving in one step, because one software-rendered frame took longer than the whole move. Chapter travel now advances at most 60 ms per frame, so a slow device moves more slowly but never skips the route.
+- **Journeys:** 35/35 pass. **Overflow:** none at 390, 768 or 1440 px. **axe-core:** clean.
+- **Lighthouse, home (lab, no GPU):**
+
+  | Run | Perf | LCP | TBT | CLS | A11y | Best practice | SEO |
+  |---|---|---|---|---|---|---|---|
+  | Desktop | 65 | 0.9 s | 6.5 s | 0 | 100 | 100 | 100 |
+  | Mobile | 54 | 3.6 s | 13.9 s | 0.013 | 100 | 100 | 100 |
+
+  LCP is unchanged from v4 (the poster paints first). The blocking time comes from model decoding and WebGL rendering on the CPU after `load`. It must be re-measured on real devices with a GPU before launch.
+- **Recording:** uncut, 87 s at 25 fps, captured frame by frame with a virtual clock. It covers a full forward journey, a reverse from Portfolio to mid-Office, and two nonadjacent chapter clicks (Office → Verify, then Verify → Room). Contact sheets confirm both clicks travel through the facade, plaza, yard and van rather than cutting.
+- **Path smoothness:** measured numerically along the spline. The worst turn rate is about 36° per 1% of progress.
+
 # QA record: v4 refinements (8 November 2026)
 
 Scope: the opening story, its transitions, and the app screens. Measured on the static build, served locally without compression.
