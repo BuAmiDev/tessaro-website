@@ -14,6 +14,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
 // @ts-ignore no bundled types
 import { N8AOPass } from 'n8ao';
 
@@ -108,7 +109,7 @@ export function createStoryScene(canvas: HTMLCanvasElement, quality: Quality): S
     paver: new THREE.MeshStandardMaterial({ map: paverTex, roughness: .9 }),
     bronze: new THREE.MeshStandardMaterial({ color: 0x8B6A4A, metalness: .78, roughness: .36, envMapIntensity: 1.1 }),
     frame: new THREE.MeshStandardMaterial({ color: 0x3B342D, metalness: .6, roughness: .4 }),
-    glass: new THREE.MeshStandardMaterial({ color: 0x3F4B49, metalness: .25, roughness: .03, transparent: true, opacity: .6, envMapIntensity: 2.8, depthWrite: false }),
+    glass: new THREE.MeshStandardMaterial({ color: 0x3C4846, metalness: .3, roughness: .03, transparent: true, opacity: .66, envMapIntensity: 3, depthWrite: false }),
     oak: new THREE.MeshStandardMaterial({ map: oakTex, roughness: .55 }),
     carpet: new THREE.MeshStandardMaterial({ map: carpetTex, roughness: 1 }),
     plaster: new THREE.MeshStandardMaterial({ map: plasterTex, roughness: .92, color: 0xF0E9DE }),
@@ -143,6 +144,13 @@ export function createStoryScene(canvas: HTMLCanvasElement, quality: Quality): S
     const road2 = new THREE.Mesh(new THREE.PlaneGeometry(12, 2400), M.asphalt); road2.rotation.x = -Math.PI / 2; road2.position.set(54, .01, 0); road2.receiveShadow = true; add(road2);
     // planters along the front, low and long, with grasses
     [[-12, 19], [3, 21.5], [-26, 12], [24, 18]].forEach(([x, z], i) => { add(box(i === 1 ? 9 : 7, .55, 2.4, M.stone, x, .275, z, 1.2)); add(box((i === 1 ? 9 : 7) - .4, .1, 2, M.grass, x, .56, z, 0, false)); });
+    // grasses in every planter, kerbs, street lights and a few parked cars
+    { const blade = new THREE.ConeGeometry(.03, .7, 3); blade.translate(0, .35, 0); const grassM = new THREE.MeshStandardMaterial({ color: 0x8C9461, roughness: .9 });
+      const gr = new THREE.InstancedMesh(blade, grassM, hi ? 5200 : 1800); const mt = new THREE.Matrix4(); const r = rnd(77); let n = 0;
+      [[-12, 19, 7], [3, 21.5, 9], [-26, 12, 7], [24, 18, 7]].forEach(([cx, cz, w]) => { for (let i = 0; i < gr.count / 4; i++) { const q = new THREE.Quaternion().setFromEuler(new THREE.Euler((r() - .5) * .7, r() * 6.3, (r() - .5) * .7)); const sc = .6 + r() * .7; mt.compose(new THREE.Vector3(cx + (r() - .5) * (w - .6), .6, cz + (r() - .5) * 1.8), q, new THREE.Vector3(sc, sc, sc)); gr.setMatrixAt(n++, mt); } });
+      gr.count = n; gr.castShadow = true; add(gr);
+      add(box(84, .14, .3, M.stone, 6, .07, 39.8, 1.2)); add(box(.3, .14, 64, M.stone, 47.8, .07, 8, 1.2));
+      for (let x = -30; x <= 44; x += 14) { const l = new THREE.Group(); l.add(box(.12, 6, .12, M.dark, 0, 3, 0)); l.add(box(1.2, .08, .2, M.dark, -.5, 6, 0)); l.add(box(.5, .04, .16, M.warmGlow, -.9, 5.95, 0, 0, false)); l.position.set(x, 0, 40.6); add(l); } }
     // bollard lights
     for (let x = -24; x <= 26; x += 6) { const b = new THREE.Group(); b.add(box(.16, .9, .16, M.dark, 0, .45, 0)); b.add(box(.17, .08, .17, M.warmGlow, 0, .82, 0, 0, false)); b.position.set(x, 0, 25); add(b); }
     // distant low-rise city and a few towers in the haze
@@ -150,7 +158,7 @@ export function createStoryScene(canvas: HTMLCanvasElement, quality: Quality): S
     const city = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ map: cityTex, roughness: 1 }), hi ? 700 : 320); const mt = new THREE.Matrix4(); let k = 0;
     for (let i = 0; i < city.count; i++) { const a = r() * Math.PI * 2, d = 150 + Math.pow(r(), .7) * 620; const x = Math.cos(a) * d, z = Math.sin(a) * d - 40;
       if (Math.abs(z - 46) < 10 || Math.abs(x - 54) < 10) continue; // keep the roads clear
-      const h = r() < .025 ? 36 + r() * 50 : 5 + r() * 12; const w = 12 + r() * 26; mt.compose(new THREE.Vector3(x, h / 2, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.round(r()) * Math.PI / 2), new THREE.Vector3(w, h, 10 + r() * 24)); city.setMatrixAt(k++, mt); }
+      const h = r() < .03 && d > 330 ? 36 + r() * 50 : 5 + r() * 12; const w = 12 + r() * 26; mt.compose(new THREE.Vector3(x, h / 2, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.round(r()) * Math.PI / 2), new THREE.Vector3(w, h, 10 + r() * 24)); city.setMatrixAt(k++, mt); }
     city.count = k; city.receiveShadow = true; add(city);
   }
 
@@ -222,7 +230,6 @@ export function createStoryScene(canvas: HTMLCanvasElement, quality: Quality): S
     strips.count = n; desks.count = d; [strips, desks].forEach((o) => add(o)); chairs.dispose(); greens.dispose(); }
   // ground floor: double-height lobby with timber canopy and a ring pendant
   { const canopy = box(12, .5, 4.2, M.oak, -1, FH * 2 - .3, HD + 1.6, 3); add(canopy);
-    add(box(.5, FH * 2 - .5, .5, M.stone, -7, FH - .25, HD + 3.4, 1.2)); add(box(.5, FH * 2 - .5, .5, M.stone, 5, FH - .25, HD + 3.4, 1.2));
     const ring = new THREE.Mesh(new THREE.TorusGeometry(1.6, .04, 8, 64), M.lamp); ring.rotation.x = Math.PI / 2; ring.position.set(-1, 5.6, 4); add(ring);
     add(box(2.2, 1.1, .7, M.oak, -1, .7, 2.5, 1)); }
   // roof: louvred plant screen set back from the parapet
@@ -262,6 +269,15 @@ export function createStoryScene(canvas: HTMLCanvasElement, quality: Quality): S
   // meeting table (chairs come from the model)
   const tableTop = box(3.4, .05, 1.25, M.oak, 11.9, L4 + .74, 5.2, 1); room.add(tableTop);
   room.add(box(.25, .7, .8, M.oak, 10.9, L4 + .37, 5.2, 1)); room.add(box(.25, .7, .8, M.oak, 12.9, L4 + .37, 5.2, 1));
+  // room details: skirting, door frame, credenza, framed print, curtains at the glass edges
+  room.add(box(.02, .08, rd, M.oak, ROOM.x0 + .08, L4 + .08, rcz)); room.add(box(rw, .08, .02, M.oak, rcx, L4 + .08, ROOM.z0 + .08));
+  room.add(box(.06, 2.3, .08, M.bronze, ROOM.x0 + .1, L4 + 1.15, ROOM.z0 + .66)); room.add(box(.06, 2.3, .08, M.bronze, ROOM.x0 + .1, L4 + 1.15, ROOM.z0 + 1.74)); room.add(box(.06, .08, 1.16, M.bronze, ROOM.x0 + .1, L4 + 2.3, ROOM.z0 + 1.2));
+  room.add(box(1.8, .62, .45, M.oak, rcx + 1.2, L4 + .31, ROOM.z0 + .32, 1)); room.add(box(1.82, .03, .47, M.stone, rcx + 1.2, L4 + .635, ROOM.z0 + .32, .6));
+  { const art = canvasTex(256, 192, (g) => { g.fillStyle = '#EDE6D9'; g.fillRect(0, 0, 256, 192); g.fillStyle = '#C9B48F'; g.fillRect(28, 70, 200, 56); g.fillStyle = '#8D9C8A'; g.beginPath(); g.arc(150, 70, 34, Math.PI, 0); g.fill(); g.fillStyle = '#B98B5E'; g.fillRect(28, 118, 200, 8); });
+    room.add(box(.9, .66, .03, M.frame, rcx + 1.2, L4 + 1.45, ROOM.z0 + .1, 0, false)); const pr = new THREE.Mesh(new THREE.PlaneGeometry(.82, .58), new THREE.MeshStandardMaterial({ map: art, roughness: .9 })); pr.position.set(rcx + 1.2, L4 + 1.45, ROOM.z0 + .12); room.add(pr); }
+  { const curtainM = new THREE.MeshStandardMaterial({ color: 0xE6DFD2, roughness: 1, side: THREE.DoubleSide }); const folds = (w: number, h: number) => { const g = new THREE.PlaneGeometry(w, h, 24, 1); const pa = g.attributes.position; for (let i = 0; i < pa.count; i++) pa.setZ(i, Math.sin(pa.getX(i) / w * Math.PI * 9) * .035); g.computeVertexNormals(); return g; };
+    const c1 = new THREE.Mesh(folds(.7, 2.75), curtainM); c1.position.set(ROOM.x0 + .5, L4 + 1.4, ROOM.z1 - .12); c1.castShadow = true; room.add(c1);
+    const c2 = new THREE.Mesh(folds(.7, 2.75), curtainM); c2.rotation.y = Math.PI / 2; c2.position.set(ROOM.x1 - .12, L4 + 1.4, ROOM.z0 + .5); c2.castShadow = true; room.add(c2); }
   const potPlant = new THREE.Group(); potPlant.add(box(.45, .55, .45, M.stone, 0, .275, 0, .6)); potPlant.position.set(ROOM.x1 - .6, L4, ROOM.z0 + .6); room.add(potPlant);
 
   // ---------- FCU-L4-07 (procedural first, replaced by the model when loaded) ----------
@@ -321,6 +337,10 @@ export function createStoryScene(canvas: HTMLCanvasElement, quality: Quality): S
   const monTex = wallTex; const monM = new THREE.MeshBasicMaterial({ map: monTex, toneMapped: false });
   [-1, 0].forEach((k) => { const x = ocx - .4 + k * .66 + .33; office.add(box(.62, .38, .03, M.dark, x, OFFICE.y + 1.05, ocz + .32)); office.add(box(.05, .26, .05, M.dark, x, OFFICE.y + .88, ocz + .38));
     const sc = new THREE.Mesh(new THREE.PlaneGeometry(.58, .34), monM); sc.position.set(x, OFFICE.y + 1.05, ocz + .34); office.add(sc); });
+  // office: pendant lines, rug, a glass partition and a second workstation row
+  for (let x = OFFICE.x0 + 1.4; x < OFFICE.x1 - .5; x += 2.4) { office.add(box(1.6, .04, .08, M.lamp, x, FH - .9, ocz + .6, 0, false)); office.add(box(.01, .35, .01, M.dark, x, FH - .7, ocz + .6, 0, false)); }
+  office.add(box(3.6, .012, 2.6, new THREE.MeshStandardMaterial({ color: 0x9C9283, roughness: 1 }), ocx - .4, OFFICE.y + .03, ocz + 1.1, 0, false));
+  { const part = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 2.6), M.glass); part.rotation.y = Math.PI / 2; part.position.set(ocx + 1.6, 1.45, ocz - .4); office.add(part); office.add(box(.05, 2.7, .05, M.frame, ocx + 1.6, 1.45, ocz + 1.7)); office.add(box(.05, 2.7, .05, M.frame, ocx + 1.6, 1.45, ocz - 2.5)); }
   const officeLight = new THREE.PointLight(0xFFE7CC, 0, 12, 1.4); officeLight.position.set(ocx, FH - .8, ocz); office.add(officeLight);
   [[ocx - 3.2, ocz + 1.6], [ocx + 2.4, ocz - 1.4]].forEach(([x, z]) => { office.add(box(1.8, .05, .8, M.desk, x, OFFICE.y + .74, z)); office.add(box(.5, .3, .03, M.dark, x, OFFICE.y + .98, z - .2)); [-.85, .85].forEach((dx) => office.add(box(.05, .72, .7, M.frame, x + dx, OFFICE.y + .37, z))); });
 
@@ -359,11 +379,12 @@ export function createStoryScene(canvas: HTMLCanvasElement, quality: Quality): S
     if (palm) { const base = fit(prep(palm), 9.5); [[-16, 22, 0], [9.5, 21, 1.4], [-30, 6, .7], [28, 22, 2.1], [34, 2, 1], [-34, 26, 2.6], [20, 34, .3]].forEach(([x, z, r], i) => { const p = i ? base.clone() : base; p.position.set(x, 0, z); p.rotation.y = r; p.scale.setScalar(.85 + (i % 3) * .12); add(p); }); }
     if (olive) { const base = fit(prep(olive), 3.6); [[-14, 19.2], [-10, 19.2], [0, 21.6], [6, 21.6], [-27.5, 12], [24.5, 18]].forEach(([x, z], i) => { const o = i ? base.clone() : base; o.position.set(x, .3, z); o.rotation.y = i * 1.7; add(o); });
       const indoor = base.clone(); indoor.scale.multiplyScalar(.36); indoor.position.set(ROOM.x1 - .6, L4, ROOM.z0 + .6); room.add(indoor); potPlant.visible = false;
-      const indoor2 = base.clone(); indoor2.scale.multiplyScalar(.5); indoor2.position.set(OFFICE.x0 + .8, OFFICE.y, OFFICE.z0 + .8); office.add(indoor2); }
+      const indoor2 = base.clone(); indoor2.scale.multiplyScalar(.5); indoor2.position.set(OFFICE.x0 + .8, OFFICE.y, OFFICE.z0 + .8); office.add(indoor2);
+      const indoor3 = base.clone(); indoor3.scale.multiplyScalar(.42); indoor3.position.set(OFFICE.x1 - .7, OFFICE.y, OFFICE.z1 - .9); office.add(indoor3); }
     const [chair, van, person, disp] = await Promise.all([loadGLB('chair'), loadGLB('van'), loadGLB('technician'), loadGLB('dispatcher')]);
     if (disp) { dispatcher = fit(prep(disp), 1.4); dispatcher.position.set(ocx - .4, OFFICE.y, ocz + 1.3); dispatcher.rotation.y = DISPATCH_RY; office.add(dispatcher); }
     if (chair) { const base = fit(prep(chair), .82); [[10.9, 4.35, 0], [11.9, 4.35, 0], [12.9, 4.35, 0], [10.9, 6.05, Math.PI], [11.9, 6.05, Math.PI], [12.9, 6.05, Math.PI], [9.95, 5.2, Math.PI / 2]].forEach(([x, z, r], i) => { const c = i ? base.clone() : base; c.position.set(x, L4 + .05, z); c.rotation.y = r + Math.PI; room.add(c); });
-      const oc = base.clone(); oc.position.set(ocx + 2.4, OFFICE.y, ocz - .7); oc.rotation.y = Math.PI; office.add(oc); }
+      [[ocx + 2.4, ocz - .7, Math.PI], [ocx - 3.2, ocz + 2.35, Math.PI], [ocx - 2.6, ocz + 2.4, Math.PI + .3]].forEach(([x, z, r]) => { const oc = base.clone(); oc.position.set(x, OFFICE.y, z); oc.rotation.y = r; office.add(oc); }); }
     if (van) { const v = fit(prep(van), 1.95); v.position.set(24.5, 0, -1.5); v.rotation.y = -Math.PI / 2 + .25; add(v); }
     if (person) {
       tech = fit(prep(person), 1.76); add(tech);
@@ -392,7 +413,7 @@ export function createStoryScene(canvas: HTMLCanvasElement, quality: Quality): S
     composer = new EffectComposer(renderer);
     const ao = new N8AOPass(scene, camera, 1, 1);
     Object.assign(ao.configuration, { aoRadius: 1.4, distanceFalloff: .8, intensity: 2.6, halfRes: true, denoiseSamples: 4, denoiseRadius: 10, gammaCorrection: false });
-    composer.addPass(ao); composer.addPass(new OutputPass());
+    composer.addPass(ao); composer.addPass(new OutputPass()); composer.addPass(new SMAAPass());
   }
 
   // ---------- one continuous camera path ----------
@@ -403,27 +424,29 @@ export function createStoryScene(canvas: HTMLCanvasElement, quality: Quality): S
     { p: .125, pos: [30, 17, 33],      tgt: [9, 17, 4],      fov: 36 },   // Level 4 framed
     { p: .175, pos: [16.5, 17.4, 18.5],tgt: [12.2, 17.2, 7], fov: 40 },   // approaching the bay
     { p: .215, pos: [13.4, 17.2, 10.6],tgt: [11.6, 16.9, 4], fov: 50 },   // through the glass
-    { p: .25,  pos: [10.4, 17.05, 3.9], tgt: [14.2, 16.6, 8.4], fov: 58 }, // Room 4.07, toward the window
-    { p: .30,  pos: [12.2, 16.9, 7.6], tgt: [12.6, 18.4, 6.0], fov: 56 }, // looking up
+    { p: .25,  pos: [13.3, 17.05, 7.7], tgt: [10.6, 16.7, 3.6], fov: 58 }, // Room 4.07
+    { p: .30,  pos: [12.5, 17.0, 8.0], tgt: [12.1, 18.3, 5.6], fov: 56 }, // looking up
     { p: .36,  pos: [10.9, 17.55, 8.3], tgt: [12.1, 18.8, 6.8], fov: 46 },// Inspect: the valve end of the unit
-    { p: .43,  pos: [13.4, 18.0, 8.1], tgt: [12.4, 18.75, 6.8], fov: 50 },  // Context, around the unit
+    { p: .43,  pos: [13.7, 17.35, 8.35], tgt: [12.3, 18.75, 6.6], fov: 50 },  // Context, around the unit
     { p: .50,  pos: [13.4, 17.3, 8.4], tgt: [11.2, 16.6, 4.6], fov: 54 },
     { p: .535, pos: [12.4, 16.4, 13.5],tgt: [2, 10, 4],      fov: 46 },   // back out of the bay
     { p: .565, pos: [-2, 6.5, 19],     tgt: [-10, 2.6, 5],   fov: 44 },   // down the facade
     { p: .595, pos: [-9.2, 2.1, 11.6], tgt: [-11, 1.9, 3],   fov: 52 },   // into the office
     { p: .63,  pos: [-7.3, 2.05, 8.25],tgt: [-11.4, 1.45, 3.5], fov: 54 },// Office: Lina at her desk, the board behind
     { p: .665, pos: [-8.0, 2.0, 8.1],  tgt: [-11.6, 1.5, 2.8], fov: 54 },
-    { p: .70,  pos: [-4, 2.8, 14.5],   tgt: [8, 2, 8],       fov: 48 },   // out to the plaza
+    { p: .686, pos: [-7.6, 2.4, 12.2], tgt: [-10.2, 1.6, 3.6], fov: 50 }, // backing out, still facing the office
+    { p: .705, pos: [-2.5, 3.0, 16.0], tgt: [-1, 2.2, 6],   fov: 48 },   // out to the plaza, turning east
     { p: .73,  pos: [16, 3.4, 17],     tgt: [22, 1.2, 2],    fov: 46 },   // along the front
     { p: .76,  pos: [31, 3.6, 10],     tgt: [19, 1.4, 0],    fov: 44 },   // service yard
     { p: .79,  pos: [26, 12, 9],       tgt: [15, 16.4, 5.6], fov: 44 },   // up the east facade
     { p: .815, pos: [17.6, 17.1, 5.6], tgt: [12, 17.1, 5.6], fov: 52 },   // through the east glass
-    { p: .845, pos: [14.1, 17.1, 4.0], tgt: [12.4, 17.5, 6.4], fov: 56 }, // repair
+    { p: .845, pos: [13.9, 17.15, 8.1], tgt: [12.0, 17.4, 5.4], fov: 58 }, // repair, from the window side
     { p: .885, pos: [11.0, 17.6, 8.25], tgt: [12.0, 18.8, 6.8], fov: 44 },// Verify, at the unit
     { p: .912, pos: [13.2, 17.2, 9.4], tgt: [11.6, 16.8, 4.6], fov: 54 },
     { p: .942, pos: [15, 19, 22],      tgt: [6, 13, 0],      fov: 42 },   // out of the bay
-    { p: .97,  pos: [40, 42, 70],      tgt: [4, 10, -6],     fov: 40 },
-    { p: 1,    pos: [120, 110, 190],   tgt: [8, 6, -30],     fov: 40 },   // Portfolio
+    { p: .968, pos: [36, 36, 62],      tgt: [4, 10, -6],     fov: 40 },
+    { p: .988, pos: [62, 58, 100],     tgt: [6, 8, -18],     fov: 40 },
+    { p: 1,    pos: [80, 72, 124],     tgt: [8, 6, -26],     fov: 40 },   // Portfolio
   ];
   const posC = new THREE.CatmullRomCurve3(KEYS.map((k) => new THREE.Vector3(...k.pos)), false, 'centripetal');
   const tgtC = new THREE.CatmullRomCurve3(KEYS.map((k) => new THREE.Vector3(...k.tgt)), false, 'centripetal');
@@ -473,7 +496,7 @@ export function createStoryScene(canvas: HTMLCanvasElement, quality: Quality): S
     const replaced = p >= .85; actuatorOld.visible = !replaced; actuatorNew.visible = replaced;
     haloM.color.setHex(p >= .88 ? 0x245B46 : 0xC77D1E); haloM.opacity = (p > .3 && p < .53) || (p > .875 && p < .93) ? .95 : 0; halo.lookAt(camera.position);
     // technician: walks from the van to the service door, then works from the ladder in Room 4.07
-    const walking = p >= .7 && p < .772, working = p >= .805 && p < .885, after = p >= .885 && p < .945;
+    const walking = p >= .7 && p < .772, working = p >= .805 && p < .862, after = p >= .862 && p < .945;
     ladder.visible = p >= .805 && p < .945;
     if (tech) {
       tech.visible = walking || working || after;
@@ -481,7 +504,7 @@ export function createStoryScene(canvas: HTMLCanvasElement, quality: Quality): S
       else { if (walk) walk.enabled = false; restPose(); }
       if (working) { tech.position.set(FCU.x - .55, L4 + .05 + .74, FCU.z + .5); tech.rotation.y = Math.PI * .95; }
       if (after) { tech.position.set(13.6, L4 + .05, 4.2); tech.rotation.y = -2.2; }
-      reachUp(tech, working && p < .875);
+      reachUp(tech, working && p < .858);
       anchors.tech.set(tech.position.x, tech.position.y + 2.05, tech.position.z);
     }
     if (dispatcher) dispatcher.visible = true;

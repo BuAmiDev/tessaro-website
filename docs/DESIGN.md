@@ -26,9 +26,12 @@ The first version leaned on a templated look: mint buttons, dark-green banners, 
 - **Specimen:** `/design-system` (not indexed).
 
 ## The architectural story (`src/story/`)
-Since v4 the story uses rendered frames of one building, with live HTML for floor picking, annotations, the work record and app reveals. See [STORY.md](STORY.md) for what is real-time, the asset list, the continuity rules and the remaining asset requirements.
-- **Data:** `story-data.ts` holds the event, the chapters and the record. `story-frames.ts` holds the frames, dissolve points, floor polygons, image-space anchors and app steps.
-- **Modes:** **frames** (default, pinned scroll at 360vh) and **static** (reduced motion, chapter buttons). `?story-still=<p>` renders a fixed progress for captures.
+Since v5, the opening is one continuous real-time 3D journey. The renderer and camera persist through all eight chapters, and progress is continuous. See [STORY.md](STORY.md) for the route, what is real-time, the modes, loading, the continuity rules and the remaining production work.
+- **Files:**
+  - `scene.ts`: world, models, camera spline, anchors and floor projection.
+  - `story-data.ts`: event, chapters, record and readings.
+  - `story-frames.ts`: floors, app steps and the no-WebGL stills.
+- **App views:** frameless glass in the hero. The showcase phones use a 1.5 px glass rim with transparent-corner exports.
 
 ## Homepage order
 Story, then the four domains with a shared drawing, then the apps (requester, technician, customer portal), then from one room to a portfolio (operating models), then scenarios (simulator preview), then shaping the setup (three choices with a live preview), then how the intelligence works (signal / context / rule / action / evidence layers), then what you can rely on, then two ways to start, then questions, then the footer.

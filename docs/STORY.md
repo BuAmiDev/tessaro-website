@@ -1,96 +1,72 @@
-# Opening story and app screens (v4)
+# Opening story (v5): one continuous real-time 3D journey
 
-v4 changes only three things on the accepted redesign: the opening scene, the story transitions, and how the apps are shown. Identity, type, colour, navigation, scenarios, configuration and conversion flows are unchanged.
+The opening is a persistent Three.js world. One renderer and one camera stay alive through all eight chapters. The camera travels a single spline through:
 
-## What is real-time and what is rendered
+1. the plaza;
+2. up to Level 4, through the glass of Room 4.07's bay;
+3. up to the fan coil unit in the opened ceiling, then around it;
+4. back out of the bay and down the facade;
+5. into the operations office;
+6. out along the plaza to the service entrance, following the technician;
+7. up the east facade into the same room, for the repair and verification at the same unit;
+8. out and up over the estate.
 
-| Part | How it is made | Live or rendered |
+Progress is continuous (0–1). Everything visible is a pure function of progress: camera, people, ceiling tiles, actuator state, readings, record, captions and app views. Stopping anywhere leaves a valid intermediate view, and reverse scrolling retraces the route exactly.
+
+## What is real-time and what is pre-made
+
+| Part | How it is made |
+|---|---|
+| Building, plaza, landscaping, Room 4.07, ceiling void, office, service yard, estate | Real-time 3D (`src/story/scene.ts`). Procedural architecture in metres, with canvas textures for limestone, pavers, oak, carpet, plaster, ceiling tiles, galvanised steel, concrete and the shutter. Lighting is a low warm sun with soft shadows, sky light and image-based reflections from a generated sky. Ambient occlusion (N8AO) and SMAA run on desktop. |
+| Palms, olive planters, van, meeting chairs, dispatcher | 3D models converted from generated reference images (Higgsfield image-to-3D), compressed with meshopt and WebP textures (`public/story/3d/*.glb`) |
+| Technician | Rigged 3D model with a walk cycle. The walk is driven by scroll progress, and the poses for reaching into the ceiling are set on the rig in code. |
+| Fan coil unit FCU-L4-07 | Detailed procedural model: casing, return grille, spigot and flexible duct, hangers, insulated chilled-water pipes, brass valve, actuator (failed and new versions), condensate drain, asset tag. It is modelled, not scanned, so the actuator can be replaced in the story. |
+| Office wall display and monitors | Texture of the real prototype dispatch board (W-026), with generic data |
+| Floor picker | Six floor outlines projected from the 3D floors every frame, mirrored by six buttons (hover, focus, touch) |
+| Labels | HTML labels projected from 3D points (valve, supply duct, asset tag, dispatcher, technician, van, site). They flip sides or hide rather than cover the record or app views. |
+| App views in the hero | Real prototype screens exported without device chrome, status bar or background. Only the app's own cards remain, on a transparent root. The site supplies the glass: backdrop blur of the live scene, a faint tint, an edge highlight, a soft shadow, a slight tilt and a gentle float. Nothing fades the whole screenshot. |
+| Poster | First frame of the same 3D scene (`public/story/3d/poster-{l,p}.webp`), shown until the canvas is ready, so the hand-over is invisible |
+
+## Navigation
+
+- **Scroll** drives progress directly. Chapter boundaries only update captions and task state.
+- **Chapter buttons, floor picker and Replay** travel along the same path. Duration scales with distance, from 0.9 s to 4.2 s, with eased start and stop. A wheel, touch or key input interrupts travel at the current camera position.
+- **Path smoothness:** the camera moves on a centripetal Catmull-Rom spline. Progress maps to the key index through a monotone cubic, so velocity is continuous through every key. Turning rate is measured numerically. The worst remaining pivot is about 36° per 1% of progress, down from 188° before the route was re-choreographed (for example, the camera now backs out of the office before turning).
+- **Glass the camera passes through** (Room 4.07's front and east panes, the office front) clears only within the last few metres of approach. It is not used to hide a cut.
+
+## Modes
+
+| Mode | When | Behaviour |
 |---|---|---|
-| Building, floor, room, ceiling void, office, service entrance, repair, portfolio | Nine rendered stills of one building (see the asset list) | Rendered media |
-| Moving between places | Scroll-driven dissolves between stills. No zooming or panning of a flat image to fake a camera move | Live (opacity only) |
-| Floor picker | SVG polygons traced on the exterior, mirrored by six real buttons (L5–G). Hover, focus or tap highlights a floor; choosing Level 4 continues into the room | Live |
-| Annotations | HTML labels attached to points in the image (fractions of the source), recomputed for every viewport with the same `object-fit: cover` maths. They flip sides or hide rather than cover the record or app panels | Live |
-| Work record, readings, chapter text, controls | HTML driven by scroll progress, as before | Live |
-| App screens in the story | Real prototype screens exported with this event's sample data, revealed as front-facing panels; click to enlarge | Rendered (static images of real UI) |
-| Reduced motion | Static chapters with Previous/Next, no pinned scroll, no dissolves | Live |
+| Live | WebGL available | Full journey. Desktop runs the high profile (shadow map 4096, AO, SMAA, pixel ratio up to 1.75). Phones and low-power devices run the low profile (no AO, shadow map 1024, pixel ratio up to 1.15) in the same scene. |
+| Static | `prefers-reduced-motion` | Same 3D scene, rendered at each chapter's position, with Previous/Next. No camera travel. |
+| Stills | No WebGL | Explicitly separate fallback: one rendered still per chapter (`public/story/v4/*`), labelled in the overview |
 
-The Three.js scene (`src/story/scene.ts`) and the `three` dependency were removed. The procedural model was the source of the "early geometric model" look. Keeping it as a fallback would have shown placeholder geometry as the finished state.
+## Loading
 
-## Continuity
+- The poster (the scene's own first frame) paints immediately.
+- The scene boots after the page `load` event. All models load before the canvas is revealed, so nothing pops in.
+- Models total about 6.6 MB (palm 1.4, olive 1.2, van 0.9, technician 0.9, dispatcher 0.6, chair 0.3). Textures are 1024 px WebP, 512 px for chairs.
 
-- **One building:** every frame was generated from the chosen exterior as a reference image, so the same bronze fins, limestone bands and late-afternoon light carry through.
-- **One room:** the interior frames (inspection, repair, evidence) were generated from the same room render.
-- **One event:** Level 4, Room 4.07, FCU-L4-07, WO-2611-0418, technician Rami S., dispatcher Lina K. These appear in the captions, record, labels and app fixtures.
-- **Floor numbering:** G (service entrance and lobby), then L1–L5. Level 4 is the second band from the top; the "selected floor" frame shows Levels 4 and 5 with Room 4.07 on Level 4.
-- **Order of states** (enforced by `tests/e2e/story.py`):
-  1. The customer sees the assignment and visit at 14:06.
-  2. The technician sees the job, scan and photo between 15:12 and 15:29.
-  3. Technician completion appears only after the repair evidence exists.
-  4. The requester's "Work completed" appears only after the repair is verified.
-  5. Sign-off is a separate record row after that.
-- **Trigger:** the building alarm is kept. The requester's own reporting flow appears only in the separate showcase.
+## Continuity rules
 
-## Brand fit
+- **Same event throughout:** Harbour Point, Level 4, Room 4.07, FCU-L4-07, WO-2611-0418, Rami S., Lina K.
+- **Floors:** G, then L1–L5. Level 4 is the second band from the top.
+- **Order of states:**
+  1. the requester's "technician booked" view appears in the Office chapter;
+  2. the technician sees the job while walking from the van;
+  3. scan, photo and completion happen in the room;
+  4. the actuator is replaced (p 0.85);
+  5. the repair is verified (0.88);
+  6. the requester's "Work completed" view appears (0.885);
+  7. sign-off is recorded (0.91).
 
-All frames are colour-graded toward the site palette by `scripts/assets/grade.py`: lower saturation, warm highlights pulled toward neutral, shadows nudged toward ink. The office wall display was neutralised inside its own outline.
+  `tests/e2e/story.py` checks that completion never shows before the evidence.
 
-The pictures contain no logos, signage or legible text. The technician's shirt is the dark green already used in the palette.
+## Remaining production work (honest gaps)
 
-## App screens
-
-- **Source:** the prototype's own screen HTML (`tessaro-prototype/s/*.html`), rendered with the product's fonts (Plus Jakarta Sans, IBM Plex Mono). Only the phone screen (`.ph`) or the portal app (`.app`) is captured, without the prototype toolbar, index, arrows or canvas.
-- **Generic data:** `scripts/assets/fixtures.py` replaces text only. Every replacement must match the source, otherwise the script stops, and it refuses any output that still contains a pilot client name.
-- **Changed state:** one story fixture (technician "Ready to close?", M-020) is shown in its completed state, using the same row, radio and button styles from the screen itself.
-- **Kept apart:** showcase screens are separate examples (an AC fault at home, a refrigeration job, a retail customer) and are labelled as such. They are not presented as the Harbour Point record.
-
-| Where | Requester app | Technician app | Customer portal (browser) |
-|---|---|---|---|
-| Story · Office (14:06) | TR-019 Technician booked | | |
-| Story · Technician | | M-004 Job detail, M-007 Scan, M-013 Camera capture | |
-| Story · Verify | TR-024 Work completed (after evidence) | M-020 Complete and validate | |
-| Homepage `#apps` | TR-010 Report, TR-018 Timeline, TR-024 Confirm | M-004 Job, M-012 Checklist, M-020 Complete | PT-013 Home, PT-016 Approvals |
-| `/platform/field-service#technician-app` and `/platform/field` | | M-004, M-012, M-013, M-020, M-022 Sync center (marked designed, not in production) | |
-| `/platform/stakeholders#customer-apps` and `/platform/facilities` | TR-010, TR-018, TR-024 | | PT-013, PT-016 |
-
-Platform menu: a new group, "The apps", links to both anchors.
-
-### Rebuilding the screens
-
-```
-PROTO_SCREENS=../tessaro-prototype/s FIXTURES_OUT=.fixtures python3 scripts/assets/fixtures.py
-SRC=.fixtures PRODUCT_FONTS=<dir with @fontsource-variable/plus-jakarta-sans and @fontsource/ibm-plex-mono> \
-  python3 scripts/assets/export_screens.py <out> none <KEY,KEY-story,…>
-```
-
-Then convert to WebP in `public/apps/`.
-
-## Asset list
-
-**Frames** in `public/story/v4/`, 1920 and 1024 wide, plus `e1p-900` (portrait). Each was generated with GPT Image 2.6 (Higgsfield), 2K, then graded.
-
-| File | Shows | Reference used |
-|---|---|---|
-| e1 / e1p | Exterior, three-quarter, plaza, service entrance (landscape and portrait) | none (master) / e1 |
-| e2 | Levels 4–5, Room 4.07 visible through glass | e1 |
-| r1 | Room 4.07 interior, suspended ceiling, slot diffuser | e1 |
-| r2 | Same room, two tiles lifted: FCU, chilled-water pipes, valve actuator | r1 |
-| o1 | Operations office, dispatcher | e1 |
-| t1 | Service entrance, van, technician arriving | e1 |
-| t2 | Technician on a step ladder at the open ceiling | r1 |
-| v1 | Over the shoulder: phone lens aimed at the new actuator | r2 |
-| p1 | Aerial portfolio with Harbour Point among other building types | e1 |
-
-**App screens** in `public/apps/`: 16 WebP files, phones at 720 × 1520 (2×) and the portal at 1680 wide.
-
-**Removed:** `public/story/c*.webp` (old procedural stills), `src/story/scene.ts`, the `three` dependency.
-
-## Remaining production-asset requirements
-
-Generated stills are good enough for a preview. For launch, these are recommended:
-
-1. **A modelled building and room.** Commission a modelled scene (Blender, Unreal or V-Ray) of the same building, Room 4.07 and the FCU, to allow true camera moves (exterior to floor to room) rendered as a short image sequence or video. Deliver at 2560 × 1440 and 1080 × 1920, with matching first and last frames per chapter so the current dissolves can become continuous moves.
-2. **Accuracy check by an HVAC engineer** of the ceiling-void frames r2, t2 and v1: valve orientation, actuator type, insulation, condensate drain and hanger spacing.
-3. **Rights:** confirm Higgsfield's commercial terms for the generated frames, or replace them with commissioned renders.
-4. **Portrait variants** for r2, t2 and v1. Today they are cropped from the landscape frames on phones.
-5. **People:** the technician is always seen from behind. If a face is wanted, use a model-released photo shoot or a commissioned render.
-6. **Live product screens:** when the apps ship, replace the exported fixtures with screens captured from the production build and remove the "designed, not in production" labels as items become Available.
+- **Realism ceiling:** this is a real-time architectural model with good light and materials, not an offline photoreal render.
+- **Recommended for launch:** a modelled facade and interiors (Blender to glTF) with baked lightmaps for the room, office and lobby, plus physically measured materials. That would close the remaining gap to the Floor Picker reference while keeping this camera route and controller.
+- **Converted models:** they are approximations. The van, palms and people hold up at the distances used. A close-up of a person would need a proper character asset.
+- **HVAC check:** an engineer should check the fan coil assembly (valve type, actuator, pipe sizes).
+- **Performance:** real-device GPU measurement on mid-range phones is still to do. The lab machine has no GPU (software rendering).
