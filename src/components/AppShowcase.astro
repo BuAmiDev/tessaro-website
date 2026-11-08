@@ -99,11 +99,15 @@ const proto = (key: string) => `${brand.productUrl}/#${key}`;
   .ax-steps button[aria-pressed="true"] { border-color: var(--green); color: var(--ink); }
   .ax-steps button[aria-pressed="true"] .n { background: var(--green); color: #fff; }
   .ax-fig { margin: 0; display: grid; gap: 12px; justify-items: start; }
-  .ax-phone .ax-shot { padding: 6px; border-radius: 34px; background: var(--ink); box-shadow: 0 30px 60px -36px rgba(32,37,34,.45); }
+  /* slim glass rim instead of a device bezel (about 75% thinner than before) */
+  .ax-phone .ax-shot { padding: 1.5px; border-radius: 40px; border: 1px solid rgba(32, 37, 34, .09);
+    background: linear-gradient(160deg, rgba(255,255,255,.95), rgba(210,224,217,.55));
+    -webkit-backdrop-filter: blur(12px) saturate(130%); backdrop-filter: blur(12px) saturate(130%);
+    box-shadow: 0 30px 60px -36px rgba(32,37,34,.42), 0 1px 3px rgba(32,37,34,.06), inset 0 1px 0 rgba(255,255,255,.9); }
   .ax-imgs { display: grid; }
   .ax-imgs img { grid-area: 1 / 1; opacity: 0; visibility: hidden; transition: opacity 260ms var(--ease-out), visibility 0s 260ms; }
   .ax-imgs img.on { opacity: 1; visibility: visible; transition: opacity 260ms var(--ease-out); }
-  .ax-phone .ax-imgs img { width: min(300px, 72vw); height: auto; border-radius: 28px; background: #EEEFEC; }
+  .ax-phone .ax-imgs img { width: min(300px, 72vw); height: auto; border-radius: 38px; }
   .ax-browser .ax-fig { justify-items: stretch; width: 100%; }
   .ax-browser .ax-shot { border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--line-c2); background: var(--white); box-shadow: 0 30px 60px -40px rgba(32,37,34,.4); }
   .ax-bar { display: flex; gap: 6px; align-items: center; height: 34px; padding: 0 14px; background: #ECEDE9; border-bottom: 1px solid var(--line-c); }

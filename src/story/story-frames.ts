@@ -85,9 +85,9 @@ export const ANCHORS: Partial<Record<FrameId, Record<string, [number, number]>>>
 export interface AppStep { from: number; to: number; img: string; app: 'Requester app' | 'Technician app'; who: string; caption: string; screen: string }
 export const APP_STEPS: AppStep[] = [
   { from: .595, to: .67, img: 'story-res-booked', app: 'Requester app', who: 'Facilities manager', screen: 'TR-019', caption: 'Sees who is coming, when, and what they are bringing, under the same reference.' },
-  { from: .685, to: .73, img: 'story-tech-job', app: 'Technician app', who: 'Rami S.', screen: 'M-004', caption: 'The job arrives with the unit, the response time, who pays and how to get in.' },
-  { from: .73, to: .77, img: 'story-tech-scan', app: 'Technician app', who: 'Rami S.', screen: 'M-007', caption: 'Scanning the tag confirms this is the unit on the job.' },
-  { from: .77, to: .82, img: 'story-tech-photo', app: 'Technician app', who: 'Rami S.', screen: 'M-013', caption: 'Photos are taken in the app, stamped and attached to the work order.' },
-  { from: .82, to: .865, img: 'story-tech-complete', app: 'Technician app', who: 'Rami S.', screen: 'M-020', caption: 'Every item done, outcome “Fully fixed”. Only now can sign-off be requested.' },
-  { from: .865, to: .915, img: 'story-res-confirm', app: 'Requester app', who: 'Facilities manager', screen: 'TR-024', caption: 'The requester sees what was done, after the evidence exists, and confirms.' },
+  { from: .69, to: .765, img: 'story-tech-job', app: 'Technician app', who: 'Rami S.', screen: 'M-004', caption: 'The job arrives with the unit, the response time, who pays and how to get in.' },
+  { from: .795, to: .825, img: 'story-tech-scan', app: 'Technician app', who: 'Rami S.', screen: 'M-007', caption: 'Scanning the tag confirms this is the unit on the job.' },
+  { from: .825, to: .86, img: 'story-tech-photo', app: 'Technician app', who: 'Rami S.', screen: 'M-013', caption: 'Photos are taken in the app, stamped and attached to the work order.' },
+  { from: .86, to: .885, img: 'story-tech-complete', app: 'Technician app', who: 'Rami S.', screen: 'M-020', caption: 'Every item done, outcome “Fully fixed”. Only now can sign-off be requested.' },
+  { from: .885, to: .93, img: 'story-res-confirm', app: 'Requester app', who: 'Facilities manager', screen: 'TR-024', caption: 'The requester sees what was done, after the evidence exists, and confirms.' },
 ];

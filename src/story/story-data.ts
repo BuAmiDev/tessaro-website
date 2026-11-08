@@ -44,11 +44,11 @@ export const CHAPTERS: Chapter[] = [
     text: 'Same asset, more context: covered by the maintenance contract, 4-hour response, actuator out of warranty, a meeting booked in the room at 16:00. A work record forms.', actor: 'auto', source: 'Contract, warranty and room booking' },
   { id: 'office', still: .6, at: .53, end: .67, nav: 'Office', label: 'Work assigned', time: '14:05',
     text: 'The operations office sees the same event. Tessaro suggests Rami, who has the skill and the part, 18 minutes away. Lina confirms, and the tenant’s facilities manager gets an update.', actor: 'suggest', source: 'Skills, shifts and van stock' },
-  { id: 'technician', still: .795, at: .67, end: .82, nav: 'Technician', label: 'Repair in progress', time: '15:12',
+  { id: 'technician', still: .8, at: .67, end: .85, nav: 'Technician', label: 'Repair in progress', time: '15:12',
     text: 'Rami arrives at the service entrance, scans the unit’s tag, and replaces the actuator. Photos and readings attach to the same work order.', actor: 'tech', source: 'Technician app · asset tag' },
-  { id: 'verify', still: .865, at: .82, end: .92, nav: 'Verify', label: 'Repair verified', time: '15:41',
+  { id: 'verify', still: .89, at: .85, end: .93, nav: 'Verify', label: 'Repair verified', time: '15:41',
     text: 'Readings are compared with the alarm: valve follows command, supply air back to 14 °C, room recovering. The facilities manager confirms.', actor: 'auto', source: 'Before and after readings' },
-  { id: 'portfolio', still: 1, at: .92, end: 1, nav: 'Portfolio', label: 'Record complete', time: '15:44',
+  { id: 'portfolio', still: 1, at: .93, end: 1, nav: 'Portfolio', label: 'Record complete', time: '15:44',
     text: 'One closed loop, recorded with evidence. The same record serves facilities, maintenance, field service and asset decisions across every building you run.', actor: 'auto', source: 'Work order · asset history' },
 ];
 
@@ -60,15 +60,15 @@ export const RECORD = [
   { id: 'context', at: .44, label: 'Context checked', value: 'Covered · 4 h response · out of warranty', actor: 'auto' as ActorKind },
   { id: 'assign', at: .58, label: 'Work assigned', value: 'Rami S. · confirmed by Lina K.', actor: 'suggest' as ActorKind },
   { id: 'update', at: .62, label: 'Update sent', value: 'Facilities manager, Harbour Point', actor: 'suggest' as ActorKind },
-  { id: 'repair', at: .78, label: 'Actuator replaced', value: '2 photos · part from van stock', actor: 'tech' as ActorKind },
-  { id: 'verify', at: .84, label: 'Repair verified', value: 'Valve 98% · supply 14.1 °C', actor: 'auto' as ActorKind },
-  { id: 'signoff', at: .895, label: 'Signed off', value: 'Facilities manager, after the evidence', actor: 'person' as ActorKind },
-  { id: 'close', at: .95, label: 'Record complete', value: 'Summary filed to asset history', actor: 'auto' as ActorKind },
+  { id: 'repair', at: .855, label: 'Actuator replaced', value: '2 photos · part from van stock', actor: 'tech' as ActorKind },
+  { id: 'verify', at: .88, label: 'Repair verified', value: 'Valve 98% · supply 14.1 °C', actor: 'auto' as ActorKind },
+  { id: 'signoff', at: .91, label: 'Signed off', value: 'Facilities manager, after the evidence', actor: 'person' as ActorKind },
+  { id: 'close', at: .955, label: 'Record complete', value: 'Summary filed to asset history', actor: 'auto' as ActorKind },
 ];
 
 export interface Readings { supply: string; valve: string; room: string; tone: 'normal' | 'alert' | 'ok' }
 export function readingsAt(p: number): Readings {
   if (p < .28) return { supply: '14.0 °C', valve: '100% · 99%', room: p < .14 ? '23.1 °C' : '26.9 °C', tone: p < .14 ? 'normal' : 'alert' };
-  if (p < .80) return { supply: '21.6 °C', valve: '100% · 12%', room: '26.9 °C', tone: 'alert' };
-  return { supply: '14.1 °C', valve: '100% · 98%', room: p < .9 ? '24.2 °C ↓' : '23.4 °C', tone: 'ok' };
+  if (p < .855) return { supply: '21.6 °C', valve: '100% · 12%', room: '26.9 °C', tone: 'alert' };
+  return { supply: '14.1 °C', valve: '100% · 98%', room: p < .92 ? '24.2 °C ↓' : '23.4 °C', tone: 'ok' };
 }
