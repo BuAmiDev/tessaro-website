@@ -16,6 +16,10 @@ export const NAV = [
         { label: 'Configuration', href: '/platform/configuration', desc: 'Forms, rules and approvals without code' },
         { label: 'Control and audit', href: '/platform/trust', desc: 'Permissions, audit, approved support access' },
       ] },
+      { title: 'The apps', links: [
+        { label: 'Technician app', href: '/platform/field-service#technician-app', desc: 'Job, checklist, evidence, completion' },
+        { label: 'Requester app and customer portal', href: '/platform/stakeholders#customer-apps', desc: 'Report, follow, confirm and approve' },
+      ] },
     ],
     featured: { title: 'How the platform fits together', text: 'One record across spaces, assets and service work.', href: '/platform' },
   },

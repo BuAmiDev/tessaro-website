@@ -61,7 +61,8 @@ export const RECORD = [
   { id: 'assign', at: .58, label: 'Work assigned', value: 'Rami S. · confirmed by Lina K.', actor: 'suggest' as ActorKind },
   { id: 'update', at: .62, label: 'Update sent', value: 'Facilities manager, Harbour Point', actor: 'suggest' as ActorKind },
   { id: 'repair', at: .78, label: 'Actuator replaced', value: '2 photos · part from van stock', actor: 'tech' as ActorKind },
-  { id: 'verify', at: .86, label: 'Repair verified', value: 'Valve 98% · supply 14.1 °C · signed off', actor: 'auto' as ActorKind },
+  { id: 'verify', at: .84, label: 'Repair verified', value: 'Valve 98% · supply 14.1 °C', actor: 'auto' as ActorKind },
+  { id: 'signoff', at: .895, label: 'Signed off', value: 'Facilities manager, after the evidence', actor: 'person' as ActorKind },
   { id: 'close', at: .95, label: 'Record complete', value: 'Summary filed to asset history', actor: 'auto' as ActorKind },
 ];
 

@@ -8,6 +8,8 @@ import { DOMAINS } from '../../content/domains';
 import { CAPABILITIES, capabilityById } from '../../content/capabilities';
 import { scenarioById } from '../../lib/scenario-engine';
 import { brand } from '../../config/brand';
+import AppShowcase from '../../components/AppShowcase.astro';
+import { ROLES, TECHNICIAN_DEEP } from '../../content/apps';
 export function getStaticPaths() {
   return [
     ...DOMAINS.map((d) => ({ params: { slug: d.id }, props: { kind: 'domain' as const, id: d.id } })),
@@ -21,6 +23,11 @@ const title = d ? d.name : a!.title;
 const lead = d ? d.body : a!.lead;
 const caps = d ? d.covers.map((c) => capabilityById[c]).filter(Boolean) : CAPABILITIES.filter((c) => a!.groups.includes(c.group));
 const scenario = d ? (caps.find((c) => c.scenarios.length)?.scenarios[0] ?? 'bms-alarm') : a!.scenario;
+const apps = ['field-service', 'field'].includes(id)
+  ? { anchor: 'technician-app', title: 'The technician app', lead: 'What the person on site sees, from reviewing the job to closing it with proof. Step through the designed screens.', roles: [TECHNICIAN_DEEP], layout: 'single' as const }
+  : ['facilities', 'stakeholders'].includes(id)
+  ? { anchor: 'customer-apps', title: 'The requester app and the customer portal', lead: 'Occupants report and follow their requests on their phone. Business customers review open work and make decisions in the portal, in the browser.', roles: [ROLES.requester, ROLES.portal], layout: 'pair' as const }
+  : null;
 const others = d ? DOMAINS.filter((x) => x.id !== d.id) : [];
 const links: Record<string, string> = {
   facilities: 'Requests from a room attach to the asset that serves it, so maintenance and field teams start with the right unit.',
@@ -47,6 +54,15 @@ const links: Record<string, string> = {
           <h2 class="h4">Connected to</h2>
           <ul role="list" class="dd-o">{others.map((o) => <li><a href={`/platform/${o.id}`}>{o.name}</a><span>{links[o.id]}</span></li>)}</ul>
         </div>
+      </div>
+    </section>
+  )}
+
+  {apps && (
+    <section class="section apps-s" id={apps.anchor} aria-labelledby="apps-s-t">
+      <div class="wrap">
+        <div class="apps-h"><h2 id="apps-s-t" class="h3">{apps.title}</h2><p class="muted">{apps.lead}</p></div>
+        <AppShowcase uid={`${id}-apps`} layout={apps.layout} roles={apps.roles} note="Designed screens from the Tessaro 2.0 prototype, shown with sample data. Not yet in production." />
       </div>
     </section>
   )}
@@ -78,6 +94,8 @@ const links: Record<string, string> = {
   .caps-h { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 16px 40px; align-items: end; margin-bottom: 24px; }
   .caps { margin: 0; border-bottom: 1px solid var(--line); }
   .between { justify-content: space-between; }
+  .apps-s { background: var(--white); scroll-margin-top: var(--hdr-h); }
+  .apps-h { display: grid; gap: 10px; max-width: 68ch; margin-bottom: 36px; }
   @media (max-width: 1000px) { .dd, .caps-h { grid-template-columns: 1fr; } }
 </style>
 <script>import { wireAddButtons } from '../../scripts/add-buttons'; wireAddButtons();</script>

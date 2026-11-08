@@ -1,0 +1,173 @@
+---
+/**
+ * Real product screens, a few user-controlled steps per role.
+ * layout "pair": two phone apps side by side with the shared timeline between
+ * them (desktop), and any browser role full width below. On narrow screens
+ * one experience is shown at a time, chosen with the role buttons.
+ */
+import { SHARED_TIMELINE, type AppRole } from '../content/apps';
+import { brand } from '../config/brand';
+interface Props { roles: AppRole[]; layout?: 'pair' | 'single'; uid: string; note?: string }
+const { roles, layout = 'single', uid, note } = Astro.props;
+const phones = roles.filter((r) => r.form === 'phone');
+const timeline = layout === 'pair' && phones.length === 2;
+const proto = (key: string) => `${brand.productUrl}/#${key}`;
+---
+<div class:list={['ax', `ax-${layout}`, { 'ax-tl': timeline }]} data-ax={uid}>
+  {roles.length > 1 && (
+    <div class="ax-switch" role="group" aria-label="Choose an experience">
+      {roles.map((r, i) => <button type="button" data-ax-role={r.id} aria-pressed={i === 0 ? 'true' : 'false'}>{r.name}</button>)}
+    </div>
+  )}
+  <div class="ax-stage">
+    {roles.map((r, ri) => (
+      <article class:list={['ax-role', `ax-${r.form}`, { on: ri === 0 }]} data-role={r.id} id={`${uid}-${r.id}`} aria-labelledby={`${uid}-${r.id}-h`}>
+        <header class="ax-h">
+          <h3 class="ax-n" id={`${uid}-${r.id}-h`}>{r.name}</h3>
+          <p class="ax-w">{r.who}{r.form === 'browser' && <span class="ax-tag">Browser</span>}</p>
+          <p class="ax-s">{r.summary}</p>
+        </header>
+        <ol class="ax-steps" role="list">
+          {r.screens.map((s, i) => (
+            <li><button type="button" data-step={i} aria-pressed={i === 0 ? 'true' : 'false'} aria-controls={`${uid}-${r.id}-shot`}><span class="n">{i + 1}</span>{s.step}</button></li>
+          ))}
+        </ol>
+        <figure class="ax-fig">
+          <div class="ax-shot" id={`${uid}-${r.id}-shot`}>
+            {r.form === 'browser' && <div class="ax-bar" aria-hidden="true"><i></i><i></i><i></i><span></span></div>}
+            <div class="ax-imgs">
+              {r.screens.map((s, i) => (
+                <img class:list={{ on: i === 0 }} src={`/apps/${s.img}.webp`} alt={`${r.name}, screen ${s.id}: ${s.caption}`} width={r.form === 'phone' ? 360 : 1680} height={r.form === 'phone' ? 760 : (s.img === 'portal-home' ? 1141 : 1112)} loading="lazy" decoding="async" />
+              ))}
+            </div>
+          </div>
+          <figcaption class="ax-cap" aria-live="polite">
+            {r.screens.map((s, i) => (
+              <span class:list={['ax-c', { on: i === 0 }]} data-cap={i}>
+                <span class="ax-ct">{s.caption}</span>
+                {s.note && <span class="ax-note">{s.note}</span>}
+                <a class="ax-id" href={proto(s.key)} target="_blank" rel="noopener">Screen {s.id} in the prototype</a>
+              </span>
+            ))}
+          </figcaption>
+        </figure>
+        <a class="link ax-x" href={proto(r.explore.key)} target="_blank" rel="noopener">{r.explore.label}</a>
+      </article>
+    ))}
+    {timeline && (
+      <div class="ax-time" aria-label="How the same work moves between the two apps">
+        <p class="ax-tt">One piece of work</p>
+        <ol role="list">
+          {SHARED_TIMELINE.map((t, i) => (
+            <li><button type="button" data-tl={i} data-links={JSON.stringify(t.links)} class={`w-${t.who}`}>
+              <span class="who">{t.who === 'office' ? 'Office' : t.who === 'requester' ? 'Requester' : 'Technician'}</span>{t.t}
+            </button></li>
+          ))}
+        </ol>
+        <p class="ax-tn">The office side of this is the web app. <a class="link" href="/platform/coordination">Dispatch and scheduling</a></p>
+      </div>
+    )}
+  </div>
+  <p class="ax-foot">{note ?? 'Designed screens from the Tessaro 2.0 prototype, shown with sample data. Separate examples, not the Harbour Point story. Not yet in production.'}</p>
+</div>
+
+<style>
+  .ax { display: grid; gap: 24px; }
+  .ax-switch { display: none; gap: 6px; flex-wrap: wrap; }
+  .ax-switch button { height: 40px; padding: 0 14px; border-radius: 99px; border: 1px solid var(--line-c2); background: var(--white); font: 600 var(--t-sm)/1 var(--font-body); color: var(--ink-2); cursor: pointer; }
+  .ax-switch button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .ax-stage { display: grid; gap: 48px 40px; }
+  .ax-pair .ax-stage { grid-template-columns: minmax(0, 1fr) minmax(200px, 260px) minmax(0, 1fr); grid-template-areas: "a t b" "c c c"; align-items: start; }
+  .ax-pair [data-role]:nth-of-type(1) { grid-area: a; } .ax-pair [data-role]:nth-of-type(2) { grid-area: b; } .ax-pair [data-role]:nth-of-type(3) { grid-area: c; }
+  .ax-pair .ax-time { grid-area: t; align-self: center; }
+  .ax-pair:not(.ax-tl) .ax-stage { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "a b" "c c"; gap: 48px 64px; }
+
+  .ax-single .ax-role { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "h fig" "steps fig" "x fig"; grid-template-rows: auto auto 1fr; gap: 20px 64px; width: 100%; }
+  .ax-h { align-content: start; }
+  .ax-single .ax-h { grid-area: h; } .ax-single .ax-steps { grid-area: steps; flex-direction: column; align-items: flex-start; align-self: start; } .ax-single .ax-fig { grid-area: fig; } .ax-single .ax-x { grid-area: x; align-self: end; }
+  .ax-single .ax-browser { grid-template-columns: 1fr; grid-template-areas: "h" "steps" "fig" "x"; }
+  .ax-role { display: grid; gap: 14px; align-content: start; justify-items: start; }
+  .ax-h { display: grid; gap: 4px; }
+  .ax-n { font-size: 1.5rem; letter-spacing: -0.025em; }
+  .ax-w { font-size: var(--t-sm); color: var(--ink-3); display: flex; gap: 8px; align-items: center; }
+  .ax-tag { font-size: var(--t-xs); font-weight: 600; color: var(--ink-2); border: 1px solid var(--line-c2); border-radius: 4px; padding: 1px 6px; }
+  .ax-s { color: var(--ink-2); max-width: 40ch; }
+  .ax-steps { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+  .ax-steps button { display: inline-flex; gap: 8px; align-items: center; height: 38px; padding: 0 12px 0 6px; border-radius: 99px; border: 1px solid var(--line-c2); background: var(--white); font: 560 var(--t-sm)/1 var(--font-body); color: var(--ink-2); cursor: pointer; transition: border-color var(--d-fast) ease, color var(--d-fast) ease; }
+  .ax-steps button:hover { border-color: var(--ink); color: var(--ink); }
+  .ax-steps .n { width: 26px; height: 26px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--chalk); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .ax-steps button[aria-pressed="true"] { border-color: var(--green); color: var(--ink); }
+  .ax-steps button[aria-pressed="true"] .n { background: var(--green); color: #fff; }
+  .ax-fig { margin: 0; display: grid; gap: 12px; justify-items: start; }
+  .ax-phone .ax-shot { padding: 6px; border-radius: 34px; background: var(--ink); box-shadow: 0 30px 60px -36px rgba(32,37,34,.45); }
+  .ax-imgs { display: grid; }
+  .ax-imgs img { grid-area: 1 / 1; opacity: 0; visibility: hidden; transition: opacity 260ms var(--ease-out), visibility 0s 260ms; }
+  .ax-imgs img.on { opacity: 1; visibility: visible; transition: opacity 260ms var(--ease-out); }
+  .ax-phone .ax-imgs img { width: min(300px, 72vw); height: auto; border-radius: 28px; background: #EEEFEC; }
+  .ax-browser .ax-fig { justify-items: stretch; width: 100%; }
+  .ax-browser .ax-shot { border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--line-c2); background: var(--white); box-shadow: 0 30px 60px -40px rgba(32,37,34,.4); }
+  .ax-bar { display: flex; gap: 6px; align-items: center; height: 34px; padding: 0 14px; background: #ECEDE9; border-bottom: 1px solid var(--line-c); }
+  .ax-bar i { width: 10px; height: 10px; border-radius: 50%; background: #CFD3CF; }
+  .ax-bar span { margin-left: 12px; height: 18px; width: min(320px, 40%); border-radius: 4px; background: var(--white); }
+  .ax-browser .ax-imgs img { width: 100%; height: auto; }
+  .ax-cap { display: grid; max-width: 44ch; }
+  .ax-c { grid-area: 1 / 1; display: none; gap: 6px; }
+  .ax-c.on { display: grid; }
+  .ax-ct { color: var(--ink); line-height: 1.5; }
+  .ax-note { font-size: var(--t-sm); color: var(--ink-2); padding-left: 10px; border-left: 2px solid var(--brass); }
+  .ax-id { font-size: var(--t-sm); color: var(--ink-3); }
+  .ax-x { font-size: var(--t-sm); }
+
+  .ax-time { display: grid; gap: 12px; }
+  .ax-tt { font-size: var(--t-sm); font-weight: 600; color: var(--ink); }
+  .ax-time ol { margin: 0; display: grid; gap: 0; border-left: 1.5px solid var(--line-c2); }
+  .ax-time button { display: grid; gap: 2px; text-align: left; width: 100%; padding: 9px 0 9px 16px; margin-left: -1.5px; border: 0; border-left: 1.5px solid transparent; background: none; font: 560 var(--t-sm)/1.35 var(--font-body); color: var(--ink-3); cursor: pointer; transition: color var(--d-fast) ease, border-color var(--d-fast) ease; }
+  .ax-time button:hover { color: var(--ink); }
+  .ax-time button.on { color: var(--ink); border-left-color: var(--green); }
+  .ax-time .who { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+  .ax-time button.on .who { color: var(--green); }
+  .ax-tn { font-size: var(--t-xs); color: var(--ink-3); }
+  .ax-foot { font-size: var(--t-sm); color: var(--ink-3); max-width: 80ch; }
+
+  @media (max-width: 1000px) {
+    .ax-single .ax-role { grid-template-columns: 1fr; grid-template-areas: "h" "steps" "fig" "x"; }
+    .ax-single .ax-steps { flex-direction: row; }
+    .ax-pair .ax-stage, .ax-pair:not(.ax-tl) .ax-stage { grid-template-columns: 1fr; grid-template-areas: none; }
+    .ax-pair [data-role] { grid-area: auto !important; }
+    .ax-switch { display: flex; }
+    .ax-role:not(.on) { display: none; }
+    .ax-pair .ax-time { grid-area: auto; order: 2; }
+    .ax-time ol { grid-auto-flow: column; grid-auto-columns: minmax(120px, 1fr); overflow-x: auto; border-left: 0; border-top: 1.5px solid var(--line-c2); }
+    .ax-time button { margin: -1.5px 0 0; padding: 10px 10px 0 0; border-left: 0; border-top: 1.5px solid transparent; }
+    .ax-time button.on { border-top-color: var(--green); }
+  }
+  @media (prefers-reduced-motion: reduce) { .ax-imgs img, .ax-imgs img.on { transition: none; } }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-ax]').forEach((ax) => {
+    const roles = [...ax.querySelectorAll<HTMLElement>('[data-role]')];
+    const setStep = (role: HTMLElement, i: number) => {
+      role.querySelectorAll<HTMLButtonElement>('[data-step]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.step! === i)));
+      role.querySelectorAll('.ax-imgs img').forEach((im, k) => im.classList.toggle('on', k === i));
+      role.querySelectorAll('[data-cap]').forEach((c, k) => c.classList.toggle('on', k === i));
+      role.dataset.cur = String(i); syncTimeline();
+    };
+    const tl = [...ax.querySelectorAll<HTMLButtonElement>('[data-tl]')];
+    function syncTimeline() {
+      const cur: Record<string, number> = Object.fromEntries(roles.map((r) => [r.dataset.role!, +(r.dataset.cur || 0)]));
+      tl.forEach((b) => { const l = JSON.parse(b.dataset.links!); b.classList.toggle('on', Object.entries(l).some(([k, v]) => cur[k] === v)); });
+    }
+    roles.forEach((r) => r.querySelectorAll<HTMLButtonElement>('[data-step]').forEach((b) => b.addEventListener('click', () => setStep(r, +b.dataset.step!))));
+    tl.forEach((b) => b.addEventListener('click', () => {
+      const l = JSON.parse(b.dataset.links!) as Record<string, number>;
+      Object.entries(l).forEach(([k, v]) => { const r = roles.find((x) => x.dataset.role === k); if (r) setStep(r, v); });
+      const first = Object.keys(l).find((k) => k !== 'office'); if (first && matchMedia('(max-width: 1000px)').matches) show(first);
+    }));
+    const sw = [...ax.querySelectorAll<HTMLButtonElement>('[data-ax-role]')];
+    function show(id: string) { sw.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.axRole === id))); roles.forEach((r) => r.classList.toggle('on', r.dataset.role === id)); }
+    sw.forEach((b) => b.addEventListener('click', () => show(b.dataset.axRole!)));
+    const hash = location.hash.slice(1); const target = roles.find((r) => r.id === hash); if (target) show(target.dataset.role!);
+    syncTimeline();
+  });
+</script>

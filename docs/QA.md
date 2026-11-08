@@ -1,3 +1,33 @@
+# QA record: v4 refinements (8 November 2026)
+
+Scope: the opening story, its transitions, and the app screens. Measured on the static build, served locally without compression.
+
+- **Story** (`tests/e2e/story.py`, new): 24/24 pass. Coverage:
+  - floor picker by keyboard focus, click and touch, plus "Follow Level 4";
+  - chapter buttons, Replay and Skip story;
+  - static mode for reduced motion, with Next;
+  - completion never shown before the evidence and verification records;
+  - office, technician and verify app reveals, and the enlarge dialog;
+  - annotation placement;
+  - homepage showcase steps and the timeline driving both phones;
+  - mobile role switching.
+- **Journeys:** 35/35 still pass (simulator, configurator, saved setup, demo, trial, onboarding, help, sign-out).
+- **Overflow:** none on any page at 320, 390, 768 or 1440 px.
+- **axe-core:** all pages at 1440 and 390 px are clean. One finding (an empty screen link while the app panel was hidden) was fixed; the hidden panel is now `inert`.
+- **Lighthouse, home:**
+
+  | Run | Perf | LCP | CLS | A11y | Best practice |
+  |---|---|---|---|---|---|
+  | Desktop | 98–99 | 0.9–1.0 s | 0 | 100 | 100 |
+  | Mobile | 86–88 | 3.6–3.7 s | 0.013 | 100 | 100 |
+
+  Mobile LCP was 2.9 s before v4. The photographic opening frame is now the LCP element. It is preloaded, the next frames wait for `load`, and the portrait frame is 78 KB. The remaining time goes to the 115 KB HTML document and the fonts on the throttled profile. Re-measure on the deployed URL with compression before deciding on further work.
+- **Visual review:**
+  - Desktop 1440 × 900: all eight chapters.
+  - Mobile 390 × 844 and 360 × 640: opening, floor, inspect, office, technician and verify.
+  - Fixed during review: the headline overlapping the facade (scrim and smaller headline); a label under the record panel; the empty first app reveal; a reduced-motion offset that let the overview cover the chapter controls; the off-palette office display.
+  - Two generated frames were rejected: one with a navy sleeve breaking continuity, and one where the phone camera faced the technician instead of the part.
+
 # QA record: v2 redesign (7 November 2026)
 
 Measured on the static build in this workspace (local server, no compression). Targets and measurements are reported separately.

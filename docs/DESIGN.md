@@ -26,23 +26,12 @@ The first version leaned on a templated look: mint buttons, dark-green banners, 
 - **Specimen:** `/design-system` (not indexed).
 
 ## The architectural story (`src/story/`)
-- **Data** (`story-data.ts`): one fault at Harbour Point, a fictional building. FCU-L4-07 in Room 4.07, work order WO-2611-0418, technician Rami S., dispatcher Lina K. Eight chapters, each with an actor (automatic / suggested and confirmed / person / technician), a source, a compressed clock and a still position. The record builds row by row, and readings change from normal to alert to verified.
-- **Scene** (`scene.ts`): Three.js, everything in metres.
-  - Building: 6 floors, 3.6 m slabs, curtain wall with instanced mullions, rooftop air-handling units, service entrance.
-  - Room 4.07: suspended ceiling with an openable 3×3-tile cutaway. The fan coil unit is drawn in component view (blower, motor, copper coil, chilled-water valve, and an actuator that is swapped after repair).
-  - Office: a wall screen and a desk screen drawn from the same work record.
-  - People and site: people at human scale (about 1.75 m), a van and the technician's route, neighbouring portfolio buildings.
-  - Camera: Catmull-Rom shots separated by three match cuts (0.535, 0.67, 0.755), each hidden by a short chalk fade.
-  - Determinism: every visible state is a pure function of scroll progress, so going backward is consistent.
-- **Component** (`Story.astro`):
-  - **Live mode** (capable desktops): sticky 340vh section with chapter navigation, Replay, Overview and Skip story. Annotations are projected from 3D anchors each frame.
-  - **Stills mode** (phones, low power, data saver, no WebGL): composed portrait or landscape stills rendered from the same scene, with cross-fades. Overlays still work.
-  - **Static mode** (reduced motion): no pinned scroll; the chapter buttons and Previous/Next switch views directly.
-  - **Story at a glance:** an HTML list of all eight chapters, which also serves as the text alternative.
-- **Opening assembly:** the floors settle once over 1.5 s. The headline and navigation are usable immediately.
+Since v4 the story uses rendered frames of one building, with live HTML for floor picking, annotations, the work record and app reveals. See [STORY.md](STORY.md) for what is real-time, the asset list, the continuity rules and the remaining asset requirements.
+- **Data:** `story-data.ts` holds the event, the chapters and the record. `story-frames.ts` holds the frames, dissolve points, floor polygons, image-space anchors and app steps.
+- **Modes:** **frames** (default, pinned scroll at 360vh) and **static** (reduced motion, chapter buttons). `?story-still=<p>` renders a fixed progress for captures.
 
 ## Homepage order
-Story, then the four domains with a shared drawing, then from one room to a portfolio (operating models), then scenarios (simulator preview), then shaping the setup (three choices with a live preview), then how the intelligence works (signal / context / rule / action / evidence layers), then what you can rely on, then two ways to start, then questions, then the footer.
+Story, then the four domains with a shared drawing, then the apps (requester, technician, customer portal), then from one room to a portfolio (operating models), then scenarios (simulator preview), then shaping the setup (three choices with a live preview), then how the intelligence works (signal / context / rule / action / evidence layers), then what you can rely on, then two ways to start, then questions, then the footer.
 
-## Regenerating stills
-Run `npm run build`, then `python3 ../tools/story_stills.py dist <out> 0.03,0.215,0.38,0.47,0.6,0.795,0.865,1`, then convert to `public/story/c{i}-{l|p}.webp`. `/story-lab` is the internal page used for rendering (not indexed, not in the sitemap).
+## Regenerating frames and screens
+See [STORY.md](STORY.md). The scripts are in `scripts/assets/`.

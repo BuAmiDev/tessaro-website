@@ -15,7 +15,7 @@ interface Props {
 const { title, description, headerTone = 'light', current, noindex = false, bodySurface = 'light' } = Astro.props;
 const canonical = new URL(Astro.url.pathname.replace(/\.html$/, '').replace(/\/index$/, '/') || '/', brand.siteUrl).href;
 const fullTitle = title === brand.name ? `${brand.name} · Field service and facilities operations` : `${title} · ${brand.name}`;
-const og = new URL('/og.png', brand.siteUrl).href;
+const og = new URL('/og.jpg', brand.siteUrl).href;
 ---
 <!doctype html>
 <html lang="en" dir="ltr" data-surface={bodySurface === 'dark' ? 'dark' : undefined}>

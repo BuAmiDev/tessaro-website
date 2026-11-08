@@ -3,6 +3,8 @@ import Base from '../layouts/Base.astro';
 import Story from '../components/Story.astro';
 import DomainVisual from '../components/DomainVisual.astro';
 import MiniSim from '../components/MiniSim.astro';
+import AppShowcase from '../components/AppShowcase.astro';
+import { ROLES } from '../content/apps';
 import { DOMAINS, SHARED } from '../content/domains';
 import { capabilityById } from '../content/capabilities';
 import { FAQS } from '../content/site';
@@ -21,6 +23,10 @@ const layers = [
 ];
 ---
 <Base title="Tessaro" description="One intelligence across your spaces, assets and service operations: facilities, maintenance, field service and asset management on one record." current="home">
+  <Fragment slot="head">
+    <link rel="preload" as="image" href="/story/v4/e1p-900.webp" media="(max-aspect-ratio: 5/6)" fetchpriority="high" />
+    <link rel="preload" as="image" imagesrcset="/story/v4/e1-1024.webp 1024w, /story/v4/e1-1920.webp 1920w" imagesizes="100vw" media="(min-aspect-ratio: 5/6)" fetchpriority="high" />
+  </Fragment>
   <Story />
 
   <!-- 3. The four domains -->
@@ -54,6 +60,19 @@ const layers = [
         <h3 class="h4">What all four share</h3>
         <ul role="list">{SHARED.map((s) => <li><b>{s.name}</b><span>{s.text}</span></li>)}</ul>
       </div>
+    </div>
+  </section>
+
+  <!-- 3b. The apps people outside the office use -->
+  <section class="section apps" id="apps" aria-labelledby="apps-t">
+    <div class="wrap">
+      <div class="apps-head">
+        <p class="eyebrow">The apps</p>
+        <h2 id="apps-t">Connected from the customer to the field.</h2>
+        <p class="lead">The person who reports a problem and the technician who fixes it each have an app, and both work on the same record the office sees. Business customers follow and approve the work in their own portal.</p>
+      </div>
+      <AppShowcase uid="home-apps" layout="pair" roles={[ROLES.requester, ROLES.technician, ROLES.portal]} />
+      <div class="apps-more"><a class="link" href="/platform/field-service#technician-app">The technician app in field service</a><a class="link" href="/platform/stakeholders#customer-apps">Requester app and customer portal</a></div>
     </div>
   </section>
 
@@ -210,6 +229,9 @@ const layers = [
   .models .link { justify-self: start; }
 
   /* Simulator */
+  .apps { background: var(--chalk); }
+  .apps-head { display: grid; gap: 18px; max-width: 760px; margin-bottom: 56px; } .apps-head .eyebrow { margin: 0; }
+  .apps-more { display: flex; flex-wrap: wrap; gap: 12px 28px; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--line); }
   .sim { background: var(--white); }
   .sim-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 72px; align-items: center; }
   .sim-copy { display: grid; gap: 22px; } .sim-copy .eyebrow { margin: 0; }

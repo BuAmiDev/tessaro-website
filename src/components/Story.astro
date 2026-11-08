@@ -1,16 +1,37 @@
 ---
 import { CHAPTERS, RECORD, STORY, ACTOR } from '../story/story-data';
+import { FRAMES, SHOTS, CHAPTER_FRAME, FLOORS, FLOOR_POLYS, APP_STEPS } from '../story/story-frames';
+import { brand } from '../config/brand';
 const first = CHAPTERS[0];
+const src = (id: string, w: 1024 | 1920) => `/story/v4/${id}-${w}.webp`;
+const srcset = (id: string) => `${src(id, 1024)} 1024w, ${src(id, 1920)} 1920w`;
 ---
-<section class="story" id="story" aria-labelledby="story-title" data-story data-mode="loading">
+<section class="story" id="story" aria-labelledby="story-title" data-story data-mode="frames">
   <div class="st-stage" data-stage>
-    <picture class="st-poster" data-poster>
-      <source media="(max-aspect-ratio: 5/6)" srcset="/story/c0-p.webp" />
-      <img src="/story/c0-l.webp" alt="" width="1600" height="900" fetchpriority="high" decoding="async" />
-    </picture>
-    <div class="st-stills" data-stills aria-hidden="true"></div>
-    <canvas class="st-canvas" data-canvas aria-hidden="true"></canvas>
-    <div class="st-fade" data-fade aria-hidden="true"></div>
+    <div class="st-frames" data-frames>
+      {SHOTS.map((s, i) => {
+        const f = FRAMES[s.frame];
+        return f.portrait
+          ? <picture data-frame={s.frame} class="on" style={`--fx:${f.focus[0] * 100}%;--fy:${f.focus[1] * 100}%`}>
+              <source media="(max-aspect-ratio: 5/6)" srcset={`/story/v4/${f.portrait}-900.webp`} />
+              <img src={src(f.id, 1920)} srcset={srcset(f.id)} sizes="100vw" alt={f.alt} width="1920" height="1086" fetchpriority="high" decoding="async" />
+            </picture>
+          : <picture data-frame={s.frame} style={`--fx:${f.focus[0] * 100}%;--fy:${f.focus[1] * 100}%`}>
+              <img data-src={src(f.id, 1920)} data-srcset={srcset(f.id)} sizes="100vw" alt={f.alt} width="1920" height="1086" decoding="async" />
+            </picture>;
+      })}
+    </div>
+
+    <div class="st-scrim" aria-hidden="true"></div>
+    <!-- Floor picker: live SVG over the rendered exterior, mirrored by real buttons -->
+    <div class="st-map" data-map aria-hidden="true">
+      <svg data-floors-l viewBox={`0 0 ${FLOOR_POLYS.landscape.w} ${FLOOR_POLYS.landscape.h}`} preserveAspectRatio="none">
+        {FLOOR_POLYS.landscape.polys.map((pts, i) => <polygon points={pts} data-floor={FLOORS[i].id} />)}
+      </svg>
+      <svg data-floors-p viewBox={`0 0 ${FLOOR_POLYS.portrait.w} ${FLOOR_POLYS.portrait.h}`} preserveAspectRatio="none">
+        {FLOOR_POLYS.portrait.polys.map((pts, i) => <polygon points={pts} data-floor={FLOORS[i].id} />)}
+      </svg>
+    </div>
 
     <div class="st-open wrap" data-open>
       <h1 id="story-title" class="st-title">One intelligence across your spaces, assets and service operations.</h1>
@@ -19,11 +40,17 @@ const first = CHAPTERS[0];
         <a class="btn btn-primary btn-lg" href="#story-start" data-explore>Explore the building</a>
         <a class="btn btn-lg" href="/demo">Book a demo</a>
       </div>
+      <div class="st-pick" role="group" aria-labelledby="pick-l">
+        <p class="pick-l" id="pick-l">Choose a floor</p>
+        <div class="pick-b">
+          {FLOORS.map((f) => <button type="button" data-pick={f.id} aria-pressed="false" aria-describedby="pick-note"><span class="sr">{f.name}</span><span aria-hidden="true">{f.id}</span></button>)}
+        </div>
+        <p class="pick-n" id="pick-note" aria-live="polite" data-pick-note>Level 4 is where this story happens.</p>
+      </div>
     </div>
 
     <div class="st-anno" data-annos aria-hidden="true">
-      <span class="an" data-an="room"></span><span class="an" data-an="valve"></span><span class="an" data-an="supply"></span>
-      <span class="an" data-an="wall"></span><span class="an" data-an="tech"></span>
+      {['a', 'b', 'c'].map((k) => <span class="an" data-an={k}></span>)}
     </div>
 
     <div class="st-cap wrap" data-cap>
@@ -48,6 +75,15 @@ const first = CHAPTERS[0];
       </dl>
     </div>
 
+    <figure class="st-app" data-app inert>
+      <figcaption class="app-h"><b data-app-name>Requester app</b><span data-app-who></span></figcaption>
+      <button type="button" class="app-shot" data-app-open aria-label="Enlarge this screen">
+        <img data-app-img alt="" width="360" height="760" decoding="async" />
+      </button>
+      <p class="app-c" data-app-cap></p>
+      <p class="app-k">Designed screen <a data-app-id href={`${brand.productUrl}/#R-03-5`} target="_blank" rel="noopener">TR-019</a> · sample data</p>
+    </figure>
+
     <nav class="st-nav" aria-label="Story chapters" data-nav>
       <ol role="list">
         {CHAPTERS.map((c, i) => <li><button type="button" data-ch={i}><span class="n">{String(i + 1).padStart(2, '0')}</span><span class="t">{c.nav}</span></button></li>)}
@@ -63,49 +99,80 @@ const first = CHAPTERS[0];
     </nav>
   </div>
   <span id="story-start" class="st-start" aria-hidden="true"></span>
+  <dialog class="st-zoom" data-zoom aria-label="Product screen">
+    <img data-zoom-img alt="" width="360" height="760" />
+    <form method="dialog"><button class="btn btn-sm">Close</button></form>
+  </dialog>
 </section>
 
 <section class="st-over section tight" id="story-overview" aria-labelledby="ov-title">
   <div class="wrap">
     <div class="ov-head">
       <h2 id="ov-title" class="h3">The story at a glance</h2>
-      <p class="muted">One illustrative fault at Harbour Point, a fictional building. Readings, names and times are sample data on a compressed timeline. The steps follow designed Tessaro screens; the connection to a building management system is proposed, not yet built.</p>
+      <p class="muted">One illustrative fault at Harbour Point, a fictional building. The building and rooms are rendered images; readings, names and times are sample data on a compressed timeline. App screens are designed Tessaro screens shown with sample data. The connection to a building management system is proposed, not yet built.</p>
     </div>
     <ol role="list" class="ov-list">
-      {CHAPTERS.map((c, i) => (
-        <li>
-          <picture><source media="(max-width: 700px)" srcset={`/story/c${i}-p.webp`} /><img src={`/story/c${i}-l.webp`} alt="" width="1600" height="900" loading="lazy" decoding="async" /></picture>
-          <div><p class="ov-k">{String(i + 1).padStart(2, '0')} · {c.time} · {ACTOR[c.actor]}</p><h3 class="ov-l">{c.label}</h3><p>{c.text}</p></div>
-        </li>
-      ))}
+      {CHAPTERS.map((c, i) => {
+        const f = FRAMES[CHAPTER_FRAME[i]];
+        return (
+          <li>
+            <img src={src(f.id, 1024)} alt="" width="1024" height="579" loading="lazy" decoding="async" style={`object-position:${i === 3 ? '54% 30%' : `${f.focus[0] * 100}% ${f.focus[1] * 100}%`}`} />
+            <div><p class="ov-k">{String(i + 1).padStart(2, '0')} · {c.time} · {ACTOR[c.actor]}</p><h3 class="ov-l">{c.label}</h3><p>{c.text}</p></div>
+          </li>
+        );
+      })}
     </ol>
   </div>
 </section>
 <span id="after-story"></span>
 
+<script type="application/json" data-app-steps set:html={JSON.stringify(APP_STEPS)} />
+
 <style>
-  .story { position: relative; height: 340vh; background: #EEF0EB; }
-  .story[data-mode="stills"] { height: 240vh; }
+  .story { position: relative; height: 360vh; background: #E9E6DF; --rx: max(20px, calc((100vw - var(--page-max)) / 2)); }
   .story[data-mode="static"] { height: auto; }
   .st-stage { position: sticky; top: var(--hdr-h); height: calc(100vh - var(--hdr-h)); height: calc(100svh - var(--hdr-h)); overflow: hidden; }
-  .story[data-mode="static"] .st-stage { position: relative; height: min(100svh, 860px); }
-  .st-poster img, .st-canvas, .st-stills, .st-stills :global(img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .st-canvas { opacity: 0; transition: opacity 600ms var(--ease-out); }
-  .story.live .st-canvas { opacity: 1; }
-  .st-stills :global(img) { opacity: 0; transition: opacity 500ms var(--ease-out); }
-  .st-stills :global(img.on) { opacity: 1; }
-  .st-fade { position: absolute; inset: 0; background: var(--chalk); opacity: 0; pointer-events: none; }
+  .story[data-mode="static"] .st-stage { position: relative; top: 0; height: min(calc(100svh - var(--hdr-h)), 880px); min-height: 640px; }
   .st-start { position: absolute; top: 60vh; }
 
+  .st-frames, .st-frames picture { position: absolute; inset: 0; }
+  .st-frames picture { opacity: 0; visibility: hidden; }
+  .st-frames picture.on { visibility: visible; }
+  .st-frames img { width: 100%; height: 100%; object-fit: cover; object-position: var(--fx, 50%) var(--fy, 50%); }
+  @media (min-aspect-ratio: 16/9) { .st-frames img { object-position: 50% var(--fy, 50%); } }
+
+  /* floor picker */
+  .st-map { position: absolute; left: 0; top: 0; pointer-events: none; opacity: 0; transition: opacity 300ms var(--ease-out); }
+  .story.pick-on .st-map { opacity: 1; }
+  .st-map svg { position: absolute; inset: 0; width: 100%; height: 100%; display: none; }
+  .st-map[data-o="l"] [data-floors-l], .st-map[data-o="p"] [data-floors-p] { display: block; }
+  .story.pick-on .st-map polygon { pointer-events: auto; cursor: pointer; }
+  .st-map polygon { fill: rgba(247, 247, 244, 0); stroke: rgba(247, 247, 244, 0); stroke-width: 3; vector-effect: non-scaling-stroke; transition: fill 220ms ease, stroke 220ms ease; }
+  .st-map polygon.hover { fill: rgba(247, 247, 244, .2); stroke: rgba(247, 247, 244, .85); }
+  .st-map polygon.sel { fill: rgba(36, 91, 70, .34); stroke: #E8EFEB; }
+
   .st-open { position: absolute; left: 0; right: 0; top: clamp(28px, 6vh, 72px); display: grid; gap: 22px; justify-items: start; transition: opacity 400ms var(--ease-out), transform 400ms var(--ease-out); }
-  .st-title { font-size: clamp(2.6rem, 1rem + 5.4vw, 6.4rem); line-height: .98; letter-spacing: -0.048em; font-weight: 540; max-width: 13ch; color: var(--ink); }
-  .st-sub { font-size: var(--t-lg); line-height: 1.45; color: var(--ink-2); max-width: 44ch; }
+  .st-title { font-size: clamp(2.6rem, 1rem + 4.1vw, 5.4rem); line-height: .98; letter-spacing: -0.048em; font-weight: 540; max-width: 12ch; color: var(--ink); }
+  .st-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(233,230,223,.94) 0%, rgba(233,230,223,.82) 28%, rgba(233,230,223,.35) 46%, rgba(233,230,223,0) 60%); transition: opacity 400ms var(--ease-out); }
+  .story.past-open .st-scrim { opacity: 0; }
+  .st-sub { font-size: var(--t-lg); line-height: 1.45; color: var(--ink-2); max-width: 40ch; }
   .st-cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
   .story.past-open .st-open { opacity: 0; transform: translateY(-24px); pointer-events: none; }
+  .st-pick { display: grid; gap: 8px; margin-top: 8px; padding: 14px 16px; background: rgba(247, 247, 244, .9); border-radius: var(--r-md); box-shadow: var(--e-float); max-width: 380px; }
+  .pick-l { font-size: var(--t-sm); font-weight: 600; color: var(--ink); }
+  .pick-b { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pick-b button { min-width: 44px; height: 40px; padding: 0 10px; border-radius: var(--r-sm); border: 1px solid var(--line-c2); background: var(--white); font: 600 var(--t-sm)/1 var(--font-body); color: var(--ink); cursor: pointer; font-variant-numeric: tabular-nums; }
+  .pick-b button:hover, .pick-b button.hover { border-color: var(--ink); }
+  .pick-b button[aria-pressed="true"] { background: var(--green); border-color: var(--green); color: #fff; }
+  .pick-b button[data-pick="L4"]:not([aria-pressed="true"]) { box-shadow: inset 0 -2px 0 var(--green); }
+  .pick-n { font-size: var(--t-sm); color: var(--ink-2); min-height: 2.9em; line-height: 1.45; }
+  .pick-n :global(a) { color: var(--green); font-weight: 600; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
   .st-cap { position: absolute; left: 0; right: 0; bottom: 112px; pointer-events: none; opacity: 0; transition: opacity 300ms ease; }
   .story.past-open .st-cap { opacity: 1; }
-  .cap-in { max-width: 520px; background: rgba(247, 247, 244, .94); padding: 22px 24px; border-radius: var(--r-md); box-shadow: var(--e-float); pointer-events: auto; }
+  .cap-in { max-width: 500px; background: rgba(247, 247, 244, .95); padding: 22px 24px; border-radius: var(--r-md); box-shadow: var(--e-float); pointer-events: none; }
+  .story.past-open .cap-in { pointer-events: auto; }
   .cap-k { font-size: var(--t-sm); color: var(--ink-3); font-variant-numeric: tabular-nums; display: flex; flex-wrap: wrap; gap: 4px 6px; }
   .cap-ill { font-style: italic; }
   .cap-l { font-family: var(--font-display); font-size: clamp(1.6rem, 1.1rem + 1.6vw, 2.4rem); letter-spacing: -0.035em; line-height: 1.05; margin: 8px 0 10px; font-weight: 560; color: var(--ink); }
@@ -113,37 +180,55 @@ const first = CHAPTERS[0];
   .cap-a { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: var(--t-sm); font-weight: 600; color: var(--green); }
   .cap-src { color: var(--ink-3); font-weight: 500; }
 
-  .st-rec { position: absolute; right: max(20px, calc((100vw - var(--page-max)) / 2)); top: 104px; width: 320px; background: rgba(255, 255, 255, .96); border-radius: var(--r-md); box-shadow: var(--e-float); padding: 18px 18px 14px; font-size: var(--t-sm); opacity: 0; transform: translateY(8px); transition: opacity 300ms ease, transform 400ms var(--ease-out); }
-  .story.rec-on .st-rec { opacity: 1; transform: none; }
+  .st-rec { position: absolute; right: var(--rx); top: 24px; width: 316px; background: rgba(255, 255, 255, .96); border-radius: var(--r-md); box-shadow: var(--e-float); padding: 16px 18px 12px; font-size: var(--t-sm); opacity: 0; transform: translateY(8px); transition: opacity 300ms ease, transform 400ms var(--ease-out); pointer-events: none; }
+  .story.rec-on .st-rec { opacity: 1; transform: none; pointer-events: auto; }
   .rec-h { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
   .rec-h .id { font-weight: 650; }
   .rec-s { color: var(--ink-3); font-size: var(--t-xs); }
-  .rec-asset { color: var(--ink-2); margin: 8px 0 12px; line-height: 1.45; }
+  .rec-asset { color: var(--ink-2); margin: 6px 0 10px; line-height: 1.45; }
   .rec-asset b { color: var(--ink); }
   .rec-list { margin: 0; display: grid; gap: 0; border-top: 1px solid var(--line-c); }
-  .rec-list li { display: grid; grid-template-columns: 16px 1fr; gap: 0 10px; padding: 7px 0; border-bottom: 1px solid var(--line-c); color: var(--ink-3); transition: color 250ms ease; }
+  .rec-list li { display: grid; grid-template-columns: 16px 1fr; gap: 0 10px; padding: 6px 0; border-bottom: 1px solid var(--line-c); color: var(--ink-3); transition: color 250ms ease; }
   .rec-list li::before { content: ""; grid-row: span 2; width: 10px; height: 10px; margin-top: 5px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-c2); transition: background-color 250ms ease, box-shadow 250ms ease, transform 300ms var(--ease-out); }
   .rec-list li.done { color: var(--ink); }
   .rec-list li.done::before { background: var(--green); box-shadow: none; }
   .rec-list li.now::before { transform: scale(1.35); }
   .rec-l { font-weight: 600; }
   .rec-v { font-size: var(--t-xs); color: var(--ink-2); line-height: 1.4; display: none; }
-  .rec-list li.done .rec-v { display: block; }
-  .rec-read { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0 0; }
+  .rec-list li.now .rec-v { display: block; }
+  .rec-read { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0 0; }
   .rec-read div { display: grid; gap: 2px; }
   .rec-read dt { font-size: 11px; color: var(--ink-3); }
   .rec-read dd { margin: 0; font-weight: 650; font-variant-numeric: tabular-nums; font-size: 13.5px; }
   .rec-read[data-tone="alert"] dd { color: var(--alert); }
   .rec-read[data-tone="ok"] dd { color: var(--ok); }
 
-  .st-anno { position: absolute; inset: 0; pointer-events: none; }
-  .an { position: absolute; left: 0; top: 0; display: none; transform: translate(-50%, calc(-100% - 14px)); background: var(--ink); color: #fff; font-size: 13px; font-weight: 600; padding: 7px 10px; border-radius: 6px; white-space: nowrap; line-height: 1.3; box-shadow: 0 8px 20px -10px rgba(0,0,0,.5); }
-  .an::after { content: ""; position: absolute; left: 50%; bottom: -14px; width: 1px; height: 14px; background: var(--ink); }
-  .an.on { display: block; }
-  .an.alert { background: #8F2A20; } .an.alert::after { background: #8F2A20; }
-  .an.ok { background: var(--green); } .an.ok::after { background: var(--green); }
+  /* app reveal: a real screen, front-facing, in a simple frame */
+  .st-app { position: absolute; right: calc(var(--rx) + 340px); top: 24px; margin: 0; width: max-content; max-width: 300px; display: grid; gap: 8px; justify-items: start; background: rgba(247, 247, 244, .96); border-radius: var(--r-lg); box-shadow: var(--e-float); padding: 14px 14px 12px; opacity: 0; transform: translateY(10px); pointer-events: none; transition: opacity 280ms ease, transform 380ms var(--ease-out); }
+  .story.app-on .st-app { opacity: 1; transform: none; pointer-events: auto; }
+  .app-h { display: flex; gap: 8px; align-items: baseline; font-size: var(--t-sm); }
+  .app-h span { color: var(--ink-3); }
+  .app-shot { display: block; padding: 5px; border: 0; border-radius: 30px; background: var(--ink); cursor: zoom-in; }
+  .app-shot img { display: block; height: min(560px, calc(100svh - var(--hdr-h) - 320px)); width: auto; aspect-ratio: 360 / 760; border-radius: 25px; background: #EEEFEC; transition: opacity 220ms ease; }
+  .app-shot img.swap { opacity: 0; }
+  .app-shot:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .app-c { font-size: var(--t-sm); line-height: 1.45; color: var(--ink); max-width: 270px; }
+  .app-k { font-size: var(--t-xs); color: var(--ink-3); }
+  .app-k a { color: inherit; }
+  .st-zoom { border: 0; padding: 16px; border-radius: var(--r-lg); background: var(--chalk); max-height: 94vh; }
+  .st-zoom::backdrop { background: rgba(32, 37, 34, .6); }
+  .st-zoom img { display: block; height: min(760px, calc(94vh - 90px)); width: auto; border-radius: 28px; }
+  .st-zoom form { display: flex; justify-content: center; margin-top: 12px; }
 
-  .st-nav { position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px 24px; padding: 14px max(20px, calc((100vw - var(--page-max)) / 2)) 18px; background: linear-gradient(to top, rgba(247,247,244,.98) 55%, rgba(247,247,244,0)); }
+  .st-anno { position: absolute; inset: 0; pointer-events: none; }
+  .an { position: absolute; left: 0; top: 0; display: none; background: var(--ink); color: #fff; font-size: 13px; font-weight: 600; padding: 7px 10px; border-radius: 6px; white-space: nowrap; line-height: 1.3; box-shadow: 0 8px 20px -10px rgba(0,0,0,.5); }
+  .an::after { content: ""; position: absolute; left: var(--ax, 50%); bottom: -14px; width: 1px; height: 14px; background: inherit; }
+  .an::before { content: ""; position: absolute; left: calc(var(--ax, 50%) - 4px); bottom: -18px; width: 9px; height: 9px; border-radius: 50%; background: inherit; box-shadow: 0 0 0 2px rgba(255,255,255,.8); }
+  .an.on { display: block; }
+  .an.alert { background: #8F2A20; }
+  .an.ok { background: var(--green); }
+
+  .st-nav { position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px 24px; padding: 14px var(--rx) 18px; background: linear-gradient(to top, rgba(247,247,244,.98) 55%, rgba(247,247,244,0)); }
   .st-nav ol { display: flex; gap: 2px; margin: 0; overflow-x: auto; scrollbar-width: none; }
   .st-nav button[data-ch] { display: inline-flex; gap: 8px; align-items: baseline; padding: 10px 12px; border: 0; background: none; color: var(--ink-3); font-size: var(--t-sm); font-weight: 560; cursor: pointer; border-radius: var(--r-sm); white-space: nowrap; transition: color var(--d-fast) ease; }
   .st-nav button[data-ch] .n { font-size: 11px; font-variant-numeric: tabular-nums; }
@@ -165,18 +250,22 @@ const first = CHAPTERS[0];
   .ov-head p { max-width: 64ch; font-size: var(--t-sm); }
   .ov-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 40px 24px; margin: 0; }
   .ov-list li { display: grid; gap: 14px; align-content: start; }
-  .ov-list img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--r-sm); background: #E6E8E2; }
+  .ov-list img { width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--r-sm); background: #E6E8E2; }
   .ov-k { font-size: var(--t-xs); color: var(--ink-3); }
   .ov-l { font-size: 1.25rem; margin: 4px 0 6px; }
   .ov-list p:not(.ov-k) { font-size: var(--t-sm); color: var(--ink-2); line-height: 1.55; }
 
+  @media (max-width: 1180px) {
+    /* the app takes the record's place while it is shown */
+    .st-app { right: var(--rx); }
+    .story.app-on .st-rec { opacity: 0; }
+  }
   @media (max-width: 1100px) { .ov-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 900px) {
-    .st-rec { left: 20px; right: auto; top: 88px; width: min(300px, calc(100vw - 40px)); padding: 12px 14px; }
+    .st-rec { left: 20px; right: auto; top: 12px; width: min(300px, calc(100vw - 40px)); padding: 12px 14px; }
     .rec-asset, .rec-read { display: none; }
     .rec-list li:not(.now) { display: none; }
-    .rec-list li.now .rec-v { display: block; }
-    .st-cap { bottom: 120px; }
+    .st-cap { bottom: 104px; }
     .cap-in { padding: 16px 18px; }
     .cap-t { font-size: 1rem; }
     .st-nav button[data-ch] .t { display: none; }
@@ -185,43 +274,68 @@ const first = CHAPTERS[0];
     .ov-head { grid-template-columns: 1fr; }
   }
   @media (max-width: 760px) {
-    .st-open { top: 0; padding-top: 28px; padding-bottom: 48px; background: linear-gradient(to bottom, rgba(238,240,235,.97) 70%, rgba(238,240,235,0)); }
+    .st-scrim { display: none; }
+    .st-open { top: 0; padding-top: 24px; padding-bottom: 40px; gap: 16px; background: linear-gradient(to bottom, rgba(233,230,223,.96) 72%, rgba(233,230,223,0)); }
     .st-sub { font-size: 1.0625rem; }
+    .st-pick { padding: 10px 12px; box-shadow: none; background: rgba(247,247,244,.7); }
+    .pick-b button { min-width: 42px; }
+    /* one readable screen at a time: the top of the screen, larger; tap for all of it */
+    .st-app { left: 50%; right: auto; top: 12px; transform: translate(-50%, 10px); max-width: calc(100vw - 32px); padding: 10px 10px 8px; }
+    .story.app-on .st-app { transform: translate(-50%, 0); }
+    .app-shot { height: min(400px, calc(100svh - var(--hdr-h) - 330px)); overflow: hidden; border-radius: 26px 26px 10px 10px; padding: 4px 4px 0; }
+    .app-shot img { height: auto; width: 248px; border-radius: 22px 22px 6px 6px; }
+    .app-c { max-width: 248px; font-size: var(--t-xs); }
+    .story.app-on .st-rec { opacity: 0; }
+    .story.app-on .cap-t, .story.app-on .cap-a { display: none; }
+    .story.app-on .cap-l { font-size: 1.35rem; margin-bottom: 0; }
   }
-  @media (max-width: 560px) { .ov-list { grid-template-columns: 1fr; } .st-title { max-width: 11ch; font-size: clamp(2.3rem, 9.5vw, 3rem); } .cap-src { display: none; } }
+  @media (max-width: 560px) {
+    .ov-list { grid-template-columns: 1fr; } .cap-src { display: none; } .st-sub { display: none; }
+    .st-title { max-width: none; font-size: clamp(1.9rem, 8.2vw, 2.6rem); }
+    .st-open { padding-bottom: 12px; gap: 12px; background: linear-gradient(to bottom, rgba(233,230,223,.96) 85%, rgba(233,230,223,0)); }
+    .st-cta { flex-wrap: nowrap; gap: 8px; margin-top: 0; }
+    .st-cta .btn { padding-inline: 14px; min-height: 44px; font-size: var(--t-sm); }
+    .st-pick { margin-top: 0; gap: 6px; justify-self: stretch; max-width: none; }
+    .pick-b { flex-wrap: nowrap; gap: 4px; } .pick-b button { min-width: 0; flex: 1; height: 38px; padding: 0 4px; }
+    .story:not(.picked) .pick-n { display: none; }
+    .pick-n { min-height: 0; }
+  }
+  @media (max-width: 760px) and (max-height: 700px) { .st-sub { display: none; } }
 </style>
 
 <script>
   import { CHAPTERS, RECORD, ACTOR, chapterAt, readingsAt } from '../story/story-data';
+  import { FRAMES, SHOTS, DISSOLVE, frameAt, ANCHORS, FLOORS, FLOOR_POLYS, type AppStep } from '../story/story-frames';
+  import { brand } from '../config/brand';
   const root = document.querySelector<HTMLElement>('[data-story]')!;
-  const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]')!;
-  const fade = root.querySelector<HTMLElement>('[data-fade]')!;
-  const stills = root.querySelector<HTMLElement>('[data-stills]')!;
   const q = new URLSearchParams(location.search);
   const stillParam = q.get('story-still');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const narrow = matchMedia('(max-width: 760px)').matches;
-  const lowPower = ((navigator as any).hardwareConcurrency || 8) <= 4 || (navigator as any).connection?.saveData === true;
-  const webgl = (() => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch { return false; } })();
-  const forced = q.get('story-mode');
-  let mode: 'live' | 'stills' | 'static' = forced as any || (stillParam ? 'live' : reduce ? 'static' : (!webgl || narrow || lowPower) ? 'stills' : 'live');
-  if (mode === 'live' && !webgl) mode = 'stills';
+  const mode: 'frames' | 'static' = (q.get('story-mode') as any) === 'static' || (reduce && !stillParam) ? 'static' : 'frames';
   root.dataset.mode = mode;
+  const STEPS: AppStep[] = JSON.parse(document.querySelector('[data-app-steps]')!.textContent!);
 
   const $ = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
+  const stage = $('[data-stage]');
+  const pics = [...root.querySelectorAll<HTMLElement>('[data-frame]')];
   const navBtns = [...root.querySelectorAll<HTMLButtonElement>('[data-ch]')];
   const recRows = [...root.querySelectorAll<HTMLElement>('[data-rec-row]')];
-  const annos = Object.fromEntries([...root.querySelectorAll<HTMLElement>('[data-an]')].map((e) => [e.dataset.an!, e]));
-  let scene: import('../story/scene').StoryScene | null = null;
-  let p = 0, staticP = CHAPTERS[0].still, lastCh = -1, assemble = stillParam ? 1 : 0, raf = 0;
+  const annoEls = [...root.querySelectorAll<HTMLElement>('[data-an]')];
+  const map = $('[data-map]');
+  const pickBtns = [...root.querySelectorAll<HTMLButtonElement>('[data-pick]')];
+  const polys = [...root.querySelectorAll<SVGPolygonElement>('[data-floor]')];
+  const portraitMQ = matchMedia('(max-aspect-ratio: 5/6)');
+  // Frames after the first load once the page has loaded, so the opening image owns the bandwidth.
+  let ahead = document.readyState === 'complete';
+  if (!ahead) addEventListener('load', () => setTimeout(() => { ahead = true; request(); }, 300), { once: true });
+  let p = 0, staticP = CHAPTERS[0].still, lastCh = -1, raf = 0, picked = '', hovered = '';
 
   const hdrH = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdr-h')) || 0;
-  // ----- progress -----
   function progress() {
     if (stillParam) return parseFloat(stillParam);
     if (mode === 'static') return staticP;
-    const r = root.getBoundingClientRect(); const top0 = r.top - hdrH(); const span = root.offsetHeight - (innerHeight - hdrH());
-    return Math.min(1, Math.max(0, -top0 / Math.max(1, span)));
+    const r = root.getBoundingClientRect(); const span = root.offsetHeight - (innerHeight - hdrH());
+    return Math.min(1, Math.max(0, -(r.top - hdrH()) / Math.max(1, span)));
   }
   function scrollToP(target: number, smooth = !reduce) {
     if (mode === 'static') { staticP = target; frame(); return; }
@@ -229,10 +343,133 @@ const first = CHAPTERS[0];
     scrollTo({ top: top + target * span + 2, behavior: smooth ? 'smooth' : 'auto' });
   }
 
+  // ----- image geometry: map image fractions to stage pixels (object-fit: cover) -----
+  function rectFor(pic: HTMLElement) {
+    const img = pic.querySelector('img')!; const W = stage.clientWidth, H = stage.clientHeight;
+    const portraitSrc = pic.dataset.frame === 'e1' && portraitMQ.matches;
+    const iw = portraitSrc ? 1520 : 2688, ih = portraitSrc ? 2688 : 1520;
+    const s = Math.max(W / iw, H / ih); const w = iw * s, h = ih * s;
+    const cs = getComputedStyle(img).objectPosition.split(' ').map((v) => parseFloat(v) / 100);
+    return { x: (W - w) * (cs[0] ?? .5), y: (H - h) * (cs[1] ?? .5), w, h, portrait: portraitSrc };
+  }
+
+  // ----- frames: dissolve by progress; load ahead of need -----
+  function load(i: number) { const img = pics[i]?.querySelector<HTMLImageElement>('img[data-src]'); if (img) { img.srcset = img.dataset.srcset!; img.src = img.dataset.src!; img.removeAttribute('data-src'); } }
+  function paintFrames(p: number) {
+    const cur = frameAt(p);
+    if (ahead || cur > 0) for (let k = 0; k <= Math.min(cur + 2, pics.length - 1); k++) load(k);
+    pics.forEach((pic, k) => {
+      const s = SHOTS[k].from; let o = 0;
+      if (k <= cur + 1) o = k === 0 ? 1 : mode === 'static' || reduce ? (p >= s ? 1 : 0) : Math.min(1, Math.max(0, (p - (s - DISSOLVE / 2)) / DISSOLVE));
+      const visible = o > 0 && k >= cur - 1;
+      pic.classList.toggle('on', visible); pic.style.opacity = String(o);
+    });
+    return cur;
+  }
+
+  // ----- floor picker -----
+  function placeMap() {
+    const r = rectFor(pics[0]); map.dataset.o = r.portrait ? 'p' : 'l';
+    Object.assign(map.style, { left: `${r.x}px`, top: `${r.y}px`, width: `${r.w}px`, height: `${r.h}px` });
+  }
+  function showFloors(autoPick: string) {
+    const sel = picked || autoPick;
+    polys.forEach((pl) => { pl.classList.toggle('hover', pl.dataset.floor === hovered && hovered !== sel); pl.classList.toggle('sel', pl.dataset.floor === sel); });
+    pickBtns.forEach((b) => { b.setAttribute('aria-pressed', String(b.dataset.pick === sel)); b.classList.toggle('hover', b.dataset.pick === hovered); });
+  }
+  function note(id: string) {
+    const f = FLOORS.find((x) => x.id === id); const n = $('[data-pick-note]');
+    if (!f) { n.textContent = 'Level 4 is where this story happens.'; return; }
+    n.innerHTML = `<b>${f.name}</b> · ${f.use}. ${f.note}.` + (f.story ? '' : ' <a href="#story-start" data-follow>Follow Level 4</a>');
+  }
+  function choose(id: string) {
+    picked = id; root.classList.add('picked'); note(id); showFloors('');
+    if (FLOORS.find((f) => f.id === id)?.story) setTimeout(() => scrollToP(mode === 'static' ? CHAPTERS[1].still : .135), reduce ? 0 : 380);
+  }
+  pickBtns.forEach((b) => {
+    b.addEventListener('click', () => choose(b.dataset.pick!));
+    b.addEventListener('mouseenter', () => { hovered = b.dataset.pick!; showFloors(''); });
+    b.addEventListener('focus', () => { hovered = b.dataset.pick!; showFloors(''); if (!picked) note(hovered); });
+    b.addEventListener('mouseleave', () => { hovered = ''; showFloors(''); });
+    b.addEventListener('blur', () => { hovered = ''; showFloors(''); });
+  });
+  polys.forEach((pl) => {
+    pl.addEventListener('pointerenter', () => { hovered = pl.dataset.floor!; showFloors(''); if (!picked) note(hovered); });
+    pl.addEventListener('pointerleave', () => { hovered = ''; showFloors(''); if (!picked) note(''); });
+    pl.addEventListener('click', () => choose(pl.dataset.floor!));
+  });
+  $('[data-pick-note]').addEventListener('click', (e) => { if ((e.target as HTMLElement).matches('[data-follow]')) { e.preventDefault(); choose('L4'); } });
+
+  // ----- annotations, attached to points in the image -----
+  type Anno = { frame: keyof typeof FRAMES; at: string; from: number; to: number; text: (p: number) => string; tone?: string };
+  const ANNO: Anno[] = [
+    { frame: 'e2', at: 'room', from: .13, to: .19, text: () => 'Level 4 · Room 4.07' },
+    { frame: 'r1', at: 'room', from: .195, to: .268, text: () => 'Room 4.07 · 26.9 °C, setpoint 23 °C', tone: 'alert' },
+    { frame: 'r2', at: 'valve', from: .29, to: .53, text: () => 'Valve actuator · 12% of 100% command', tone: 'alert' },
+    { frame: 'r2', at: 'supply', from: .31, to: .53, text: () => 'Supply air · 21.6 °C, design 14 °C', tone: 'alert' },
+    { frame: 'r2', at: 'tag', from: .41, to: .53, text: () => 'FCU-L4-07 · covered · out of warranty' },
+    { frame: 'o1', at: 'desk', from: .55, to: .665, text: (p) => p < .58 ? 'Lina K. · same event, WO-2611-0418' : 'Rami S. assigned · confirmed by Lina' },
+    { frame: 't1', at: 'van', from: .678, to: .722, text: () => 'Rami S. · 15:12 · actuator from van stock' },
+    { frame: 't2', at: 'tech', from: .735, to: .815, text: (p) => p < .78 ? 'FCU-L4-07 · replacing the actuator' : 'Actuator replaced · 2 photos' },
+    { frame: 'v1', at: 'valve', from: .83, to: .915, text: () => 'New actuator · follows command, 98%', tone: 'ok' },
+    { frame: 'p1', at: 'site', from: .93, to: 1.01, text: () => 'Harbour Point · record complete' },
+  ];
+  const visRect = (el: HTMLElement) => { const r = el.getBoundingClientRect(); const s = stage.getBoundingClientRect(); return { l: r.left - s.left, t: r.top - s.top, r: r.right - s.left, b: r.bottom - s.top }; };
+  function blockers() {
+    const out = [] as ReturnType<typeof visRect>[];
+    const recHidden = root.classList.contains('app-on') && innerWidth <= 1180;
+    if (root.classList.contains('rec-on') && !recHidden) out.push(visRect($('[data-rec]')));
+    if (root.classList.contains('app-on')) out.push(visRect($('[data-app]')));
+    if (root.classList.contains('past-open')) out.push(visRect($('.cap-in')));
+    out.push(visRect($('[data-nav]')));
+    return out;
+  }
+  function placeAnnos(p: number, cur: number) {
+    const active = ANNO.filter((a) => p >= a.from && p < a.to && SHOTS[cur].frame === a.frame);
+    const pic = pics[cur]; const r = rectFor(pic); const blk = blockers(); const W = stage.clientWidth;
+    annoEls.forEach((el, i) => {
+      const a = active[i]; if (!a) { el.classList.remove('on'); return; }
+      const pt = ANCHORS[a.frame]?.[a.at]; if (!pt) { el.classList.remove('on'); return; }
+      const x = r.x + pt[0] * r.w, y = r.y + pt[1] * r.h;
+      el.textContent = a.text(p); el.className = 'an on ' + (a.tone || '');
+      const w = el.offsetWidth, h = el.offsetHeight;
+      const tries = [w / 2, w - 18, 18].map((ax) => ({ ax, l: x - ax, t: y - h - 18 }));
+      const hit = (c: { l: number; t: number }) => c.l < 4 || c.l + w > W - 4 || c.t < 4 || blk.some((b) => !(c.l + w < b.l || c.l > b.r || c.t + h + 18 < b.t || c.t > b.b));
+      const pos = tries.find((c) => !hit(c));
+      const onPoint = blk.some((b) => x > b.l && x < b.r && y > b.t && y < b.b);
+      if (!pos || onPoint) { el.classList.remove('on'); return; }
+      el.style.setProperty('--ax', `${pos.ax}px`); el.style.transform = `translate(${pos.l}px, ${pos.t}px)`;
+    });
+  }
+
+  // ----- app screens -----
+  const appImg = $<HTMLImageElement>('[data-app-img]'); let appKey = '';
+  function paintApp(p: number) {
+    const s = STEPS.find((x) => p >= x.from && p < x.to);
+    const wasOn = root.classList.contains('app-on') && !!appImg.getAttribute('src');
+    root.classList.toggle('app-on', !!s); $('[data-app]').toggleAttribute('inert', !s);
+    if (p > .5) STEPS.forEach((x) => { const i = new Image(); i.src = `/apps/${x.img}.webp`; });
+    if (!s || s.img === appKey) return;
+    appKey = s.img;
+    const set = () => {
+      appImg.src = `/apps/${s.img}.webp`; appImg.alt = `${s.app} screen ${s.screen}: ${s.caption}`;
+      $('[data-app-name]').textContent = s.app; $('[data-app-who]').textContent = s.who;
+      $('[data-app-cap]').textContent = s.caption;
+      const a = $<HTMLAnchorElement>('[data-app-id]'); a.textContent = s.screen;
+      a.href = `${brand.productUrl}/#${({ 'TR-019': 'R-03-5', 'M-004': 'M-02-3', 'M-007': 'M-02-4', 'M-013': 'M-03-4', 'M-020': 'M-05-2', 'TR-024': 'R-04-4' } as Record<string, string>)[s.screen]}`;
+      appImg.classList.remove('swap');
+    };
+    if (reduce || !wasOn) set(); else { appImg.classList.add('swap'); setTimeout(set, 160); }
+  }
+  const zoom = root.querySelector<HTMLDialogElement>('[data-zoom]')!;
+  $('[data-app-open]').addEventListener('click', () => { const z = zoom.querySelector<HTMLImageElement>('[data-zoom-img]')!; z.src = appImg.src; z.alt = appImg.alt; zoom.showModal(); });
+  zoom.addEventListener('click', (e) => { if (e.target === zoom) zoom.close(); });
+
   // ----- overlay state, all derived from p -----
   function paint(p: number) {
     const ci = chapterAt(p); const c = CHAPTERS[ci];
-    root.classList.toggle('past-open', mode === 'static' ? staticP > CHAPTERS[0].end - .001 || ci > 0 : p > .045);
+    root.classList.toggle('past-open', mode === 'static' ? ci > 0 : p > .045);
+    root.classList.toggle('pick-on', p < .125);
     root.classList.toggle('rec-on', p > .26);
     if (ci !== lastCh) {
       lastCh = ci;
@@ -243,92 +480,42 @@ const first = CHAPTERS[0];
       $('[data-cap-actor]').textContent = ACTOR[c.actor];
       $('[data-cap-src]').textContent = c.source || '';
       navBtns.forEach((b, i) => { if (i === ci) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); });
-      if (mode !== 'live') showStill(ci);
     }
     let last = -1; recRows.forEach((r, i) => { const done = p >= Number(r.dataset.at); r.classList.toggle('done', done); if (done) last = i; });
     recRows.forEach((r, i) => r.classList.toggle('now', i === Math.max(0, last)));
-    $('[data-rec-state]').textContent = last < 0 ? 'Not yet created' : last >= RECORD.length - 1 ? 'Closed' : last >= 4 ? 'Awaiting verification' : last >= 2 ? 'Assigned' : 'Open';
+    const id = last >= 0 ? RECORD[last].id : '';
+    $('[data-rec-state]').textContent = !id ? 'Not yet created' : id === 'close' ? 'Closed' : id === 'signoff' ? 'Signed off' : id === 'verify' ? 'Awaiting sign-off' : id === 'repair' ? 'Awaiting verification' : ['assign', 'update'].includes(id) ? 'Assigned' : 'Open';
     const rd = readingsAt(p); const box = $('[data-read]'); box.dataset.tone = rd.tone;
     $('[data-read-supply]').textContent = rd.supply; $('[data-read-valve]').textContent = rd.valve; $('[data-read-room]').textContent = rd.room;
     $<HTMLElement>('[data-prog]').style.width = `${p * 100}%`;
+    paintApp(p);
+    // The story's own floor is shown as selected while scrolling toward it.
+    showFloors(p > .085 ? 'L4' : '');
   }
-  const ANNO: { id: string; from: number; to: number; text: (p: number) => string; tone?: (p: number) => string }[] = [
-    { id: 'room', from: .13, to: .25, text: () => 'Room 4.07 · 26.9 °C, setpoint 23 °C', tone: () => 'alert' },
-    { id: 'valve', from: .31, to: .53, text: () => 'Valve actuator · 12% of 100% command', tone: () => 'alert' },
-    { id: 'supply', from: .33, to: .53, text: () => 'Supply-air sensor · 21.6 °C, design 14 °C' },
-    { id: 'wall', from: .545, to: .665, text: (p) => p < .58 ? 'Same event · WO-2611-0418' : 'Assigned · update sent' },
-    { id: 'tech', from: .685, to: .75, text: () => 'Rami S. · service entrance, 15:12' },
-    { id: 'valve', from: .84, to: .895, text: () => 'New actuator · follows command, 98%', tone: () => 'ok' },
-    { id: 'supply', from: .845, to: .895, text: () => 'Supply air 14.1 °C', tone: () => 'ok' },
-  ];
-  function placeAnnos(anchors: { id: string; x: number; y: number; visible: boolean }[], p: number) {
-    const at = Object.fromEntries(anchors.map((a) => [a.id, a]));
-    const active = new Map<string, (typeof ANNO)[number]>(); ANNO.forEach((a) => { if (p >= a.from && p < a.to) active.set(a.id, a); });
-    for (const [id, el] of Object.entries(annos)) {
-      const a = active.get(id); const pt = at[id];
-      const blocked = pt && innerWidth > 900 && pt.x > root.clientWidth - 380 && pt.y < 620;
-      if (!a || !pt || !pt.visible || blocked) { el.classList.remove('on'); continue; }
-      el.textContent = a.text(p); el.className = 'an on ' + (a.tone?.(p) || '');
-      el.style.transform = `translate(${pt.x}px, ${pt.y}px) translate(-50%, calc(-100% - 14px))`;
-    }
-  }
-  function cutFade(p: number) { const d = Math.min(...[.535, .67, .755].map((c) => Math.abs(p - c))); return Math.max(0, 1 - d / .012); }
 
   function frame() {
     raf = 0; p = mode === 'static' ? staticP : progress();
-    paint(p);
-    if (scene) {
-      fade.style.opacity = String(mode === 'static' ? 0 : cutFade(p));
-      const anchors = scene.render(p, assemble);
-      placeAnnos(anchors, p);
-    }
+    const cur = paintFrames(p); paint(p); placeMap(); placeAnnos(p, cur);
   }
   const request = () => { if (!raf) raf = requestAnimationFrame(frame); };
-
-  // ----- stills mode (phones, low power, no WebGL, reduced motion) -----
-  const portrait = () => innerWidth / innerHeight < .83;
-  let stillsMade = false;
-  function showStill(ci: number) {
-    if (!stillsMade) {
-      stillsMade = true;
-      stills.innerHTML = CHAPTERS.map((_, i) => `<img alt="" decoding="async" ${i > 1 ? 'loading="lazy"' : ''} src="/story/c${i}-${portrait() ? 'p' : 'l'}.webp" />`).join('');
-    }
-    [...stills.children].forEach((img, i) => img.classList.toggle('on', i === ci));
-  }
 
   // ----- controls -----
   navBtns.forEach((b, i) => b.addEventListener('click', () => scrollToP(mode === 'static' ? CHAPTERS[i].still : CHAPTERS[i].at + (i === 0 ? 0 : .012))));
   const step = (d: number) => { const ci = chapterAt(mode === 'static' ? staticP : p); const n = Math.min(CHAPTERS.length - 1, Math.max(0, ci + d)); scrollToP(mode === 'static' ? CHAPTERS[n].still : CHAPTERS[n].at + .012); };
   $('[data-prev]').addEventListener('click', () => step(-1));
   $('[data-next]').addEventListener('click', () => step(1));
-  $('[data-replay]').addEventListener('click', () => { scrollToP(mode === 'static' ? CHAPTERS[0].still : 0); });
-  $('[data-explore]').addEventListener('click', (e) => { e.preventDefault(); scrollToP(mode === 'static' ? CHAPTERS[1].still : CHAPTERS[1].at + .02); });
+  $('[data-replay]').addEventListener('click', () => { picked = ''; note(''); scrollToP(mode === 'static' ? CHAPTERS[0].still : 0); });
+  $('[data-explore]').addEventListener('click', (e) => { e.preventDefault(); choose('L4'); });
   root.addEventListener('keydown', (e) => { if (mode === 'static' && (e.key === 'ArrowRight' || e.key === 'ArrowLeft') && (e.target as HTMLElement).closest('[data-nav]')) { e.preventDefault(); step(e.key === 'ArrowRight' ? 1 : -1); } });
 
-  // ----- boot -----
-  async function bootLive() {
-    const { createStoryScene } = await import('../story/scene');
-    scene = createStoryScene(canvas, (narrow || lowPower) ? 'low' : 'high');
-    new ResizeObserver(() => { scene!.resize(); request(); }).observe(canvas);
-    if (stillParam) {
-      assemble = 1; root.classList.add('live'); document.fonts?.ready.then(() => { p = parseFloat(stillParam); scene!.render(p, 1); scene!.render(p, 1); document.documentElement.dataset.storyReady = '1'; });
-      return;
-    }
-    root.classList.add('live');
-    // Opening assembly: one short settle, then the architecture stays put.
-    const t0 = performance.now(); const dur = 1500;
-    const tick = (t: number) => { assemble = Math.min(1, (t - t0) / dur); frame(); if (assemble < 1) requestAnimationFrame(tick); };
-    if (progress() > .02) { assemble = 1; frame(); } else requestAnimationFrame(tick);
-  }
   addEventListener('scroll', request, { passive: true });
   addEventListener('resize', request);
-  if (mode === 'live') {
-    if (stillParam) { document.documentElement.classList.add('story-still'); bootLive(); }
-    else if ('requestIdleCallback' in window) (window as any).requestIdleCallback(bootLive, { timeout: 1200 }); else setTimeout(bootLive, 300);
-  } else { showStill(0); }
+  portraitMQ.addEventListener?.('change', request);
+  pics.forEach((pic) => pic.querySelector('img')!.addEventListener('load', request));
   frame();
+  if (stillParam) {
+    // capture mode for documentation stills: wait for the frames on screen
+    const imgs = pics.filter((x) => x.classList.contains('on')).map((x) => x.querySelector('img')!);
+    Promise.all(imgs.map((i) => i.complete ? 1 : new Promise((r) => i.addEventListener('load', r, { once: true })))).then(() => document.fonts.ready).then(() => { frame(); document.documentElement.dataset.storyReady = '1'; });
+  }
 </script>
-<style is:global>
-  html.story-still .hdr, html.story-still .st-open, html.story-still .st-cap, html.story-still .st-rec, html.story-still .st-nav, html.story-still .st-anno { visibility: hidden !important; }
-  html.story-still .st-poster { display: none; }
-</style>
