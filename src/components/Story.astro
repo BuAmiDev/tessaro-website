@@ -328,7 +328,7 @@ const still = (id: string) => `/story/v4/${id}-1024.webp`;
     const from = progress(), d = Math.abs(target - from); if (d < .001) return;
     const dur = Math.min(4200, 900 + 3600 * d), t0 = performance.now(), y0 = topY();
     const ease = (t: number) => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    const step = (now: number) => { const t = Math.min(1, (now - t0) / dur); scrollTo(0, y0 + (from + (target - from) * ease(t)) * span()); tween = t < 1 ? requestAnimationFrame(step) : 0; };
+    const step = () => { const t = Math.min(1, (performance.now() - t0) / dur); scrollTo(0, y0 + (from + (target - from) * ease(t)) * span()); tween = t < 1 ? requestAnimationFrame(step) : 0; };
     tween = requestAnimationFrame(step);
   }
 
